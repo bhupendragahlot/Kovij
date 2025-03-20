@@ -128,7 +128,7 @@ function Footer() {
         
         <div className={`border-t ${theme === 'dark' ? 'border-gray-800' : 'border-gray-300'} mt-12 pt-8 text-center`}>
           <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
-            &copy; {currentYear} Kovij Fitness Zone. All rights reserved. Created by BhupendraGahlot
+            &copy; {currentYear} Kovij Fitness Zone. All rights reserved. Developed by <a href="mailto:bhupendragahlot11@gmail.com" className={`${theme === 'dark' ? 'text-gray-400 hover:text-blue-500' : 'text-gray-600 hover:text-blue-500'} transition-colors duration-300`}>BhupendraGahlot</a>
           </p>
         </div>
       </div>

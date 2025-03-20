@@ -25,7 +25,7 @@ function Shop() {
       price: 2499,
       discountPrice: 1999,
       rating: 4.8,
-      image: "/images/product-1.jpg",
+      image: "https://imgs.search.brave.com/Ckjd05tsIs4QgvuMMRJkITTvdIiIqduxzY_6IRGEcQw/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9zaG9w/LmJvZHlidWlsZGlu/Zy5jb20vY2RuL3No/b3AvZmlsZXMva2Fn/ZWQtd2hleS1wcm90/ZWluLWlzb2xhdGUt/NDkxNDM2LmpwZz9j/cm9wPWNlbnRlciZo/ZWlnaHQ9MjA0OCZ2/PTE3MzAzNjcwMzIm/d2lkdGg9MjA0OA",
       badge: "Best Seller",
     },
     {
@@ -35,7 +35,7 @@ function Shop() {
       price: 1899,
       discountPrice: 1499,
       rating: 4.5,
-      image: "/images/product-2.jpg",
+      image: "https://imgs.search.brave.com/6VVg1MNWl-0ErZ5rh3sc3xEAN12mQgU-gNgiHtwod9E/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/ODF1cGlrSkppQ0wu/anBn",
       badge: "20% OFF",
     },
     {
@@ -83,7 +83,7 @@ function Shop() {
       price: 799,
       discountPrice: 649,
       rating: 4.2,
-      image: "/images/product-7.jpg",
+      image: "https://imgs.search.brave.com/qZp0nYP-m3W-OGkn7ifJWUoLseBCTQhQoReuLJ54FDA/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly93d3cu/Z29yaWxsYXdlYXIu/Y29tL3Jlc2l6ZS85/OTgwMzkwOC13b21l/bnMtZml0bmVzcy1n/bG92ZXMtMjAtYmxh/Y2stZ3JheS0xXzM4/MjAwMTUwNTg5NDgu/anBnLzUwMC81MDAv/VHJ1ZS93b21lbi1z/LWZpdG5lc3MtZ2xv/dmVzLTIwLWJsYWNr/LWdyYXkuanBn",
     },
     {
       id: 8,
@@ -92,7 +92,7 @@ function Shop() {
       price: 699,
       discountPrice: 599,
       rating: 4.5,
-      image: "/images/product-8.jpg",
+      image: "https://imgs.search.brave.com/aEXrGmsMyDpJIZaGWAz2inMtkgz9e4cipQlSESQpvxg/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NDFIcUlLRjlHVEwu/anBn",
     },
   ]
 
@@ -160,12 +160,12 @@ function Shop() {
                     {product.badge}
                   </div>
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
+                {/* <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end justify-center pb-4">
                   <button className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded-full flex items-center gap-2 transition-colors duration-300">
                     <FaShoppingCart />
                     <span>Add to Cart</span>
                   </button>
-                </div>
+                </div> */}
               </div>
               <div className="p-4">
                 <h3 className={`text-lg font-bold ${theme === "dark" ? "text-white" : "text-gray-900"} mb-1`}>

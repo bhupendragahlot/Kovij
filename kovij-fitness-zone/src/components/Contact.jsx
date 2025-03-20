@@ -168,7 +168,7 @@ function Contact() {
                       ? "bg-gray-700/50 border border-gray-600 text-white"
                       : "bg-gray-100 border border-gray-300 text-gray-800"
                   }`}
-                  placeholder="+91 9876543210"
+                  placeholder="+911234567890"
                 />
               </div>
 
@@ -260,7 +260,7 @@ function Contact() {
                         theme === "dark" ? "text-gray-400" : "text-gray-600"
                       }`}
                     >
-                      +91 98765 43210
+                      +919057027053
                     </a>
                   </div>
                 </div>
@@ -295,7 +295,7 @@ function Contact() {
                     <FaFacebook className="text-xl" />
                   </a>
                   <a
-                    href="https://instagram.com"
+                    href="https://www.instagram.com/kovij_fitness_zone?igsh=MWR4aWdiYm0wN210dA=="
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-gradient-to-br from-purple-600 to-pink-500 p-3 rounded-full text-white hover:from-purple-700 hover:to-pink-600 transition-colors duration-300"
@@ -303,7 +303,7 @@ function Contact() {
                     <FaInstagram className="text-xl" />
                   </a>
                   <a
-                    href="https://wa.me/919876543210"
+                    href="https://wa.me/919057027053"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-green-600 p-3 rounded-full text-white hover:bg-green-700 transition-colors duration-300"
