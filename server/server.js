@@ -27,7 +27,7 @@ app.use(cookieMiddleware);
 
 // Connect to MongoDB
 mongoose
-  .connect(process.env.MONGO_URI || "mongodb://localhost:27017/kovij-fitness-zone")
+  .connect(process.env.MONGO_URI )
   .then(() => console.log("MongoDB connected"))
   .catch(error => console.error("MongoDB connection error:", error));
 
