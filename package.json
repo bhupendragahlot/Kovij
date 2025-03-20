@@ -8,7 +8,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon server.js"
+    "start": "node server/server.js",
+    "build": "npm install && npm install --prefix kovij-fitness-zone && npm run build --prefix kovij-fitness-zone"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
