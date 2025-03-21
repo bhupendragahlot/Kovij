@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { FaDumbbell, FaMoon, FaSun } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
+import { motion } from 'framer-motion';
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -38,7 +39,7 @@ function Navbar() {
         : 'bg-transparent'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+        <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             <Link to="/" className="flex items-center">
               <FaDumbbell className="h-8 w-8 text-red-500" />
@@ -50,13 +51,19 @@ function Navbar() {
           
           {/* Desktop menu */}
           <div className="hidden md:block">
+           
             <div className="ml-10 flex items-center space-x-4">
-              <a href="#home" className={`hover:text-red-500 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Home</a>
-              <a href="#services" className={`hover:text-red-500 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Services</a>
-              <a href="#gallery" className={`hover:text-red-500 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Gallery</a>
-              <a href="#trainers" className={`hover:text-red-500 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Trainers</a>
-              <a href="#pricing" className={`hover:text-red-500 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Pricing</a>
-              <a href="#contact" className={`hover:text-red-500 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Contact</a>
+              {['home', 'services', 'gallery', 'trainers', 'pricing', 'contact'].map((item) => (
+                <motion.a
+                  key={item}
+                  href={`#${item}`}
+                  className={`hover:text-red-500 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {item.charAt(0).toUpperCase() + item.slice(1)}
+                </motion.a>
+              ))}
               <a href="/shop" target="_blank" rel="noopener noreferrer" className="bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:from-red-700 hover:to-red-600 transition-all duration-300 transform hover:scale-105">Shop</a>
               
               {/* Theme toggle button */}
@@ -104,12 +111,18 @@ function Navbar() {
       {/* Mobile menu */}
       <div className={`md:hidden ${isOpen ? 'block' : 'hidden'}`}>
         <div className={`px-2 pt-2 pb-3 space-y-1 sm:px-3 ${theme === 'dark' ? 'bg-black/90 backdrop-blur-md' : 'bg-white/90 backdrop-blur-md'}`}>
-          <a href="#home" onClick={closeMenu} className={`hover:bg-gray-800 block px-3 py-2 rounded-md text-base font-medium ${theme === 'dark' ? 'text-white hover:bg-gray-700' : 'text-gray-800 hover:bg-gray-200'}`}>Home</a>
-          <a href="#services" onClick={closeMenu} className={`hover:bg-gray-800 block px-3 py-2 rounded-md text-base font-medium ${theme === 'dark' ? 'text-white hover:bg-gray-700' : 'text-gray-800 hover:bg-gray-200'}`}>Services</a>
-          <a href="#gallery" onClick={closeMenu} className={`hover:bg-gray-800 block px-3 py-2 rounded-md text-base font-medium ${theme === 'dark' ? 'text-white hover:bg-gray-700' : 'text-gray-800 hover:bg-gray-200'}`}>Gallery</a>
-          <a href="#trainers" onClick={closeMenu} className={`hover:bg-gray-800 block px-3 py-2 rounded-md text-base font-medium ${theme === 'dark' ? 'text-white hover:bg-gray-700' : 'text-gray-800 hover:bg-gray-200'}`}>Trainers</a>
-          <a href="#pricing" onClick={closeMenu} className={`hover:bg-gray-800 block px-3 py-2 rounded-md text-base font-medium ${theme === 'dark' ? 'text-white hover:bg-gray-700' : 'text-gray-800 hover:bg-gray-200'}`}>Pricing</a>
-          <a href="#contact" onClick={closeMenu} className={`hover:bg-gray-800 block px-3 py-2 rounded-md text-base font-medium ${theme === 'dark' ? 'text-white hover:bg-gray-700' : 'text-gray-800 hover:bg-gray-200'}`}>Contact</a>
+          {['home', 'services', 'gallery', 'trainers', 'pricing', 'contact'].map((item) => (
+            <motion.a
+              key={item}
+              href={`#${item}`}
+              onClick={closeMenu}
+              className={`hover:bg-gray-800 block px-3 py-2 rounded-md text-base font-medium ${theme === 'dark' ? 'text-white hover:bg-gray-700' : 'text-gray-800 hover:bg-gray-200'}`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {item.charAt(0).toUpperCase() + item.slice(1)}
+            </motion.a>
+          ))}
           <a href="/shop" target="_blank" rel="noopener noreferrer" onClick={closeMenu} className="bg-gradient-to-r from-red-600 to-red-500 block px-3 py-2 rounded-md text-base font-medium text-white">Shop</a>
         </div>
       </div>

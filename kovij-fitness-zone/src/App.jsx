@@ -5,6 +5,8 @@ import Footer from './components/Footer';
 import Home from './pages/Home';
 import Shop from './pages/Shop';
 import { useTheme } from './context/ThemeContext';
+import ScrollToTop from './components/ScrollToTop';
+
 
 function App() {
   const { theme } = useTheme();
@@ -20,6 +22,7 @@ function App() {
 
   return (
     <Router>
+      <ScrollToTop />
       <div className={`font-poppins ${theme === 'dark' ? 'bg-gradient-to-b from-gray-900 to-black' : 'bg-gradient-to-b from-gray-100 to-white'} min-h-screen ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
         <Navbar />
         <Routes>

@@ -68,7 +68,7 @@ function Services() {
               OUR SERVICES
             </span>
           </h2>
-          <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} max-w-3xl mx-auto`}>
+          <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-800'} max-w-3xl mx-auto`}>
             We offer a wide range of fitness services to help you achieve your goals, whether you're a beginner or an experienced athlete.
           </p>
         </div>
@@ -85,17 +85,18 @@ function Services() {
               key={index}
               className={`${theme === 'dark' 
                 ? 'bg-gray-800/50 backdrop-blur-sm border-gray-700 hover:border-red-500/50 group' 
-                : 'bg-white/70 backdrop-blur-sm border-gray-200 hover:border-red-500/50 group shadow-sm'} 
-                p-8 rounded-xl hover:bg-gray-800/80 transition-all duration-300 border`}
+                : 'bg-white border-gray-200 hover:border-gray-800/50 group shadow-sm'} 
+                p-8 rounded-2xl hover:bg-gray-600/60 transition-all duration-300 border`}
               variants={itemVariants}
+              whileHover={{ scale: 1.05 }}
             >
               <div className="mb-4 transform group-hover:scale-110 transition-transform duration-300">
                 {service.icon}
               </div>
-              <h3 className={`text-xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'} group-hover:text-red-400 transition-colors duration-300`}>
+              <h3 className={`text-xl font-bold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'} group-hover:text-red-500 transition-colors duration-300`}>
                 {service.title}
               </h3>
-              <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
+              <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-800'}`}>
                 {service.description}
               </p>
             </motion.div>
