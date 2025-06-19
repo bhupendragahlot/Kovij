@@ -44,7 +44,7 @@ function Navbar() {
             <Link to="/" className="flex items-center">
               <FaDumbbell className="h-8 w-8 text-red-500" />
               <span className={`ml-2 text-xl font-bold bg-gradient-to-r from-red-500 to-yellow-500 bg-clip-text text-transparent`}>
-                KOVIJ FITNESS ZONE
+                KOVIJ
               </span>
             </Link>
           </div>
@@ -72,7 +72,7 @@ function Navbar() {
                 className={`p-2 rounded-full ${theme === 'dark' ? 'bg-gray-800 text-yellow-300' : 'bg-gray-200 text-gray-800'} hover:bg-opacity-80 transition-colors duration-300`}
                 aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
               >
-                {theme === 'dark' ? <FaSun className="h-5 w-5" /> : <FaMoon className="h-5 w-5" />}
+                {theme === 'dark' ? <FaSun className="h-4 w-4" /> : <FaMoon className="h-4 w-4" />}
               </button>
             </div>
           </div>
