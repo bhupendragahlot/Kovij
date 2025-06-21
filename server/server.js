@@ -32,16 +32,6 @@ mongoose
   .then(() => console.log("MongoDB connected"))
   .catch(error => console.error("MongoDB connection error:", error));
 
-const __dirname = path.resolve();
-
-app.use(express.static(path.join(__dirname,'/kovij-fitness-zone/dist')));
-
-app.get('*',(req,res)=>{
-  res.sendFile(path.join(__dirname,'kovij-fitness-zone','dist','index.html'))
-})
-
-
-
 
 // Use API routes
 app.use("/api", emailRoutes);
@@ -52,6 +42,17 @@ app.use('/api/trainers', trainerRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/plans', planRoutes);
 app.use('/api/settings', settingsRoutes);
+
+
+
+
+const __dirname = path.resolve();
+
+app.use(express.static(path.join(__dirname,'/kovij-fitness-zone/dist')));
+
+app.get('*',(req,res)=>{
+  res.sendFile(path.join(__dirname,'kovij-fitness-zone','dist','index.html'))
+})
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
