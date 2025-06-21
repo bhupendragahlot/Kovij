@@ -11,10 +11,10 @@ import { protect } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-router.get('/', protect, getTrainers);
-router.get('/:id', protect, getTrainerById);
-router.post('/', protect, createTrainer);
-router.put('/:id', protect, updateTrainer);
-router.delete('/:id', protect, deleteTrainer);
+router.get('/',  getTrainers);
+router.get('/:id',  getTrainerById);
+router.post('/',  createTrainer);
+router.put('/:id',  updateTrainer);
+router.delete('/:id', deleteTrainer);
 
 export default router;

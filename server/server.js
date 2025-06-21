@@ -13,6 +13,7 @@ import authRoutes from './routes/authRoutes.js';
 import trainerRoutes from './routes/trainerRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import planRoutes from './routes/planRoutes.js';
+import settingsRoutes from './routes/settingsRoutes.js';
 
 
 dotenv.config();
@@ -51,6 +52,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/trainers', trainerRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/plans', planRoutes);
+app.use('/api/settings', settingsRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

@@ -28,10 +28,18 @@ const planSchema = new mongoose.Schema({
     type: String,
     default: 'from-gray-600 to-gray-700'
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+  status: {
+    type: String,
+    required: true,
+    enum: ['Active', 'Inactive'],
+    default: 'Active'
+  },
+   showOnFrontend: { // also called showOnFrontend:
+    type: Boolean,
+    default: true
+  },
+}, {
+  timestamps: true
 });
 
 const Plan = mongoose.model('Plan', planSchema);

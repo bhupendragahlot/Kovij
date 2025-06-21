@@ -24,11 +24,11 @@ const trainerSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
+  showOnFrontend: {
+    type: Boolean,
+    default: true 
   }
-});
+},{ timestamps: true });
 
 const Trainer = mongoose.model('Trainer', trainerSchema);
 

@@ -39,10 +39,21 @@ const productSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+  showOnFrontend: {
+    type: Boolean,
+    default: true
+  },
+  sku: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  brand: {
+    type: String,
+    required: true
+  },
+}, {
+  timestamps: true
 });
 
 const Product = mongoose.model('Product', productSchema);
