@@ -27,11 +27,7 @@ const TrainerForm = () => {
   useEffect(() => {
     if (isEditing) {
       setLoading(true)
-      fetch(`/api/trainers/${id}`,{
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      })
+      fetch(`/api/trainers/${id}`)
         .then(res => res.json())
         .then(data => setFormData({
           name: data.name || "",
@@ -57,6 +53,8 @@ const TrainerForm = () => {
     e.preventDefault()
     setLoading(true)
     try {
+      const token = localStorage.getItem("token");
+
       const method = isEditing ? "PUT" : "POST"
       const url = isEditing ? `/api/trainers/${id}` : `/api/trainers`
       await fetch(url, {

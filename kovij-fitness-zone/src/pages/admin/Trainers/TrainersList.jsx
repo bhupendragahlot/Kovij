@@ -33,31 +33,35 @@ const TrainersList = () => {
       trainer.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this trainer?")) {
-      await fetch(`/api/trainers/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setTrainers(trainers.filter((t) => t._id !== id));
-    }
-  };
-
-  const handleToggleShow = async (id, current) => {
+const handleDelete = async (id) => {
+  const token = localStorage.getItem('token');
+  if (window.confirm("Are you sure you want to delete this trainer?")) {
     await fetch(`/api/trainers/${id}`, {
-      method: "PUT",
+      method: "DELETE",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-      body: JSON.stringify({ showOnFrontend: !current })
+        Authorization: `Bearer ${token}`
+      }
     });
-    setTrainers(
-      trainers.map((t) =>
-        t._id === id ? { ...t, showOnFrontend: !current } : t
-      )
-    );
-  };
+    setTrainers(trainers.filter((t) => t._id !== id));
+  }
+};
+
+ const handleToggleShow = async (id, current) => {
+  const token = localStorage.getItem('token');
+  await fetch(`/api/trainers/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ showOnFrontend: !current })
+  });
+  setTrainers(
+    trainers.map((t) =>
+      t._id === id ? { ...t, showOnFrontend: !current } : t
+    )
+  );
+};
 
   const handleView = (trainer) => {
     setViewTrainer(trainer);

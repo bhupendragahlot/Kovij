@@ -12,7 +12,7 @@ import { cacheMiddleware } from '../middleware/cacheMiddleware.js';
 const router = express.Router();
 
 router.get('/', cacheMiddleware, getTrainers);
-router.get('/:id',protect,  getTrainerById);
+router.get('/:id',  getTrainerById);
 router.post('/', protect, createTrainer);
 router.put('/:id',protect,  updateTrainer);
 router.delete('/:id',protect, deleteTrainer);
