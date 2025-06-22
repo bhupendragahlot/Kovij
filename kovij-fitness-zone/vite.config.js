@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy:{
       '/api':{
-        target:'https://kovij.onrender.com/',
+        target:'https://kovij.onrender.com',
         secure:false,
       }
     },

@@ -11,7 +11,7 @@ import { protect } from '../middleware/authMiddleware.js';
 import { cacheMiddleware } from '../middleware/cacheMiddleware.js'; 
 const router = express.Router();
 
-router.get('/', cacheMiddleware, getTrainers);
+router.get('/', getTrainers);
 router.get('/:id',  getTrainerById);
 router.post('/', protect, createTrainer);
 router.put('/:id',protect,  updateTrainer);

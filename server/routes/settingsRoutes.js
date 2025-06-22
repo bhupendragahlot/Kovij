@@ -4,7 +4,7 @@ import { protect } from '../middleware/authMiddleware.js';
 import { cacheMiddleware } from '../middleware/cacheMiddleware.js'; 
 const router = express.Router();
 
-router.get('/',cacheMiddleware, getSettings);
+router.get('/', getSettings);
 router.post('/',protect, upsertSettings);   // Create or update
 router.put('/', protect,upsertSettings);    // Update
 router.delete('/',protect, deleteSettings); // Delete

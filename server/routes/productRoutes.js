@@ -12,7 +12,7 @@ import { cacheMiddleware } from '../middleware/cacheMiddleware.js';
 
 const router = express.Router();
 
-router.get('/',cacheMiddleware, getProducts);
+router.get('/', getProducts);
 router.get('/:id',  getProductById);
 router.post('/',protect, createProduct);
 router.put('/:id',protect, updateProduct);
