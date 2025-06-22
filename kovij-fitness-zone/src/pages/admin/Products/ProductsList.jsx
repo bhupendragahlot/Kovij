@@ -17,7 +17,7 @@ const ProductsList = () => {
   useEffect(() => {
     fetchProducts()
   }, [])
-const token = localStorage.getItem("token");
+
   const fetchProducts = async () => {
     setLoading(true)
     try {
@@ -32,6 +32,7 @@ const token = localStorage.getItem("token");
   }
 
   const handleDelete = async (id) => {
+    const token = localStorage.getItem("token");
     if (window.confirm("Are you sure you want to delete this product?")) {
       await fetch(`${API_URL}/${id}`, { 
         method: "DELETE",
@@ -44,6 +45,7 @@ const token = localStorage.getItem("token");
   }
 
   const handleToggleShow = async (id, current) => {
+    const token = localStorage.getItem("token");
     await fetch(`${API_URL}/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" ,

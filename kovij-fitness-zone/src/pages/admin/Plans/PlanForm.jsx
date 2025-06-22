@@ -41,10 +41,7 @@ const PlanForm = () => {
   useEffect(() => {
     if (isEditing) {
       setLoading(true)
-      fetch(`${API_URL}/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        }
-      )
+      fetch(`${API_URL}/${id}`)
         .then((res) => res.json())
         .then((data) => {
           setFormData({
@@ -66,6 +63,7 @@ const PlanForm = () => {
     e.preventDefault()
     setLoading(true)
     try {
+      const token = localStorage.getItem("token");
       const method = isEditing ? "PUT" : "POST"
       const url = isEditing ? `${API_URL}/${id}` : API_URL
       const res = await fetch(url, {

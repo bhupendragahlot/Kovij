@@ -30,7 +30,7 @@ const ProductForm = () => {
 
   const [formData, setFormData] = useState(initialState)
   const [loading, setLoading] = useState(false)
-const token = localStorage.getItem("token");
+
   useEffect(() => {
     if (isEditing) {
       fetch(`${API_URL}/${id}`)
@@ -50,6 +50,7 @@ const token = localStorage.getItem("token");
     e.preventDefault()
     setLoading(true)
     try {
+      const token = localStorage.getItem("token");
       const method = isEditing ? "PUT" : "POST"
       const url = isEditing ? `${API_URL}/${id}` : API_URL
       await fetch(url, {

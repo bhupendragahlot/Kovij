@@ -22,8 +22,9 @@ const PlansList = () => {
       .then((data) => setPlans(data))
       .finally(() => setLoading(false))
   }, [])
-   const token = localStorage.getItem("token")
+  
   const handleDelete = async (id) => {
+     const token = localStorage.getItem("token")
     if (window.confirm("Are you sure you want to delete this plan?")) {
       await fetch(`${API_URL}/${id}`, {
         method: "DELETE",
