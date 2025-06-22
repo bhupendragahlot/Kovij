@@ -46,8 +46,10 @@ const TrainersList = () => {
   const handleToggleShow = async (id, current) => {
     await fetch(`/api/trainers/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      Authorization: `Bearer ${token}`,
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+      },
       body: JSON.stringify({ showOnFrontend: !current })
     });
     setTrainers(
