@@ -8,13 +8,13 @@ import {
   deleteTrainer,
 } from '../controllers/trainerController.js';
 import { protect } from '../middleware/authMiddleware.js';
-
+import { cacheMiddleware } from '../middleware/cacheMiddleware.js'; 
 const router = express.Router();
 
-router.get('/',  getTrainers);
-router.get('/:id',  getTrainerById);
-router.post('/',  createTrainer);
-router.put('/:id',  updateTrainer);
-router.delete('/:id', deleteTrainer);
+router.get('/', cacheMiddleware, getTrainers);
+router.get('/:id',protect,  getTrainerById);
+router.post('/', protect, createTrainer);
+router.put('/:id',protect,  updateTrainer);
+router.delete('/:id',protect, deleteTrainer);
 
 export default router;

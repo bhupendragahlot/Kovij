@@ -8,13 +8,14 @@ import {
   deleteProduct,
 } from '../controllers/productController.js';
 import { protect } from '../middleware/authMiddleware.js';
+import { cacheMiddleware } from '../middleware/cacheMiddleware.js';
 
 const router = express.Router();
 
-router.get('/', getProducts);
-router.get('/:id',  getProductById);
-router.post('/', createProduct);
-router.put('/:id', updateProduct);
-router.delete('/:id',deleteProduct);
+router.get('/',cacheMiddleware, getProducts);
+router.get('/:id',protect,  getProductById);
+router.post('/',protect, createProduct);
+router.put('/:id',protect, updateProduct);
+router.delete('/:id',protect,deleteProduct);
 
 export default router;
