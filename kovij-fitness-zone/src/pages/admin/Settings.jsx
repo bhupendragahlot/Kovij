@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react"
 import { useTheme } from "../../context/ThemeContext"
 import { Save, Pencil } from "lucide-react"
-
-const API_URL = "https://kovij.onrender.com" // Update with your actual API URL
 const AdminSettings = () => {
   const { theme } = useTheme()
   const [loading, setLoading] = useState(false)
@@ -27,7 +25,7 @@ const AdminSettings = () => {
     const fetchSettings = async () => {
       setLoading(true)
       try {
-        const res = await fetch(`${API_URL}/api/settings`)
+        const res = await fetch(`/api/settings`)
         if (res.ok) {
           const data = await res.json()
           setSettings(data)
@@ -54,7 +52,7 @@ const AdminSettings = () => {
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await fetch(`${API_URL}/api/settings`, {
+      const res = await fetch(`/api/settings`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         "Authorization": `Bearer ${token}`,

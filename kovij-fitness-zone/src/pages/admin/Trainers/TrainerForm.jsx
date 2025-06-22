@@ -5,7 +5,6 @@ import { useNavigate, useParams } from "react-router-dom"
 import { useTheme } from "../../../context/ThemeContext"
 import { ArrowLeft, Save } from "lucide-react"
 
-const API_URL = "https://kovij.onrender.com"
 
 const TrainerForm = () => {
   const { theme } = useTheme()
@@ -26,7 +25,7 @@ const TrainerForm = () => {
   useEffect(() => {
     if (isEditing) {
       setLoading(true)
-      fetch(`${API_URL}/api/trainers/${id}`,{
+      fetch(`/api/trainers/${id}`,{
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -57,7 +56,7 @@ const TrainerForm = () => {
     setLoading(true)
     try {
       const method = isEditing ? "PUT" : "POST"
-      const url = isEditing ? `${API_URL}/api/trainers/${id}` : "${API_URL}/api/trainers"
+      const url = isEditing ? `/api/trainers/${id}` : `/api/trainers`
       await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },

@@ -6,7 +6,6 @@ import { useTheme } from "../../../context/ThemeContext";
 import { Plus, Search, Edit, Trash2, Eye } from "lucide-react";
 import { FaInstagram } from "react-icons/fa";
 
-const API_URL = "https://kovij.onrender.com";
 const TrainersList = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
@@ -17,7 +16,7 @@ const TrainersList = () => {
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    fetch(`${API_URL}/api/trainers`)
+    fetch(`/api/trainers`)
       .then((res) => res.json())
       .then(setTrainers)
       .finally(() => setLoading(false));
@@ -32,7 +31,7 @@ const TrainersList = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this trainer?")) {
-      await fetch(`${API_URL}/api/trainers/${id}`, {
+      await fetch(`/api/trainers/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -41,7 +40,7 @@ const TrainersList = () => {
   };
 
   const handleToggleShow = async (id, current) => {
-    await fetch(`${API_URL}/api/trainers/${id}`, {
+    await fetch(`/api/trainers/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       Authorization: `Bearer ${token}`,

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import { useTheme } from "../../../context/ThemeContext"
 import { ArrowLeft, Save, Star, Eye, EyeOff } from "lucide-react"
 
-const API_URL = "https://kovij.onrender.com/api/plans"
+const API_URL = "/api/plans"
 const DURATION_OPTIONS = [
   { value: "day", label: "Day" },
   { value: "week", label: "Week" },

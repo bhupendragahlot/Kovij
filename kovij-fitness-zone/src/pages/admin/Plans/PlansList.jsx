@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom"
 import { useTheme } from "../../../context/ThemeContext"
 import { Plus, Search, Edit, Trash2, Eye, Calendar, Star, EyeOff } from "lucide-react"
 
-const API_URL = "https://kovij.onrender.com/api/plans"
+const API_URL = "/api/plans"
 
 const PlansList = () => {
   const { theme } = useTheme()
@@ -25,7 +25,13 @@ const PlansList = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this plan?")) {
-      await fetch(`${API_URL}/${id}`, { method: "DELETE" })
+      const token = localStorage.getItem("token")
+      await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
       setPlans((plans) => plans.filter((plan) => plan._id !== id))
     }
   }
