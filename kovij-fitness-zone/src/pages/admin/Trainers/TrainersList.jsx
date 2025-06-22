@@ -15,6 +15,10 @@ const TrainersList = () => {
   const [viewTrainer, setViewTrainer] = useState(null);
   const [showModal, setShowModal] = useState(false);
 
+
+  // Add this line to get the token from localStorage
+  const token = localStorage.getItem("token");
+
   useEffect(() => {
     fetch(`/api/trainers`)
       .then((res) => res.json())

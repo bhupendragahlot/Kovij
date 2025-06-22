@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import { useTheme } from "../../../context/ThemeContext"
 import { ArrowLeft, Save } from "lucide-react"
 
-const API_URL = "https://kovij.onrender.com/api/products"
+const API_URL = "/api/products"
 
 const initialState = {
   name: "",
@@ -30,7 +30,7 @@ const ProductForm = () => {
 
   const [formData, setFormData] = useState(initialState)
   const [loading, setLoading] = useState(false)
-
+const token = localStorage.getItem("token");
   useEffect(() => {
     if (isEditing) {
       fetch(`${API_URL}/${id}`)
@@ -54,7 +54,9 @@ const ProductForm = () => {
       const url = isEditing ? `${API_URL}/${id}` : API_URL
       await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+         },
         body: JSON.stringify({
           ...formData,
           price: Number(formData.price),

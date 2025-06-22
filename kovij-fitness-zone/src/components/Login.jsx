@@ -197,7 +197,7 @@ const Login = () => {
       // Handle successful login
       console.log('Login successful:', response.data);
       // Redirect or store token in localStorage
-      localStorage.setItem('authToken', response.data.token);
+      localStorage.setItem('token', response.data.token);
       window.location.href = '/admin/dashboard'; // or use React Router navigation
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed. Please check your credentials.');

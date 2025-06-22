@@ -42,7 +42,7 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
   ]
 
   const handleLogout = () => {
-    localStorage.removeItem("authToken")
+    localStorage.removeItem("token")
     navigate("/admin/login")
   }
 

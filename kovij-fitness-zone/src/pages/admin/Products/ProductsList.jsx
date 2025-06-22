@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom"
 import { useTheme } from "../../../context/ThemeContext"
 import { Plus, Search, Edit, Trash2, Eye, Package } from "lucide-react"
 
-const API_URL = "https://kovij.onrender.com/api/products"
+const API_URL = "/api/products"
 
 const ProductsList = () => {
   const { theme } = useTheme()
@@ -17,7 +17,7 @@ const ProductsList = () => {
   useEffect(() => {
     fetchProducts()
   }, [])
-
+const token = localStorage.getItem("token");
   const fetchProducts = async () => {
     setLoading(true)
     try {
@@ -33,7 +33,12 @@ const ProductsList = () => {
 
   const handleDelete = async (id) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
-      await fetch(`${API_URL}/${id}`, { method: "DELETE" })
+      await fetch(`${API_URL}/${id}`, { 
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      })
       fetchProducts()
     }
   }
@@ -41,7 +46,9 @@ const ProductsList = () => {
   const handleToggleShow = async (id, current) => {
     await fetch(`${API_URL}/${id}`, {
       method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" ,
+        "Authorization": `Bearer ${token}`,
+      },
       body: JSON.stringify({ showOnFrontend: !current }),
     })
     fetchProducts()

@@ -36,7 +36,7 @@ const PlanForm = () => {
   })
   const [featureInput, setFeatureInput] = useState("")
   const [loading, setLoading] = useState(false)
-
+ const token = localStorage.getItem("token");
   // Fetch plan if editing
   useEffect(() => {
     if (isEditing) {

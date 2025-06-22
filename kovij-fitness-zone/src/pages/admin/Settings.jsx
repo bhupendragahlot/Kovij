@@ -19,7 +19,7 @@ const AdminSettings = () => {
     whatsapp: "",
     mapEmbedUrl: ""
   })
-
+ const token = localStorage.getItem("token");
   // Fetch settings on mount
   useEffect(() => {
     const fetchSettings = async () => {

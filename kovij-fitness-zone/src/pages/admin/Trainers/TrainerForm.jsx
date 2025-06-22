@@ -5,7 +5,7 @@ import { useNavigate, useParams } from "react-router-dom"
 import { useTheme } from "../../../context/ThemeContext"
 import { ArrowLeft, Save } from "lucide-react"
 
-
+ 
 const TrainerForm = () => {
   const { theme } = useTheme()
   const navigate = useNavigate()
@@ -21,6 +21,8 @@ const TrainerForm = () => {
     showOnFrontend: true,
   })
   const [loading, setLoading] = useState(false)
+
+  const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (isEditing) {
