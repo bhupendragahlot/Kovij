@@ -1,10 +1,10 @@
-"use client";
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "../../../context/ThemeContext";
 import { Plus, Search, Edit, Trash2, Eye } from "lucide-react";
 import { FaInstagram } from "react-icons/fa";
+import axios from "axios";
 
 const TrainersList = () => {
   const { theme } = useTheme();
@@ -14,15 +14,13 @@ const TrainersList = () => {
   const [loading, setLoading] = useState(true);
   const [viewTrainer, setViewTrainer] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const API_URL = "https://kovij.onrender.com";
 
 
-  // Add this line to get the token from localStorage
-  const token = localStorage.getItem("token");
 
   useEffect(() => {
-    fetch(`/api/trainers`)
-      .then((res) => res.json())
-      .then(setTrainers)
+    axios.get(`${API_URL}/api/trainers`)
+      .then((res) => setTrainers(res.data))
       .finally(() => setLoading(false));
   }, []);
 
@@ -33,35 +31,31 @@ const TrainersList = () => {
       trainer.description?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-const handleDelete = async (id) => {
-  const token = localStorage.getItem('token');
-  if (window.confirm("Are you sure you want to delete this trainer?")) {
-    await fetch(`/api/trainers/${id}`, {
-      method: "DELETE",
+  const handleDelete = async (id) => {
+    const token = localStorage.getItem('token');
+    if (window.confirm("Are you sure you want to delete this trainer?")) {
+      await axios.delete(`${API_URL}/api/trainers/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      setTrainers(trainers.filter((t) => t._id !== id));
+    }
+  };
+
+  const handleToggleShow = async (id, current) => {
+    const token = localStorage.getItem('token');
+    await axios.put(`${API_URL}/api/trainers/${id}`, { showOnFrontend: !current }, {
       headers: {
         Authorization: `Bearer ${token}`
       }
     });
-    setTrainers(trainers.filter((t) => t._id !== id));
-  }
-};
-
- const handleToggleShow = async (id, current) => {
-  const token = localStorage.getItem('token');
-  await fetch(`/api/trainers/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`
-    },
-    body: JSON.stringify({ showOnFrontend: !current })
-  });
-  setTrainers(
-    trainers.map((t) =>
-      t._id === id ? { ...t, showOnFrontend: !current } : t
-    )
-  );
-};
+    setTrainers(
+      trainers.map((t) =>
+        t._id === id ? { ...t, showOnFrontend: !current } : t
+      )
+    );
+  };
 
   const handleView = (trainer) => {
     setViewTrainer(trainer);

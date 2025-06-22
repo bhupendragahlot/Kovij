@@ -1,9 +1,8 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useTheme } from "../../../context/ThemeContext"
 import { ArrowLeft, Save } from "lucide-react"
+import axios from "axios"
 
  
 const TrainerForm = () => {
@@ -21,22 +20,23 @@ const TrainerForm = () => {
     showOnFrontend: true,
   })
   const [loading, setLoading] = useState(false)
-
-  const token = localStorage.getItem("token");
+  const API_URL = "https://kovij.onrender.com";
 
   useEffect(() => {
     if (isEditing) {
       setLoading(true)
-      fetch(`/api/trainers/${id}`)
-        .then(res => res.json())
-        .then(data => setFormData({
-          name: data.name || "",
-          role: data.role || "",
-          image: data.image || "",
-          instagram: data.instagram || "",
-          description: data.description || "",
-          showOnFrontend: data.showOnFrontend ?? true,
-        }))
+      axios.get(`${API_URL}/api/trainers/${id}`)
+        .then(res => {
+          const data = res.data;
+          setFormData({
+            name: data.name || "",
+            role: data.role || "",
+            image: data.image || "",
+            instagram: data.instagram || "",
+            description: data.description || "",
+            showOnFrontend: data.showOnFrontend ?? true,
+          })
+        })
         .finally(() => setLoading(false))
     }
   }, [isEditing, id])
@@ -55,13 +55,13 @@ const TrainerForm = () => {
     try {
       const token = localStorage.getItem("token");
 
-      const method = isEditing ? "PUT" : "POST"
-      const url = isEditing ? `/api/trainers/${id}` : `/api/trainers`
-      await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        Authorization: `Bearer ${token}`,
-        body: JSON.stringify(formData),
+      const method = isEditing ? "put" : "post"
+      const url = isEditing ? `${API_URL}/api/trainers/${id}` : `${API_URL}/api/trainers`
+      await axios[method](url, formData, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        }
       })
       navigate("/admin/trainers")
     } catch (error) {
