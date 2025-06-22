@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useTheme } from "../../context/ThemeContext"
 import { Save, Pencil } from "lucide-react"
 
-const API_URL = "http://localhost:5000" // Update with your actual API URL
+const API_URL = "https://kovij.onrender.com" // Update with your actual API URL
 const AdminSettings = () => {
   const { theme } = useTheme()
   const [loading, setLoading] = useState(false)
