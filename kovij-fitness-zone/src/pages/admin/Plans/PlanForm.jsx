@@ -44,7 +44,7 @@ const PlanForm = () => {
       axios
         .get(`${API_URL}/${id}`)
         .then((res) => {
-          const data = res.data.plans
+          const data = res.data; // <-- Fix here
           setFormData({
             name: data.name || "",
             price: data.price || "",

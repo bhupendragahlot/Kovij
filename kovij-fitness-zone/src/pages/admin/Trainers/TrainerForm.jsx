@@ -22,24 +22,24 @@ const TrainerForm = () => {
   const [loading, setLoading] = useState(false)
   const API_URL = "/api/trainers";
 
-  useEffect(() => {
-    if (isEditing) {
-      setLoading(true)
-      axios.get(`${API_URL}/${id}`)
-        .then(res => {
-          const data = res.data.trainers;
-          setFormData({
-            name: data.name || "",
-            role: data.role || "",
-            image: data.image || "",
-            instagram: data.instagram || "",
-            description: data.description || "",
-            showOnFrontend: data.showOnFrontend ?? true,
-          })
+ useEffect(() => {
+  if (isEditing) {
+    setLoading(true)
+    axios.get(`${API_URL}/${id}`)
+      .then(res => {
+        const data = res.data; // <-- Fix here
+        setFormData({
+          name: data.name || "",
+          role: data.role || "",
+          image: data.image || "",
+          instagram: data.instagram || "",
+          description: data.description || "",
+          showOnFrontend: data.showOnFrontend ?? true,
         })
-        .finally(() => setLoading(false))
-    }
-  }, [isEditing, id])
+      })
+      .finally(() => setLoading(false))
+  }
+}, [isEditing, id])
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
