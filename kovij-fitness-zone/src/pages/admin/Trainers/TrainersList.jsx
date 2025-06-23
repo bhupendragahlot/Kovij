@@ -14,13 +14,13 @@ const TrainersList = () => {
   const [loading, setLoading] = useState(true);
   const [viewTrainer, setViewTrainer] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const API_URL = "https://kovij.onrender.com";
+  const API_URL = "/api/trainers";
 
 
 
   useEffect(() => {
-    axios.get(`${API_URL}/api/trainers`)
-      .then((res) => setTrainers(res.data))
+    axios.get(`${API_URL}`)
+      .then((res) => setTrainers(res.data.trainers))
       .finally(() => setLoading(false));
   }, []);
 
@@ -34,7 +34,7 @@ const TrainersList = () => {
   const handleDelete = async (id) => {
     const token = localStorage.getItem('token');
     if (window.confirm("Are you sure you want to delete this trainer?")) {
-      await axios.delete(`${API_URL}/api/trainers/${id}`, {
+      await axios.delete(`${API_URL}/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -45,7 +45,7 @@ const TrainersList = () => {
 
   const handleToggleShow = async (id, current) => {
     const token = localStorage.getItem('token');
-    await axios.put(`${API_URL}/api/trainers/${id}`, { showOnFrontend: !current }, {
+    await axios.put(`${API_URL}/${id}`, { showOnFrontend: !current }, {
       headers: {
         Authorization: `Bearer ${token}`
       }

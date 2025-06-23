@@ -23,7 +23,7 @@ const ProductsList = () => {
     try {
       const res = await fetch(API_URL)
       const data = await res.json()
-      setProducts(data)
+      setProducts(data.products)
     } catch (err) {
       setProducts([])
     } finally {

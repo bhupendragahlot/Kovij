@@ -31,18 +31,22 @@ const ProductForm = () => {
   const [formData, setFormData] = useState(initialState)
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
+useEffect(() => {
     if (isEditing) {
       fetch(`${API_URL}/${id}`)
         .then(res => res.json())
-        .then(data => setFormData({
-          ...initialState,
-          ...data,
-          price: data.price ?? "",
-          discountPrice: data.discountPrice ?? "",
-          stock: data.stock ?? "",
-          rating: data.rating ?? "",
-        }))
+        .then(data => {
+          // If backend returns { product: {...} }, use data.product
+          const product = data.product || data;
+          setFormData({
+            ...initialState,
+            ...product,
+            price: product.price ?? "",
+            discountPrice: product.discountPrice ?? "",
+            stock: product.stock ?? "",
+            rating: product.rating ?? "",
+          })
+        })
     }
   }, [isEditing, id])
 

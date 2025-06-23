@@ -2,6 +2,7 @@ import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useTheme } from "../../../context/ThemeContext"
 import { ArrowLeft, Save, Star, Eye, EyeOff } from "lucide-react"
+import axios from "axios"
 
 const API_URL = "/api/plans"
 const DURATION_OPTIONS = [
@@ -36,14 +37,14 @@ const PlanForm = () => {
   })
   const [featureInput, setFeatureInput] = useState("")
   const [loading, setLoading] = useState(false)
- const token = localStorage.getItem("token");
   // Fetch plan if editing
   useEffect(() => {
     if (isEditing) {
       setLoading(true)
-      fetch(`${API_URL}/${id}`)
-        .then((res) => res.json())
-        .then((data) => {
+      axios
+        .get(`${API_URL}/${id}`)
+        .then((res) => {
+          const data = res.data.plans
           setFormData({
             name: data.name || "",
             price: data.price || "",
@@ -64,18 +65,17 @@ const PlanForm = () => {
     setLoading(true)
     try {
       const token = localStorage.getItem("token");
-      const method = isEditing ? "PUT" : "POST"
       const url = isEditing ? `${API_URL}/${id}` : API_URL
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        Authorization: `Bearer ${token}`,
-        body: JSON.stringify(formData),
+      const method = isEditing ? "put" : "post"
+      await axios[method](url, formData, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
       })
-      if (!res.ok) throw new Error("Failed to save plan")
       navigate("/admin/plans")
     } catch (error) {
-      alert(error.message)
+      alert(error.response?.data?.message || error.message)
     } finally {
       setLoading(false)
     }

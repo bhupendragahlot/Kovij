@@ -4,7 +4,10 @@ import Plan from '../models/Plan.js';
 export const getPlans = async (req, res) => {
   try {
     const plans = await Plan.find();
-    res.json(plans);
+    res.json({
+    length: plans.length,
+    plans: plans
+});
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

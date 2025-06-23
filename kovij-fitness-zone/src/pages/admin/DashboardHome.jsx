@@ -1,39 +1,46 @@
-"use client"
-
 import { useTheme } from "../../context/ThemeContext"
 import { Users, Calendar, ShoppingBag, TrendingUp } from "lucide-react"
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+const API_URL = "/api";
 
 const DashboardHome = () => {
-  const { theme } = useTheme()
+  const { theme } = useTheme();
+  const navigate = useNavigate();
+
+  const [plansCount, setPlansCount] = useState(0);
+  const [trainersCount, setTrainersCount] = useState(0);
+  const [productsCount, setProductsCount] = useState(0);
+
+  useEffect(() => {
+    axios.get(`${API_URL}/plans`).then((res) => {
+      setPlansCount(res.data.length);
+    });
+    axios.get(`${API_URL}/trainers`).then((res) => {
+      setTrainersCount(res.data.length);
+    });
+    axios.get(`${API_URL}/products`).then((res) => {
+      setProductsCount(res.data.length);
+    });
+  }, []);
 
   const stats = [
     {
       name: "Total Trainers",
-      value: "24",
-      change: "+12%",
-      changeType: "positive",
+      value: trainersCount.toString(),
       icon: Users,
     },
     {
-      name: "Active Plans",
-      value: "156",
-      change: "+8%",
-      changeType: "positive",
+      name: "Plans",
+      value: plansCount.toString(),
       icon: Calendar,
     },
     {
       name: "Products",
-      value: "89",
-      change: "+23%",
-      changeType: "positive",
+      value: productsCount.toString(),
       icon: ShoppingBag,
-    },
-    {
-      name: "Revenue",
-      value: "$12,345",
-      change: "+15%",
-      changeType: "positive",
-      icon: TrendingUp,
     },
   ]
 
@@ -72,9 +79,9 @@ const DashboardHome = () => {
               </div>
               <div className="mt-4 flex items-center">
                 <span className="text-green-500 text-sm font-medium">{stat.change}</span>
-                <span className={`ml-2 text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
+                {/* <span className={`ml-2 text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-600"}`}>
                   from last month
-                </span>
+                </span> */}
               </div>
             </div>
           )
@@ -92,6 +99,7 @@ const DashboardHome = () => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
+          onClick={() => navigate("/admin/trainers/new")}
             className={`p-4 rounded-lg border-2 border-dashed transition-colors duration-200 ${
               theme === "dark"
                 ? "border-gray-600 hover:border-blue-500 hover:bg-blue-900/10"
@@ -102,6 +110,7 @@ const DashboardHome = () => {
             <p className={`font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>Add New Trainer</p>
           </button>
           <button
+           onClick={() => navigate("/admin/plans/new")}
             className={`p-4 rounded-lg border-2 border-dashed transition-colors duration-200 ${
               theme === "dark"
                 ? "border-gray-600 hover:border-blue-500 hover:bg-blue-900/10"
@@ -112,6 +121,7 @@ const DashboardHome = () => {
             <p className={`font-medium ${theme === "dark" ? "text-white" : "text-gray-900"}`}>Create New Plan</p>
           </button>
           <button
+              onClick={() => navigate("/admin/products/new")}
             className={`p-4 rounded-lg border-2 border-dashed transition-colors duration-200 ${
               theme === "dark"
                 ? "border-gray-600 hover:border-blue-500 hover:bg-blue-900/10"

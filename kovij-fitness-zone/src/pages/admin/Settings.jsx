@@ -1,8 +1,8 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useTheme } from "../../context/ThemeContext"
 import { Save, Pencil } from "lucide-react"
+import axios from "axios"
+
 const AdminSettings = () => {
   const { theme } = useTheme()
   const [loading, setLoading] = useState(false)
@@ -19,17 +19,14 @@ const AdminSettings = () => {
     whatsapp: "",
     mapEmbedUrl: ""
   })
- const token = localStorage.getItem("token");
+
   // Fetch settings on mount
   useEffect(() => {
     const fetchSettings = async () => {
       setLoading(true)
       try {
-        const res = await fetch(`/api/settings`)
-        if (res.ok) {
-          const data = await res.json()
-          setSettings(data)
-        }
+        const res = await axios.get(`/api/settings`)
+        setSettings(res.data)
       } catch (error) {
         // Handle error if needed
       } finally {
@@ -52,16 +49,19 @@ const AdminSettings = () => {
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await fetch(`/api/settings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        "Authorization": `Bearer ${token}`,
-        body: JSON.stringify(settings),
-      })
-      if (res.ok) {
-        setEditMode(false)
-        // Optionally show a success message
-      }
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `/api/settings`,
+        settings,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      setEditMode(false)
+      // Optionally show a success message
     } catch (error) {
       // Handle error
     } finally {

@@ -4,7 +4,11 @@ import Trainer from '../models/Trainer.js';
 export const getTrainers = async (req, res) => {
   try {
     const trainers = await Trainer.find();
-    res.json(trainers);
+    // res.json(trainers);
+    res.json({
+length: trainers.length,
+trainers: trainers
+});
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

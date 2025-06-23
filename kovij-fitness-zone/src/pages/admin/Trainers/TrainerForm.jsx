@@ -20,14 +20,14 @@ const TrainerForm = () => {
     showOnFrontend: true,
   })
   const [loading, setLoading] = useState(false)
-  const API_URL = "https://kovij.onrender.com";
+  const API_URL = "/api/trainers";
 
   useEffect(() => {
     if (isEditing) {
       setLoading(true)
-      axios.get(`${API_URL}/api/trainers/${id}`)
+      axios.get(`${API_URL}/${id}`)
         .then(res => {
-          const data = res.data;
+          const data = res.data.trainers;
           setFormData({
             name: data.name || "",
             role: data.role || "",
@@ -56,7 +56,7 @@ const TrainerForm = () => {
       const token = localStorage.getItem("token");
 
       const method = isEditing ? "put" : "post"
-      const url = isEditing ? `${API_URL}/api/trainers/${id}` : `${API_URL}/api/trainers`
+      const url = isEditing ? `${API_URL}/${id}` : `${API_URL}`
       await axios[method](url, formData, {
         headers: {
           "Content-Type": "application/json",

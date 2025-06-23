@@ -1,10 +1,8 @@
-"use client"
-
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
 import { useTheme } from "../../../context/ThemeContext"
 import { Plus, Search, Edit, Trash2, Eye, Calendar, Star, EyeOff } from "lucide-react"
-
+import axios from "axios";
 const API_URL = "/api/plans"
 
 const PlansList = () => {
@@ -15,26 +13,26 @@ const PlansList = () => {
   const [loading, setLoading] = useState(false)
 
   // Fetch plans from API
-  useEffect(() => {
-    setLoading(true)
-    fetch(API_URL)
-      .then((res) => res.json())
-      .then((data) => setPlans(data))
-      .finally(() => setLoading(false))
-  }, [])
+useEffect(() => {
+  setLoading(true);
+  axios.get(API_URL)
+    .then((res) => {
+      setPlans(res.data.plans);
+    })
+    .finally(() => setLoading(false))
+}, [])
   
-  const handleDelete = async (id) => {
-     const token = localStorage.getItem("token")
-    if (window.confirm("Are you sure you want to delete this plan?")) {
-      await fetch(`${API_URL}/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      setPlans((plans) => plans.filter((plan) => plan._id !== id))
-    }
+const handleDelete = async (id) => {
+  const token = localStorage.getItem("token")
+  if (window.confirm("Are you sure you want to delete this plan?")) {
+    await axios.delete(`${API_URL}/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    })
+    setPlans((plans) => plans.filter((plan) => plan._id !== id))
   }
+}
 
   const filteredPlans = plans.filter(
     (plan) =>
