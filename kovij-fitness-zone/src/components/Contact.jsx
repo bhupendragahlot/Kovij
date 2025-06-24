@@ -1,6 +1,4 @@
-
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa"
 import { useTheme } from "../context/ThemeContext"
@@ -16,6 +14,15 @@ function Contact() {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState(null)
+  const [settings, setSettings] = useState(null)
+
+  // Fetch settings from backend
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => setSettings(data))
+      .catch(() => setSettings(null));
+  }, [])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -27,7 +34,6 @@ function Contact() {
     setIsSubmitting(true)
 
     try {
-      // Use the Vercel API route
       const response = await fetch("/api/send-email", {
         method: "POST",
         headers: {
@@ -35,7 +41,6 @@ function Contact() {
         },
         body: JSON.stringify(formData),
       })
-console.log(formData);
 
       const data = await response.json()
 
@@ -59,8 +64,6 @@ console.log(formData);
       })
     } finally {
       setIsSubmitting(false)
-
-      // Clear success message after 5 seconds
       setTimeout(() => {
         setSubmitMessage(null)
       }, 5000)
@@ -169,7 +172,7 @@ console.log(formData);
                       ? "bg-gray-700/50 border border-gray-600 text-white"
                       : "bg-gray-100 border border-gray-300 text-gray-800"
                   }`}
-                  placeholder="+911234567890"
+                  placeholder="+91**********"
                 />
               </div>
 
@@ -237,14 +240,14 @@ console.log(formData);
                   <div>
                     <h4 className={`font-bold mb-1 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>Address</h4>
                     <a
-                      href="https://maps.app.goo.gl/v99oCZ1vtRpuXTB66"
+                      href={settings?.mapEmbedUrl || "https://maps.app.goo.gl/v99oCZ1vtRpuXTB66"}
                       target="_blank"
                       rel="noopener noreferrer"
                       className={`hover:text-red-400 transition-colors duration-300 ${
                         theme === "dark" ? "text-gray-400" : "text-gray-600"
                       }`}
                     >
-                      120 Feet Rd, Chitresh Nagar, Manpura, Naya Nohra, Rajasthan 324004
+                      {settings?.address || "120 Feet Rd, Chitresh Nagar, Manpura, Naya Nohra, Rajasthan 324004"}
                     </a>
                   </div>
                 </div>
@@ -256,12 +259,12 @@ console.log(formData);
                   <div>
                     <h4 className={`font-bold mb-1 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>Phone</h4>
                     <a
-                      href="tel:+919876543210"
+                      href={`tel:${settings?.phone || "+919057027053"}`}
                       className={`hover:text-red-400 transition-colors duration-300 ${
                         theme === "dark" ? "text-gray-400" : "text-gray-600"
                       }`}
                     >
-                      +919057027053
+                      {settings?.phone || "+919057027053"}
                     </a>
                   </div>
                 </div>
@@ -273,12 +276,12 @@ console.log(formData);
                   <div>
                     <h4 className={`font-bold mb-1 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>Email</h4>
                     <a
-                      href="mailto:info@kovijfitness.com"
+                      href={`mailto:${settings?.email || "info@kovijfitness.com"}`}
                       className={`hover:text-red-400 transition-colors duration-300 ${
                         theme === "dark" ? "text-gray-400" : "text-gray-600"
                       }`}
                     >
-                      info@kovijfitness.com
+                      {settings?.email || "info@kovijfitness.com"}
                     </a>
                   </div>
                 </div>
@@ -288,7 +291,7 @@ console.log(formData);
                 <h4 className={`font-bold mb-4 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>Follow Us</h4>
                 <div className="flex space-x-4">
                   <a
-                    href="https://facebook.com"
+                    href={settings?.facebook || "https://facebook.com"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-blue-600 p-3 rounded-full text-white hover:bg-blue-700 transition-colors duration-300"
@@ -296,7 +299,7 @@ console.log(formData);
                     <FaFacebook className="text-xl" />
                   </a>
                   <a
-                    href="https://www.instagram.com/kovij_fitness_zone?igsh=MWR4aWdiYm0wN210dA=="
+                    href={settings?.instagram || "https://www.instagram.com/kovij_fitness_zone?igsh=MWR4aWdiYm0wN210dA=="}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-gradient-to-br from-purple-600 to-pink-500 p-3 rounded-full text-white hover:from-purple-700 hover:to-pink-600 transition-colors duration-300"
@@ -304,7 +307,7 @@ console.log(formData);
                     <FaInstagram className="text-xl" />
                   </a>
                   <a
-                    href="https://wa.me/919057027053"
+                    href={settings?.whatsapp ? `https://wa.me/${settings.whatsapp}` : "https://wa.me/+919057027053"}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="bg-green-600 p-3 rounded-full text-white hover:bg-green-700 transition-colors duration-300"
@@ -323,7 +326,7 @@ console.log(formData);
               }`}
             >
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d3712.1985550394793!2d75.89803922711107!3d25.179997694741587!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x396f911faffd7c31%3A0xec54a1034fdf7b9a!2sKovij%20Fitness%20Zone!5e0!3m2!1sen!2sin!4v1742579483445!5m2!1sen!2sin"
+                src={settings?.mapEmbedUrl || "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d3712.1985550394793!2d75.89803922711107!3d25.179997694741587!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x396f911faffd7c31%3A0xec54a1034fdf7b9a!2sKovij%20Fitness%20Zone!5e0!3m2!1sen!2sin!4v1742579483445!5m2!1sen!2sin"}
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}

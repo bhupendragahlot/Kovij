@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { useTheme } from "../../../context/ThemeContext"
 import { ArrowLeft, Save, Star, Eye, EyeOff } from "lucide-react"
@@ -12,12 +12,21 @@ const DURATION_OPTIONS = [
   { value: "year", label: "Year" },
 ]
 const COLOR_OPTIONS = [
-  { value: "from-gray-600 to-gray-700", label: "Gray" },
-  { value: "from-red-600 to-red-500", label: "Red" },
-  { value: "from-yellow-600 to-yellow-500", label: "Yellow" },
-  { value: "from-blue-600 to-blue-500", label: "Blue" },
-  { value: "from-green-600 to-green-500", label: "Green" },
-]
+  { value: "from-gray-300 to-gray-100", label: "Silver", preview: "bg-gradient-to-r from-gray-300 to-gray-100" },
+  { value: "from-yellow-400 to-yellow-200", label: "Gold", preview: "bg-gradient-to-r from-yellow-400 to-yellow-200" },
+  { value: "from-zinc-300 to-zinc-100", label: "Platinum", preview: "bg-gradient-to-r from-zinc-300 to-zinc-100" },
+  { value: "from-cyan-300 to-blue-200", label: "Diamond", preview: "bg-gradient-to-r from-cyan-300 to-blue-200" }, 
+  // Festival-themed colors
+  { value: "from-orange-600 to-yellow-400", label: "Diwali Glow", preview: "bg-gradient-to-r from-orange-600 to-yellow-400" },
+  { value: "from-red-700 to-green-500", label: "Christmas Joy", preview: "bg-gradient-to-r from-red-700 to-green-500" },
+  { value: "from-pink-500 via-yellow-400 to-green-400", label: "Holi Splash", preview: "bg-gradient-to-r from-pink-500 via-yellow-400 to-green-400" },
+  { value: "from-emerald-600 to-amber-300", label: "Eid Elegance", preview: "bg-gradient-to-r from-emerald-600 to-amber-300" },
+  { value: "from-purple-800 to-orange-600", label: "Halloween Vibe", preview: "bg-gradient-to-r from-purple-800 to-orange-600" },
+  { value: "from-indigo-600 to-pink-500", label: "New Year Pop", preview: "bg-gradient-to-r from-indigo-600 to-pink-500" },
+  { value: "from-red-400 to-yellow-300", label: "Raksha Bandhan", preview: "bg-gradient-to-r from-red-400 to-yellow-300" },
+  { value: "from-teal-400 to-blue-300", label: "Onam Spirit", preview: "bg-gradient-to-r from-teal-400 to-blue-300" },
+  { value: "from-lime-500 to-amber-300", label: "Harvest Fest", preview: "bg-gradient-to-r from-lime-500 to-amber-300" },
+];
 
 const PlanForm = () => {
   const { theme } = useTheme()
@@ -37,6 +46,20 @@ const PlanForm = () => {
   })
   const [featureInput, setFeatureInput] = useState("")
   const [loading, setLoading] = useState(false)
+  const [colorDropdownOpen, setColorDropdownOpen] = useState(false)
+  const colorDropdownRef = useRef(null)
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (colorDropdownRef.current && !colorDropdownRef.current.contains(event.target)) {
+        setColorDropdownOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
   // Fetch plan if editing
   useEffect(() => {
     if (isEditing) {
@@ -190,20 +213,53 @@ const PlanForm = () => {
             {/* Color */}
             <div>
               <label className={`block text-sm font-medium mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>Color</label>
-              <select
-                name="color"
-                value={formData.color}
-                onChange={handleChange}
-                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                  theme === "dark" ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-900"
-                }`}
-              >
-                {COLOR_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+              <div className="relative" ref={colorDropdownRef}>
+                <button
+                  type="button"
+                  className={`w-full flex items-center justify-between px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    theme === "dark" ? "bg-gray-700 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-900"
+                  }`}
+                  onClick={() => setColorDropdownOpen((open) => !open)}
+                >
+                  <span className="flex-1 text-left">
+                    {COLOR_OPTIONS.find(opt => opt.value === formData.color)?.label || "Select color"}
+                  </span>
+                  <span className={`w-12 h-5 rounded ${COLOR_OPTIONS.find(opt => opt.value === formData.color)?.preview || ""} border border-gray-300 ml-2`} />
+                  <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {colorDropdownOpen && (
+                  <div className={`absolute z-10 mt-1 w-full rounded-lg shadow-lg max-h-60 overflow-auto border
+                    ${theme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"}
+                  `}>
+                    {COLOR_OPTIONS.map((opt) => (
+                      <div
+                        key={opt.value}
+                        className={`flex items-center px-3 py-2 cursor-pointer ${
+                          formData.color === opt.value
+                            ? (theme === "dark" ? "bg-blue-900" : "bg-blue-100")
+                            : (theme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-100")
+                        }`}
+                        onClick={() => {
+                          setFormData((prev) => ({ ...prev, color: opt.value }))
+                          setColorDropdownOpen(false)
+                        }}
+                      >
+                        <span className="text-sm flex-1">{opt.label}</span>
+                        <span className={`w-12 h-5 rounded ${opt.preview} border border-gray-300 ml-2`} />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* Color preview */}
+              <div className="mt-2 flex items-center">
+                <span
+                  className={`w-12 h-5 rounded ${COLOR_OPTIONS.find(opt => opt.value === formData.color)?.preview || ""} border border-gray-300 inline-block`}
+                />
+                <span className="ml-2 text-xs text-gray-500">{COLOR_OPTIONS.find(opt => opt.value === formData.color)?.label}</span>
+              </div>
             </div>
             {/* Status */}
             <div>

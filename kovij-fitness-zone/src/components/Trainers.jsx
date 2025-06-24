@@ -1,41 +1,26 @@
-"use client"
-
 import { motion } from "framer-motion"
 import { FaInstagram } from "react-icons/fa"
 import { useTheme } from "../context/ThemeContext"
+import { useState, useEffect } from "react"
 
 function Trainers() {
   const { theme } = useTheme()
-  const trainers = [
-    {
-      name: "John Doe",
-      role: "Strength & Conditioning",
-      image: "https://imgs.search.brave.com/B7GV0Gy79INbganpPnCVJ4evcAHvGBUx6xineqjvvGo/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/cHJlbWl1bS1waG90/by9wZXJzb25hbC10/cmFpbmVyLXRha2Vz/LW5vdGVzLWNsaXBi/b2FyZC1maXRuZXNz/LWNlbnRlci1neW1f/NjAwNzc2LTU5NS5q/cGc_c2VtdD1haXNf/aHlicmlk",
-      instagram: "https://instagram.com",
-      description: "Certified strength coach with 10+ years of experience in bodybuilding and powerlifting.",
-    },
-    {
-      name: "Jane Smith",
-      role: "Yoga & Flexibility",
-      image: "/images/trainer-2.jpg",
-      instagram: "https://instagram.com",
-      description: "Yoga instructor specializing in flexibility and mindfulness training for all fitness levels.",
-    },
-    {
-      name: "Mike Johnson",
-      role: "Cardio & HIIT",
-      image: "/images/trainer-3.jpg",
-      instagram: "https://instagram.com",
-      description: "Former athlete focused on high-intensity interval training and cardiovascular fitness.",
-    },
-    {
-      name: "Sarah Williams",
-      role: "Nutrition Expert",
-      image: "/images/trainer-4.jpg",
-      instagram: "https://instagram.com",
-      description: "Certified nutritionist helping clients achieve their fitness goals through proper diet.",
-    },
-  ]
+  const [trainers, setTrainers] = useState([])
+
+  useEffect(() => {
+    const fetchTrainers = async () => {
+      try {
+        const res = await fetch('/api/trainers')
+        const data = await res.json()
+        // Filter trainers where showOnFrontend is true
+        const filtered = (data.trainers || []).filter(t => t.showOnFrontend)
+        setTrainers(filtered)
+      } catch (err) {
+        setTrainers([])
+      }
+    }
+    fetchTrainers()
+  }, [])
 
   return (
     <section
@@ -104,4 +89,3 @@ function Trainers() {
 }
 
 export default Trainers
-

@@ -4,9 +4,20 @@ import { useTheme } from '../context/ThemeContext';
 
 function Hero() {
   const [text, setText] = useState('');
-  const fullText = "TRANSFORM YOUR BODY, TRANSFORM YOUR LIFE";
+  const [settings, setSettings] = useState(null);
   const [index, setIndex] = useState(0);
   const { theme } = useTheme();
+
+  // Fetch settings from backend
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => setSettings(data))
+      .catch(() => setSettings(null));
+  }, []);
+
+  // Use fetched headline or fallback
+  const fullText = settings?.heroHeadline || "TRANSFORM YOUR BODY, TRANSFORM YOUR LIFE";
 
   useEffect(() => {
     if (index < fullText.length) {
@@ -14,23 +25,21 @@ function Hero() {
         setText(prevText => prevText + fullText[index]);
         setIndex(prevIndex => prevIndex + 1);
       }, 100);
-      
       return () => clearTimeout(timeout);
     }
-  }, [index]);
+  }, [index, fullText]);
 
   return (
     <section id="home" className="relative h-screen flex items-center justify-center overflow-hidden">
       {/* Background image with overlay */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="https://c1.wallpaperflare.com/preview/497/845/200/gym-strong-fitness-athlete.jpg" 
+          src={settings?.heroBackgroundImage || "https://c1.wallpaperflare.com/preview/497/845/200/gym-strong-fitness-athlete.jpg"} 
           alt="Gym background" 
           className="w-full h-full object-cover"
         />
         <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-black/60' : 'bg-black/40'}`}></div>
       </div>
-      
       {/* Content */}
       <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
         <motion.div
@@ -44,16 +53,13 @@ function Hero() {
               KOVIJ FITNESS ZONE
             </span>
           </h1>
-          
           <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-8 h-12">
             {text}
             <span className="animate-blink">|</span>
           </h2>
-          
           <p className="text-gray-300 text-lg md:text-xl max-w-3xl mx-auto mb-10">
-            Achieve your fitness goals with state-of-the-art equipment, expert trainers, and a motivating environment.
+            {settings?.heroDescription || "Achieve your fitness goals with state-of-the-art equipment, expert trainers, and a motivating environment."}
           </p>
-          
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <motion.a 
               href="#contact"
@@ -74,7 +80,6 @@ function Hero() {
           </div>
         </motion.div>
       </div>
-      
       {/* Scroll down indicator */}
       <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
         <a href="#services" className="text-white">

@@ -1,10 +1,20 @@
+import { useState, useEffect } from 'react';
 import { FaDumbbell, FaFacebook, FaInstagram, FaWhatsapp, FaEnvelope, FaPhone, FaMapMarkerAlt } from 'react-icons/fa';
 import { useTheme } from '../context/ThemeContext';
 
 function Footer() {
   const currentYear = new Date().getFullYear();
   const { theme } = useTheme();
-  
+  const [settings, setSettings] = useState(null);
+
+  // Fetch settings from backend
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => setSettings(data))
+      .catch(() => setSettings(null));
+  }, []);
+
   return (
     <footer className={theme === 'dark' ? 'bg-black text-white' : 'bg-gray-100 text-gray-900'}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -18,11 +28,11 @@ function Footer() {
               </span>
             </div>
             <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-4`}>
-              Transforming lives through fitness since 2015. Our state-of-the-art facility is designed to help you achieve your fitness goals.
+              {settings?.heroDescription || "Transforming lives through fitness since 2015. Our state-of-the-art facility is designed to help you achieve your fitness goals."}
             </p>
             <div className="flex space-x-4">
               <a 
-                href="https://facebook.com" 
+                href={settings?.facebook || "https://facebook.com"} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className={`${theme === 'dark' ? 'text-gray-400 hover:text-blue-500' : 'text-gray-600 hover:text-blue-500'} transition-colors duration-300`}
@@ -30,7 +40,7 @@ function Footer() {
                 <FaFacebook className="text-xl" />
               </a>
               <a 
-                href="https://instagram.com" 
+                href={settings?.instagram || "https://instagram.com"} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className={`${theme === 'dark' ? 'text-gray-400 hover:text-pink-500' : 'text-gray-600 hover:text-pink-500'} transition-colors duration-300`}
@@ -38,7 +48,7 @@ function Footer() {
                 <FaInstagram className="text-xl" />
               </a>
               <a 
-                href="https://wa.me/919876543210" 
+                href={settings?.whatsapp ? `https://wa.me/${settings.whatsapp}` : "https://wa.me/+919057027053"} 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className={`${theme === 'dark' ? 'text-gray-400 hover:text-green-500' : 'text-gray-600 hover:text-green-500'} transition-colors duration-300`}
@@ -83,24 +93,24 @@ function Footer() {
               <li className="flex items-start">
                 <FaMapMarkerAlt className="text-red-500 mt-1 mr-2" />
                 <a 
-                  href="https://maps.app.goo.gl/v99oCZ1vtRpuXTB66" 
+                  href={settings?.mapEmbedUrl || "https://maps.app.goo.gl/v99oCZ1vtRpuXTB66"} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className={`${theme === 'dark' ? 'text-gray-400 hover:text-red-400' : 'text-gray-600 hover:text-red-500'} transition-colors duration-300`}
                 >
-                  120 Feet Rd, Chitresh Nagar, Manpura, Naya Nohra, Rajasthan 324004
+                  {settings?.address || "120 Feet Rd, Chitresh Nagar, Manpura, Naya Nohra, Rajasthan 324004"}
                 </a>
               </li>
               <li className="flex items-center">
                 <FaPhone className="text-red-500 mr-2" />
-                <a href="tel:+919876543210" className={`${theme === 'dark' ? 'text-gray-400 hover:text-red-400' : 'text-gray-600 hover:text-red-500'} transition-colors duration-300`}>
-                  +91 98765 43210
+                <a href={`tel:${settings?.phone || "+919057027053"}`} className={`${theme === 'dark' ? 'text-gray-400 hover:text-red-400' : 'text-gray-600 hover:text-red-500'} transition-colors duration-300`}>
+                  {settings?.phone || "+919057027053"}
                 </a>
               </li>
               <li className="flex items-center">
                 <FaEnvelope className="text-red-500 mr-2" />
-                <a href="mailto:info@kovijfitness.com" className={`${theme === 'dark' ? 'text-gray-400 hover:text-red-400' : 'text-gray-600 hover:text-red-500'} transition-colors duration-300`}>
-                  info@kovijfitness.com
+                <a href={`mailto:${settings?.email || "info@kovijfitness.com"}`} className={`${theme === 'dark' ? 'text-gray-400 hover:text-red-400' : 'text-gray-600 hover:text-red-500'} transition-colors duration-300`}>
+                  {settings?.email || "info@kovijfitness.com"}
                 </a>
               </li>
             </ul>
