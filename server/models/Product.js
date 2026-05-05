@@ -1,5 +1,6 @@
 //models/Product.js
 import mongoose from 'mongoose';
+import Contents from '../config/constants.js';
 
 const productSchema = new mongoose.Schema({
   name: {
@@ -10,7 +11,7 @@ const productSchema = new mongoose.Schema({
   category: {
     type: String,
     required: true,
-    enum: ['protein', 'preworkout', 'vitamins', 'accessories']
+    enum: Contents.values(Contents.PRODUCT_TYPES),
   },
   price: {
     type: Number,

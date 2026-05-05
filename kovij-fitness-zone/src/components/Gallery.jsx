@@ -1,80 +1,105 @@
-import { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useTheme } from '../context/ThemeContext';
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { FaExpandAlt } from "react-icons/fa";
 
 function Gallery() {
   const [selectedImage, setSelectedImage] = useState(null);
-  const { theme } = useTheme();
-  
+
   const images = [
-    { src: "https://imgs.search.brave.com/yGNRxDhx_MMD11JPJ3yZitl4VJgvQaUvpqyoT0ai00Q/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvNTE1/MjM4Mjc0L3Bob3Rv/L21vZGVybi1hbmQt/YmlnLWd5bS5qcGc_/cz02MTJ4NjEyJnc9/MCZrPTIwJmM9RTBz/VExNQkY1elVYNTIw/NFNVd3dDTmYydmNS/b0FZcDVDUzYwYzJM/dlNLaz0", alt: "Gym equipment" },
-    { src: "https://imgs.search.brave.com/nwzxLv61W94-EUkIL8JEIzPog8qVp5xTyTaqwSXWvIY/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly93d3cu/cHVyZWd5bS5jb20v/bWVkaWEvbzM0bW9v/c3EvaHlyb3gtc2xl/ZC1wdWxsLWd1aWRl/X2Jsb2doZWFkZXIt/bm8tdGl0bGUuanBn/P3F1YWxpdHk9ODA", alt: "Weight training area" },
-    { src: "/images/gallery-3.jpg", alt: "Cardio zone" },
-    { src: "/images/gallery-4.jpg", alt: "Group class" },
-    { src: "/images/gallery-5.jpg", alt: "Personal training" },
-    { src: "/images/gallery-6.jpg", alt: "Stretching area" }
+    {
+      src: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1974&auto=format&fit=crop",
+      alt: "Gym equipment zone",
+      label: "Strength Floor",
+    },
+    {
+      src: "https://images.unsplash.com/photo-1599058917212-d750089bc07e?q=80&w=1974&auto=format&fit=crop",
+      alt: "Weight training setup",
+      label: "Iron Arena",
+    },
+    {
+      src: "https://images.unsplash.com/photo-1574680178050-55c6a6a96e0a?q=80&w=1974&auto=format&fit=crop",
+      alt: "Cardio and conditioning",
+      label: "Cardio Ops",
+    },
+    {
+      src: "https://images.unsplash.com/photo-1571019613914-85f342c1d4b7?q=80&w=1974&auto=format&fit=crop",
+      alt: "Group class session",
+      label: "Group Intensity",
+    },
+    {
+      src: "https://images.unsplash.com/photo-1581122584612-713f89daa8eb?q=80&w=1974&auto=format&fit=crop",
+      alt: "Personal training session",
+      label: "Elite Coaching",
+    },
+    {
+      src: "https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=2070&auto=format&fit=crop",
+      alt: "Mobility and stretching space",
+      label: "Recovery Bay",
+    },
   ];
-  
+
   const openModal = (image) => {
     setSelectedImage(image);
   };
-  
+
   const closeModal = () => {
     setSelectedImage(null);
   };
 
   return (
-    <section id="gallery" className={`py-20 px-4 sm:px-6 lg:px-8 ${theme === 'dark' ? 'bg-gradient-to-b from-gray-900 to-black' : 'bg-gradient-to-b from-gray-100 to-white'}`}>
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-500">
-              OUR GALLERY
-            </span>
-          </h2>
-          <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} max-w-3xl mx-auto`}>
-            Take a virtual tour of our state-of-the-art facilities and equipment.
+    <section id="gallery" className="bg-[#0f0f0f] px-4 py-20 text-[#e5e2e1] sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-14 text-center">
+          <h2 className="mb-4 font-['Lexend'] text-4xl font-black uppercase md:text-5xl">OUR GALLERY</h2>
+          <p className="mx-auto max-w-3xl text-[#ab8985]">
+            A visual walkthrough of Kovij Fitness Zone. Equipment, coaching spaces, and performance-focused environments.
           </p>
         </div>
-        
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {images.map((image, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, scale: 0.9 }}
               whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
+              transition={{ duration: 0.45, delay: index * 0.07 }}
               viewport={{ once: true }}
-              className="overflow-hidden rounded-lg cursor-pointer relative group"
+              className="group relative cursor-pointer overflow-hidden border border-[#393939] bg-[#1c1b1b]"
               onClick={() => openModal(image)}
             >
-              <img 
-                src={image.src || "/placeholder.svg"} 
-                alt={image.alt} 
-                className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+              <img
+                src={image.src || "/placeholder.svg"}
+                alt={image.alt}
+                className="h-72 w-full object-cover grayscale transition-all duration-700 group-hover:scale-110 group-hover:grayscale-0"
               />
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <span className="text-white text-lg font-bold">View Larger</span>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+                <div>
+                  <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-[#f27a00]">Kovij Zone</span>
+                  <span className="font-['Lexend'] text-lg font-bold uppercase text-white">{image.label}</span>
+                </div>
+                <div className="flex h-10 w-10 items-center justify-center border border-[#d32f2f] bg-[#131313]/80 text-[#d32f2f] transition group-hover:bg-[#d32f2f] group-hover:text-white">
+                  <FaExpandAlt className="text-xs" />
+                </div>
               </div>
             </motion.div>
           ))}
         </div>
       </div>
-      
-      {/* Modal */}
+
       {selectedImage && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90" onClick={closeModal}>
-          <div className="relative max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
-            <button 
-              className="absolute top-4 right-4 text-white text-2xl z-10 bg-red-500 w-10 h-10 rounded-full flex items-center justify-center"
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4" onClick={closeModal}>
+          <div className="relative w-full max-w-5xl border border-[#393939] bg-[#131313] p-2" onClick={(e) => e.stopPropagation()}>
+            <button
+              className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center bg-[#d32f2f] text-2xl text-white"
               onClick={closeModal}
             >
               &times;
             </button>
-            <img 
-              src={selectedImage.src || "/placeholder.svg"} 
-              alt={selectedImage.alt} 
-              className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+            <img
+              src={selectedImage.src || "/placeholder.svg"}
+              alt={selectedImage.alt}
+              className="max-h-[80vh] w-full object-contain"
             />
           </div>
         </div>

@@ -1,6 +1,7 @@
 //models/User.js
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
+import Contents from '../config/constants.js';
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -17,16 +18,38 @@ const userSchema = new mongoose.Schema({
     trim: true,
     lowercase: true
   },
+  phone: {
+    type: Number,
+    required: true,
+    unique: true,
+    trim: true,
+  },
   password: {
     type: String,
     required: true,
     minlength: 6
   },
+  gender: {
+    type: String,
+    required: true,
+    enum: Contents.values(Contents.GENDER),
+  },
+  age: {
+    type: Number,
+    required: true,
+    minlength: 1,
+    maxlength: 3
+  }, 
   role: {
     type: String,
-    enum: ['admin', 'staff','manager'],
-    default: 'admin'
+    enum: Contents.values(Contents.USER_ROLES),
+    default: Contents.USER_ROLES.USER
   },
+  address: {
+    type: String,
+    default: ''
+  },
+
   createdAt: {
     type: Date,
     default: Date.now
