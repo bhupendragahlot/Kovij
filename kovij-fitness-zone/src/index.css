@@ -261,3 +261,50 @@ body {
   color: transparent;
   animation: textShine 2.8s ease-in-out infinite;
 }
+
+/* Mobile-first sizing system (permanent, reusable) */
+@layer utilities {
+  .kv-container {
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+  }
+
+  .kv-section {
+    @apply px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20;
+  }
+
+  .kv-card {
+    @apply border rounded-xl p-5 sm:p-6 lg:p-8;
+  }
+
+  .kv-overline {
+    @apply block text-[10px] sm:text-xs font-black uppercase tracking-[0.22em];
+  }
+
+  .kv-h2 {
+    @apply font-['Lexend'] font-black uppercase leading-tight text-2xl sm:text-3xl lg:text-5xl;
+  }
+
+  .kv-h3 {
+    @apply font-['Lexend'] font-black uppercase leading-tight text-xl sm:text-2xl;
+  }
+
+  .kv-body {
+    @apply text-sm sm:text-base;
+  }
+
+  .kv-muted {
+    @apply text-neutral-500 dark:text-neutral-400;
+  }
+
+  .kv-label {
+    @apply mb-2 block text-[10px] font-black uppercase tracking-[0.22em];
+  }
+
+  .kv-field {
+    @apply w-full px-3 py-2.5 sm:px-4 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-red-500;
+  }
+
+  .kv-iconBtn {
+    @apply flex h-10 w-10 items-center justify-center border transition-all sm:h-12 sm:w-12;
+  }
+}

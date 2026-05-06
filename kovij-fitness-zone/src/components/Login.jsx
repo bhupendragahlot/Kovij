@@ -48,12 +48,12 @@ const Login = () => {
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 transition-colors duration-300">
       {/* Left side - Text content */}
-      <div className="flex-1 flex flex-col justify-center p-8 md:p-16 lg:p-24">
+      <div className="flex-1 flex flex-col justify-center p-5 sm:p-8 md:p-16 lg:p-24">
         <div className="max-w-lg">
-          <h1 className="text-4xl font-bold text-gray-800 mb-6">
+          <h1 className="text-2xl sm:text-4xl font-bold text-gray-800 mb-4 sm:mb-6">
             Admin Dashboard
           </h1>
-          <p className="text-lg text-gray-600 mb-8">
+          <p className="text-sm sm:text-lg text-gray-600 mb-6 sm:mb-8">
             Welcome back! Log in to access your admin dashboard and manage your application.
           </p>
           <div className="flex items-center text-gray-500">
@@ -64,9 +64,9 @@ const Login = () => {
       </div>
 
       {/* Right side - Login form */}
-      <div className="flex-1 flex items-center justify-center p-8 md:p-16 lg:p-24">
-        <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
-          <div className="flex justify-between items-center mb-8">
+      <div className="flex-1 flex items-center justify-center p-5 sm:p-8 md:p-16 lg:p-24">
+        <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-5 sm:p-8">
+          <div className="flex justify-between items-center mb-6 sm:mb-8">
             <h2 className="text-2xl font-semibold text-gray-800">
               Login
             </h2>

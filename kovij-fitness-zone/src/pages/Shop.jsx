@@ -133,9 +133,9 @@ function Shop() {
   }, [])
 
   return (
-    <main className={`${theme === "dark" ? "bg-[#131313] text-[#e5e2e1]" : "bg-gradient-to-b from-gray-100 to-white text-gray-900"} min-h-screen pt-16`}>
+    <main className={`${theme === "dark" ? "bg-[#131313] text-[#e5e2e1]" : "bg-gradient-to-b from-gray-100 to-white text-gray-900"} min-h-screen pt-14 sm:pt-16`}>
       {/* Hero */}
-      <section className="relative h-[400px] overflow-hidden flex items-center">
+      <section className="relative h-[320px] overflow-hidden flex items-center sm:h-[400px]">
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1974&auto=format&fit=crop"
@@ -147,10 +147,10 @@ function Shop() {
         </div>
         <div className="relative z-10 mx-auto w-full max-w-7xl px-6">
           <div ref={heroCopyRef} className="max-w-2xl border-l-4 border-[#d32f2f] pl-6">
-            <h1 data-shop-reveal className="font-['Lexend'] text-5xl md:text-6xl font-black uppercase text-white mb-4">
+            <h1 data-shop-reveal className="font-['Lexend'] text-3xl font-black uppercase text-white mb-3 sm:text-5xl sm:mb-4 md:text-6xl">
               EQUIP YOUR MISSION
             </h1>
-            <p data-shop-reveal className="text-neutral-400 max-w-lg">
+            <p data-shop-reveal className="kv-body text-neutral-400 max-w-lg">
               Precision-engineered fuel for peak human performance. Every formula, every fiber, designed for the relentless.
             </p>
           </div>
@@ -158,7 +158,7 @@ function Shop() {
       </section>
 
       {/* Filter Bar */}
-      <section className="sticky top-16 z-40 border-b border-neutral-800 bg-[#1c1b1b]">
+      <section className="sticky top-14 z-40 border-b border-neutral-800 bg-[#1c1b1b] sm:top-16">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-2 overflow-x-auto">
             {categoryPills.map((pill) => (
@@ -206,7 +206,7 @@ function Shop() {
                   </div>
                 )}
               </div>
-              <div className="p-6">
+              <div className="p-4 sm:p-6">
                 <div className="flex justify-between items-start mb-2 gap-3">
                   <h3 className="font-['Lexend'] text-lg font-black uppercase tracking-tight">{product.name}</h3>
                   <span className="text-[#ffb3ac] font-black">₹{product.discountPrice}</span>

@@ -47,11 +47,11 @@ function Gallery() {
   };
 
   return (
-    <section id="gallery" className="bg-[#0f0f0f] px-4 py-20 text-[#e5e2e1] sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-14 text-center">
-          <h2 className="mb-4 font-['Lexend'] text-4xl font-black uppercase md:text-5xl">OUR GALLERY</h2>
-          <p className="mx-auto max-w-3xl text-[#ab8985]">
+    <section id="gallery" className="kv-section bg-[#0f0f0f] text-[#e5e2e1]">
+      <div className="kv-container">
+        <div className="mb-8 text-center sm:mb-14">
+          <h2 className="kv-h2 mb-3 text-white sm:mb-4">OUR GALLERY</h2>
+          <p className="kv-body mx-auto max-w-3xl text-[#ab8985]">
             A visual walkthrough of Kovij Fitness Zone. Equipment, coaching spaces, and performance-focused environments.
           </p>
         </div>
@@ -70,15 +70,15 @@ function Gallery() {
               <img
                 src={image.src || "/placeholder.svg"}
                 alt={image.alt}
-                className="h-72 w-full object-cover grayscale transition-all duration-700 group-hover:scale-110 group-hover:grayscale-0"
+                className="h-56 w-full object-cover grayscale transition-all duration-700 group-hover:scale-110 group-hover:grayscale-0 sm:h-64 lg:h-72"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
               <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
                 <div>
                   <span className="block text-[10px] font-bold uppercase tracking-[0.16em] text-[#f27a00]">Kovij Zone</span>
-                  <span className="font-['Lexend'] text-lg font-bold uppercase text-white">{image.label}</span>
+                  <span className="font-['Lexend'] text-base font-bold uppercase text-white sm:text-lg">{image.label}</span>
                 </div>
-                <div className="flex h-10 w-10 items-center justify-center border border-[#d32f2f] bg-[#131313]/80 text-[#d32f2f] transition group-hover:bg-[#d32f2f] group-hover:text-white">
+                <div className="flex h-9 w-9 items-center justify-center border border-[#d32f2f] bg-[#131313]/80 text-[#d32f2f] transition group-hover:bg-[#d32f2f] group-hover:text-white sm:h-10 sm:w-10">
                   <FaExpandAlt className="text-xs" />
                 </div>
               </div>

@@ -17,7 +17,7 @@ function Footer() {
 
   return (
     <footer className={theme === "dark" ? "bg-neutral-950 text-[#e5e2e1] border-t-4 border-red-600" : "bg-gray-100 text-gray-900"}>
-      <div className="fx-scan-sweep relative mx-auto w-full max-w-7xl px-8 py-12">
+      <div className="fx-scan-sweep relative kv-container py-10 sm:py-12">
         {theme === "dark" && <div className="pointer-events-none absolute inset-0 grid-noise fx-noise-drift opacity-[0.06]" />}
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-12">
           <div className="lg:col-span-5">

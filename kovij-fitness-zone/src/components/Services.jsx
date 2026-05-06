@@ -4,19 +4,19 @@ import { FaArrowRight, FaBolt, FaCheckCircle, FaDumbbell, FaUsers } from "react-
 function Services() {
   return (
     <section id="services" className="bg-[#131313] text-[#e5e2e1]">
-      <div className="px-6 pb-8 pt-20 text-center">
+      <div className="kv-container pb-6 pt-12 text-center sm:pb-8 sm:pt-16 lg:pt-20">
         <motion.h2
           initial={{ opacity: 0, y: 14 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4 }}
-          className="font-['Lexend'] text-4xl font-extrabold uppercase italic text-white md:text-5xl"
+          className="kv-h2 italic text-white"
         >
           OVER SERVICES
         </motion.h2>
       </div>
 
-      <section className="mx-auto max-w-7xl px-6 py-16">
+      <section className="kv-container py-10 sm:py-14 lg:py-16">
         <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
           <motion.article
             initial={{ opacity: 0, y: 24 }}
@@ -26,16 +26,18 @@ function Services() {
           >
             <div className="absolute left-0 top-0 h-full w-1 bg-[#d32f2f]" />
             <div className="flex h-full flex-col md:flex-row">
-              <div className="flex-1 p-8">
+              <div className="flex-1 p-5 sm:p-6 lg:p-8">
                 <div className="mb-4 flex items-center gap-2">
                   <FaDumbbell className="text-[#d32f2f]" />
                   <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#d32f2f]">Tier 01</span>
                 </div>
-                <h3 className="mb-4 font-['Lexend'] text-4xl font-black uppercase">Strength & Conditioning</h3>
-                <p className="mb-6 text-[#e4beba]">
+                <h3 className="mb-3 font-['Lexend'] text-2xl font-black uppercase sm:mb-4 sm:text-3xl lg:text-4xl">
+                  Strength & Conditioning
+                </h3>
+                <p className="kv-body mb-5 text-[#e4beba] sm:mb-6">
                   Forge an unbreakable foundation. Our strength program utilizes progressive overload and olympic lifting techniques to maximize muscular power and metabolic efficiency.
                 </p>
-                <div className="mb-8 grid grid-cols-2 gap-3 text-sm">
+                <div className="mb-6 grid grid-cols-2 gap-3 text-xs sm:mb-8 sm:text-sm">
                   {["Olympic Lifting", "Powerlifting Core", "Hypertrophy Focus", "Mobility Prep"].map((point) => (
                     <div key={point} className="flex items-center gap-2 text-[#e5e2e1]">
                       <FaCheckCircle className="text-[#f7be1d]" /> {point}
@@ -43,7 +45,7 @@ function Services() {
                   ))}
                 </div>
                 <div className="flex flex-wrap items-center gap-6">
-                  <button className="corner-cut-tr bg-[#d32f2f] px-8 py-3 text-xs font-black uppercase tracking-[0.16em] text-white hover:bg-[#930010]">
+                  <button className="corner-cut-tr fx-hoverlift fx-press bg-[#d32f2f] px-6 py-2.5 text-[11px] font-black uppercase tracking-[0.16em] text-white hover:bg-[#930010] sm:px-8 sm:py-3 sm:text-xs">
                     Book a Trial
                   </button>
                   <div>
@@ -52,7 +54,7 @@ function Services() {
                   </div>
                 </div>
               </div>
-              <div className="relative min-h-[300px] md:w-1/3">
+              <div className="relative min-h-[220px] sm:min-h-[260px] md:w-1/3">
                 <img
                   src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1974&auto=format&fit=crop"
                   alt="Strength training"
@@ -70,13 +72,13 @@ function Services() {
             className="relative border border-[#5b403d] bg-[#1c1b1b] md:col-span-4"
           >
             <div className="absolute left-0 top-0 h-full w-1 bg-[#f27a00]" />
-            <div className="flex h-full flex-col p-8">
+            <div className="flex h-full flex-col p-5 sm:p-6 lg:p-8">
               <div className="mb-4 flex items-center gap-2">
                 <FaBolt className="text-[#f27a00]" />
                 <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#f27a00]">Tier 02</span>
               </div>
-              <h3 className="mb-4 font-['Lexend'] text-4xl font-black uppercase">HIIT & Cardio</h3>
-              <p className="mb-8 text-[#e4beba]">
+              <h3 className="mb-3 font-['Lexend'] text-2xl font-black uppercase sm:mb-4 sm:text-3xl lg:text-4xl">HIIT & Cardio</h3>
+              <p className="kv-body mb-6 text-[#e4beba] sm:mb-8">
                 High-octane interval training designed to push your VO2 max to the limit. Precision monitoring ensures you stay in the burn zone.
               </p>
               <div className="mb-7 space-y-4">
@@ -110,16 +112,16 @@ function Services() {
                   className="h-full w-full object-cover opacity-60"
                 />
               </div>
-              <div className="p-8 sm:w-1/2">
+              <div className="p-5 sm:w-1/2 sm:p-6 lg:p-8">
                 <div className="mb-4 flex items-center gap-2">
                   <FaCheckCircle className="text-[#f7be1d]" />
                   <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#f7be1d]">Tier 03</span>
                 </div>
-                <h3 className="mb-4 font-['Lexend'] text-4xl font-black uppercase">Yoga & Flow</h3>
-                <p className="mb-6 text-[#e4beba]">
+                <h3 className="mb-3 font-['Lexend'] text-2xl font-black uppercase sm:mb-4 sm:text-3xl lg:text-4xl">Yoga & Flow</h3>
+                <p className="kv-body mb-5 text-[#e4beba] sm:mb-6">
                   Active recovery and mental resilience. Our combat yoga focuses on mobility and core stability for high-impact athletes.
                 </p>
-                <button className="corner-cut-tr bg-[#f7be1d] px-8 py-3 text-xs font-black uppercase tracking-[0.16em] text-black hover:bg-yellow-500">
+                <button className="corner-cut-tr fx-hoverlift fx-press bg-[#f7be1d] px-6 py-2.5 text-[11px] font-black uppercase tracking-[0.16em] text-black hover:bg-yellow-500 sm:px-8 sm:py-3 sm:text-xs">
                   Book a Trial
                 </button>
               </div>
@@ -131,14 +133,14 @@ function Services() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.08 }}
-            className="relative flex items-center overflow-hidden border border-red-900/30 bg-neutral-900 p-8 md:col-span-6"
+            className="relative flex items-center overflow-hidden border border-red-900/30 bg-neutral-900 p-5 sm:p-6 lg:p-8 md:col-span-6"
           >
             <div className="absolute right-4 top-4 text-7xl text-red-900/20">
               <FaUsers />
             </div>
             <div className="relative z-10 max-w-md">
-              <h3 className="mb-2 font-['Lexend'] text-3xl font-black uppercase">1-on-1 Elite Coaching</h3>
-              <p className="mb-6 text-[#e4beba]">Customized mechanical analysis and nutritional engineering from pro-level trainers.</p>
+              <h3 className="mb-2 font-['Lexend'] text-2xl font-black uppercase sm:text-3xl">1-on-1 Elite Coaching</h3>
+              <p className="kv-body mb-5 text-[#e4beba] sm:mb-6">Customized mechanical analysis and nutritional engineering from pro-level trainers.</p>
               <div className="flex gap-4">
                 <div className="flex -space-x-3">
                   <div className="h-10 w-10 rounded-full border-2 border-[#131313] bg-[#393939]" />
@@ -169,7 +171,7 @@ function Services() {
             ].map((stat, idx) => (
               <div key={stat[1]} className="flex items-center gap-8">
                 <div className="flex flex-col">
-                  <span className="font-['Lexend'] text-5xl font-black" style={{ color: stat[2] }}>
+                  <span className="font-['Lexend'] text-3xl font-black sm:text-4xl lg:text-5xl" style={{ color: stat[2] }}>
                     {stat[0]}
                   </span>
                   <span className="text-xs font-bold uppercase tracking-[0.16em] text-[#ab8985]">{stat[1]}</span>

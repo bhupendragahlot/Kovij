@@ -54,7 +54,10 @@ function Hero() {
   }, [settings?.heroHeadline]);
 
   return (
-    <section id="home" className="relative mt-[72px] flex h-[921px] items-center overflow-hidden bg-[#131313] text-[#e5e2e1]">
+    <section
+      id="home"
+      className="relative mt-14 flex min-h-[620px] items-center overflow-hidden bg-[#131313] text-[#e5e2e1] sm:mt-[72px] sm:min-h-[720px] lg:h-[921px]"
+    >
       <div className="absolute inset-0 z-0">
         <img
           src={settings?.heroBackgroundImage || "https://c1.wallpaperflare.com/preview/497/845/200/gym-strong-fitness-athlete.jpg"}
@@ -71,25 +74,31 @@ function Hero() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, amount: 0.3 }}
         transition={{ duration: 0.7, ease: "easeOut" }}
-        className="relative z-10 mx-auto w-full max-w-7xl px-6"
+        className="relative z-10 mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8"
       >
         <div ref={heroTextRef} className="max-w-2xl">
-          <span className="mb-6 inline-block bg-[#d32f2f] px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-[#fff2f0]">
+          <span className="mb-5 inline-block bg-[#d32f2f] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-[#fff2f0] sm:mb-6 sm:text-xs">
             EST. 2024
           </span>
 
-          <h1 data-hero-reveal className="mb-6 font-['Lexend'] text-[48px] font-extrabold uppercase leading-none md:text-[72px]">
+          <h1
+            data-hero-reveal
+            className="mb-5 font-['Lexend'] text-[32px] font-extrabold uppercase leading-none sm:mb-6 sm:text-[48px] lg:text-[72px]"
+          >
             FORGE YOUR <br />
-            <span className="text-stroke-red block text-8xl md:inline">ULTIMATE</span> <br />
+            <span className="text-stroke-red block text-[56px] sm:text-8xl md:inline">ULTIMATE</span> <br />
             SELF
           </h1>
 
-          <h2 data-hero-reveal className="mb-4 h-10 text-lg font-bold uppercase tracking-wide text-[#e4beba] md:h-12 md:text-xl">
+          <h2
+            data-hero-reveal
+            className="mb-3 h-9 text-sm font-bold uppercase tracking-wide text-[#e4beba] sm:mb-4 sm:h-10 sm:text-lg md:h-12 md:text-xl"
+          >
             {text}
             <span className="animate-blink">|</span>
           </h2>
 
-          <p data-hero-reveal className="mb-8 max-w-md text-lg text-[#e4beba]">
+          <p data-hero-reveal className="mb-7 max-w-md text-sm text-[#e4beba] sm:mb-8 sm:text-lg">
             {settings?.heroDescription ||
               "Achieve your fitness goals with state-of-the-art equipment, expert trainers, and a motivating environment."}
           </p>
@@ -97,13 +106,13 @@ function Hero() {
           <div className="flex flex-wrap gap-4">
             <a
               href="#contact"
-              className="corner-cut-tr fx-hoverlift fx-press bg-[#d32f2f] px-10 py-4 text-sm font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-[#930010]"
+              className="corner-cut-tr fx-hoverlift fx-press bg-[#d32f2f] px-6 py-3 text-xs font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-[#930010] sm:px-10 sm:py-4 sm:text-sm"
             >
               START TRAINING
             </a>
             <a
               href="#services"
-              className="corner-cut-bl fx-hoverlift fx-press border-2 border-[#f27a00] px-10 py-4 text-sm font-bold uppercase tracking-[0.16em] text-[#f27a00] transition-colors hover:bg-[#f27a00]/10"
+              className="corner-cut-bl fx-hoverlift fx-press border-2 border-[#f27a00] px-6 py-3 text-xs font-bold uppercase tracking-[0.16em] text-[#f27a00] transition-colors hover:bg-[#f27a00]/10 sm:px-10 sm:py-4 sm:text-sm"
             >
               EXPLORE
             </a>

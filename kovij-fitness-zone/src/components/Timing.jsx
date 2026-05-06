@@ -15,11 +15,11 @@ function Timing() {
   ]
 
   return (
-    <section id="timing" className="bg-[#0e0e0e] px-4 py-20 text-[#e5e2e1] sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl px-0">
-        <div className="mb-12 text-center">
-          <h2 className="font-['Lexend'] text-4xl font-black uppercase text-white md:text-5xl">OPENING HOURS</h2>
-          <p className="mx-auto mt-3 max-w-2xl text-[#ab8985]">
+    <section id="timing" className="kv-section bg-[#0e0e0e] text-[#e5e2e1]">
+      <div className="kv-container">
+        <div className="mb-8 text-center sm:mb-12">
+          <h2 className="kv-h2 text-white">OPENING HOURS</h2>
+          <p className="kv-body mx-auto mt-3 max-w-2xl text-[#ab8985]">
             We&apos;re open all week to match your schedule. Train early. Train late. Stay consistent.
           </p>
         </div>
@@ -33,14 +33,14 @@ function Timing() {
         >
           <div className="absolute left-0 top-0 h-full w-1 bg-[#d32f2f]" />
 
-          <div className="flex flex-col gap-6 p-8 md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col gap-5 p-5 sm:gap-6 sm:p-6 lg:p-8 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center border border-[#393939] bg-[#1c1b1b] text-[#d32f2f]">
+              <div className="flex h-10 w-10 items-center justify-center border border-[#393939] bg-[#1c1b1b] text-[#d32f2f] sm:h-12 sm:w-12">
                 <FaClock />
               </div>
               <div>
                 <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-[#ab8985]">Operations</span>
-                <h3 className="font-['Lexend'] text-2xl font-black uppercase text-white">Weekly Schedule</h3>
+                <h3 className="font-['Lexend'] text-xl font-black uppercase text-white sm:text-2xl">Weekly Schedule</h3>
               </div>
             </div>
 
@@ -56,13 +56,13 @@ function Timing() {
               return (
                 <div
                   key={index}
-                  className={`flex flex-col gap-3 border-b border-neutral-800 px-8 py-6 transition-colors md:flex-row md:items-center md:justify-between ${
+                  className={`flex flex-col gap-3 border-b border-neutral-800 px-5 py-5 transition-colors sm:px-6 sm:py-6 lg:px-8 md:flex-row md:items-center md:justify-between ${
                     isClosed ? "bg-[#d32f2f]/10" : "hover:bg-white/5"
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <span className={`h-2 w-2 ${isClosed ? "bg-[#d32f2f]" : "bg-[#f27a00]"}`} />
-                    <div className="font-['Lexend'] text-lg font-black uppercase text-white">{item.day}</div>
+                    <div className="font-['Lexend'] text-base font-black uppercase text-white sm:text-lg">{item.day}</div>
                   </div>
                   <div className="flex flex-col gap-1 md:items-end">
                     {item.hours.map((hour, idx) => (

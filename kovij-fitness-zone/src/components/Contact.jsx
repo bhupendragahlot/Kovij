@@ -73,19 +73,19 @@ function Contact() {
   return (
     <section
       id="contact"
-      className={`py-20 px-4 sm:px-6 lg:px-8 ${
+      className={`kv-section ${
         theme === "dark" ? "bg-[#131313] text-[#e5e2e1]" : "bg-gradient-to-b from-gray-100 to-white"
       }`}
     >
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-10 text-center">
-          <span className="mb-3 block text-xs font-bold uppercase tracking-[0.26em] text-[#f27a00]">
+      <div className="kv-container">
+        <div className="mb-7 text-center sm:mb-10">
+          <span className="kv-overline mb-3 text-[#f27a00]">
             SECURE CONTACT CHANNEL
           </span>
-          <h2 className="font-['Lexend'] text-4xl font-black uppercase text-white md:text-5xl">
+          <h2 className="kv-h2 text-white">
             CONTACT <span className="text-[#d32f2f]">US</span>
           </h2>
-          <p className={`${theme === "dark" ? "text-[#ab8985]" : "text-gray-600"} mx-auto mt-4 max-w-3xl`}>
+          <p className={`${theme === "dark" ? "text-[#ab8985]" : "text-gray-600"} kv-body mx-auto mt-3 max-w-3xl sm:mt-4`}>
             Send mission specs. We respond fast.
           </p>
         </div>
@@ -97,15 +97,15 @@ function Contact() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className={`rounded-xl p-8 border ${
+            className={`kv-card ${
               theme === "dark"
                 ? "bg-[#201f1f] border-[#393939]"
                 : "bg-white/70 backdrop-blur-sm border-gray-200 shadow-sm"
             } lg:col-span-7`}
           >
-            <div className="mb-6 flex items-center gap-3">
-              <span className="text-[#f27a00] text-sm font-black uppercase tracking-[0.2em]">▶</span>
-              <h3 className={`font-['Lexend'] text-2xl font-black uppercase ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
+            <div className="mb-5 flex items-center gap-3 sm:mb-6">
+              <span className="text-[#f27a00] text-xs font-black uppercase tracking-[0.2em] sm:text-sm">▶</span>
+              <h3 className={`kv-h3 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
                 Send a Message
               </h3>
             </div>
@@ -125,7 +125,7 @@ function Contact() {
                 <div>
                   <label
                     htmlFor="name"
-                    className={`block mb-2 text-[10px] font-black uppercase tracking-[0.22em] ${
+                    className={`kv-label ${
                       theme === "dark" ? "text-[#ab8985]" : "text-gray-700"
                     }`}
                   >
@@ -138,7 +138,7 @@ function Contact() {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className={`w-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${
+                    className={`kv-field ${
                       theme === "dark" ? "bg-[#131313] border border-[#393939] text-white" : "bg-gray-100 border border-gray-300 text-gray-800"
                     }`}
                     placeholder="GHOST"
@@ -147,7 +147,7 @@ function Contact() {
                 <div>
                   <label
                     htmlFor="email"
-                    className={`block mb-2 text-[10px] font-black uppercase tracking-[0.22em] ${
+                    className={`kv-label ${
                       theme === "dark" ? "text-[#ab8985]" : "text-gray-700"
                     }`}
                   >
@@ -160,7 +160,7 @@ function Contact() {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className={`w-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${
+                    className={`kv-field ${
                       theme === "dark" ? "bg-[#131313] border border-[#393939] text-white" : "bg-gray-100 border border-gray-300 text-gray-800"
                     }`}
                     placeholder="ops@kovij.fit"
@@ -171,7 +171,7 @@ function Contact() {
               <div className="mt-4">
                 <label
                   htmlFor="phone"
-                  className={`block mb-2 text-[10px] font-black uppercase tracking-[0.22em] ${
+                  className={`kv-label ${
                     theme === "dark" ? "text-[#ab8985]" : "text-gray-700"
                   }`}
                 >
@@ -183,7 +183,7 @@ function Contact() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className={`w-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${
+                  className={`kv-field ${
                     theme === "dark" ? "bg-[#131313] border border-[#393939] text-white" : "bg-gray-100 border border-gray-300 text-gray-800"
                   }`}
                   placeholder="+1 (555) 000-0000"
@@ -193,7 +193,7 @@ function Contact() {
               <div className="mt-4 mb-6">
                 <label
                   htmlFor="message"
-                  className={`block mb-2 text-[10px] font-black uppercase tracking-[0.22em] ${
+                  className={`kv-label ${
                     theme === "dark" ? "text-[#ab8985]" : "text-gray-700"
                   }`}
                 >
@@ -205,8 +205,8 @@ function Contact() {
                   value={formData.message}
                   onChange={handleChange}
                   required
-                  rows="6"
-                  className={`w-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none ${
+                  rows="5"
+                  className={`kv-field resize-none ${
                     theme === "dark" ? "bg-[#131313] border border-[#393939] text-white" : "bg-gray-100 border border-gray-300 text-gray-800"
                   }`}
                   placeholder="REASON FOR CONTACT..."
@@ -216,7 +216,7 @@ function Contact() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full py-4 px-6 text-xs font-black uppercase tracking-[0.22em] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed ${
+                className={`fx-hoverlift fx-press w-full px-6 py-3.5 text-[11px] font-black uppercase tracking-[0.22em] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed sm:py-4 sm:text-xs ${
                   theme === "dark" ? "bg-[#d32f2f] text-white hover:bg-[#930010]" : "bg-gradient-to-r from-red-700 to-red-600 text-white"
                 }`}
               >
@@ -235,19 +235,19 @@ function Contact() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className={`rounded-xl p-8 border ${
+            className={`kv-card ${
               theme === "dark" ? "bg-[#201f1f] border-[#393939]" : "bg-white/70 backdrop-blur-sm border-gray-200 shadow-sm"
             } lg:col-span-5`}
           >
               <div className="flex items-center justify-between">
-                <h3 className={`font-['Lexend'] text-2xl font-black uppercase ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
+                <h3 className={`kv-h3 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
                   Base of Operations
                 </h3>
                 <span className="text-[10px] font-black uppercase tracking-[0.22em] text-[#f27a00]">HQ</span>
               </div>
 
               <div className="mt-6 space-y-4">
-                <div className="flex items-start gap-4 border-l-4 border-[#f27a00] bg-[#131313] p-4">
+                <div className="flex items-start gap-3 border-l-4 border-[#f27a00] bg-[#131313] p-3 sm:gap-4 sm:p-4">
                   <div className="mt-1 text-[#f27a00]">
                     <FaMapMarkerAlt />
                   </div>
@@ -257,14 +257,14 @@ function Contact() {
                       href={settings?.mapEmbedUrl || "https://maps.app.goo.gl/v99oCZ1vtRpuXTB66"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="mt-1 block text-sm font-bold text-white hover:text-[#f27a00]"
+                      className="mt-1 block text-xs font-bold text-white hover:text-[#f27a00] sm:text-sm"
                     >
                       {settings?.address || "120 Feet Rd, Chitresh Nagar, Manpura, Naya Nohra, Rajasthan 324004"}
                     </a>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4 border-l-4 border-[#f27a00] bg-[#131313] p-4">
+                <div className="flex items-start gap-3 border-l-4 border-[#f27a00] bg-[#131313] p-3 sm:gap-4 sm:p-4">
                   <div className="mt-1 text-[#f27a00]">
                     <FaPhone />
                   </div>
@@ -272,14 +272,14 @@ function Contact() {
                     <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#ab8985]">Direct Line</div>
                     <a
                       href={`tel:${settings?.phone || "+919057027053"}`}
-                      className="mt-1 block text-sm font-bold text-white hover:text-[#f27a00]"
+                      className="mt-1 block text-xs font-bold text-white hover:text-[#f27a00] sm:text-sm"
                     >
                       {settings?.phone || "+919057027053"}
                     </a>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4 border-l-4 border-[#f27a00] bg-[#131313] p-4">
+                <div className="flex items-start gap-3 border-l-4 border-[#f27a00] bg-[#131313] p-3 sm:gap-4 sm:p-4">
                   <div className="mt-1 text-[#f27a00]">
                     <FaEnvelope />
                   </div>
@@ -287,7 +287,7 @@ function Contact() {
                     <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#ab8985]">Secure Inbox</div>
                     <a
                       href={`mailto:${settings?.email || "info@kovijfitness.com"}`}
-                      className="mt-1 block text-sm font-bold text-white hover:text-[#f27a00]"
+                      className="mt-1 block text-xs font-bold text-white hover:text-[#f27a00] sm:text-sm"
                     >
                       {settings?.email || "info@kovijfitness.com"}
                     </a>
@@ -302,25 +302,25 @@ function Contact() {
                     href={settings?.facebook || "https://facebook.com"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex h-12 w-12 items-center justify-center border border-neutral-700 bg-neutral-950 text-neutral-300 hover:border-[#d32f2f] hover:text-[#d32f2f] transition-all duration-200"
+                    className="kv-iconBtn border-neutral-700 bg-neutral-950 text-neutral-300 hover:border-[#d32f2f] hover:text-[#d32f2f]"
                   >
-                    <FaFacebook className="text-xl" />
+                    <FaFacebook className="text-base sm:text-xl" />
                   </a>
                   <a
                     href={settings?.instagram || "https://www.instagram.com/kovij_fitness_zone?igsh=MWR4aWdiYm0wN210dA=="}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex h-12 w-12 items-center justify-center border border-neutral-700 bg-neutral-950 text-neutral-300 hover:border-[#f27a00] hover:text-[#f27a00] transition-all duration-200"
+                    className="kv-iconBtn border-neutral-700 bg-neutral-950 text-neutral-300 hover:border-[#f27a00] hover:text-[#f27a00]"
                   >
-                    <FaInstagram className="text-xl" />
+                    <FaInstagram className="text-base sm:text-xl" />
                   </a>
                   <a
                     href={settings?.whatsapp ? `https://wa.me/${settings.whatsapp}` : "https://wa.me/+919057027053"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex h-12 w-12 items-center justify-center border border-neutral-700 bg-neutral-950 text-neutral-300 hover:border-[#f7be1d] hover:text-[#f7be1d] transition-all duration-200"
+                    className="kv-iconBtn border-neutral-700 bg-neutral-950 text-neutral-300 hover:border-[#f7be1d] hover:text-[#f7be1d]"
                   >
-                    <FaWhatsapp className="text-xl" />
+                    <FaWhatsapp className="text-base sm:text-xl" />
                   </a>
                 </div>
               </div>
@@ -332,7 +332,7 @@ function Contact() {
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.55, delay: 0.05 }}
             viewport={{ once: true }}
-            className={`rounded-xl overflow-hidden border h-80 relative ${
+            className={`rounded-xl overflow-hidden border relative h-64 sm:h-72 lg:h-80 ${
               theme === "dark" ? "bg-[#201f1f] border-[#393939]" : "bg-white/70 backdrop-blur-sm border-gray-200 shadow-sm"
             } lg:col-span-5`}
           >
