@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { useTheme } from '../context/ThemeContext';
+import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { animate, stagger } from "motion";
+import { useTheme } from "../context/ThemeContext";
 
 function Hero() {
   const [text, setText] = useState('');
   const [settings, setSettings] = useState(null);
   const [index, setIndex] = useState(0);
   const { theme } = useTheme();
+  const heroTextRef = useRef(null);
 
   // Fetch settings from backend
   useEffect(() => {
@@ -29,64 +31,90 @@ function Hero() {
     }
   }, [index, fullText]);
 
+  useEffect(() => {
+    const el = heroTextRef.current;
+    if (!el) return;
+
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+
+    const targets = el.querySelectorAll("[data-hero-reveal]");
+    if (!targets.length) return;
+
+    const controls = animate(
+      targets,
+      { opacity: [0, 1], y: [12, 0], filter: ["blur(8px)", "blur(0px)"] },
+      { duration: 0.55, delay: stagger(0.05), easing: "ease-out" }
+    );
+
+    return () => controls?.cancel?.();
+  }, [settings?.heroHeadline]);
+
   return (
-    <section id="home" className="relative h-screen flex items-center justify-center overflow-hidden">
-      {/* Background image with overlay */}
+    <section id="home" className="relative mt-[72px] flex h-[921px] items-center overflow-hidden bg-[#131313] text-[#e5e2e1]">
       <div className="absolute inset-0 z-0">
-        <img 
-          src={settings?.heroBackgroundImage || "https://c1.wallpaperflare.com/preview/497/845/200/gym-strong-fitness-athlete.jpg"} 
-          alt="Gym background" 
-          className="w-full h-full object-cover"
+        <img
+          src={settings?.heroBackgroundImage || "https://c1.wallpaperflare.com/preview/497/845/200/gym-strong-fitness-athlete.jpg"}
+          alt="Gym background"
+          className="fx-kenburns fx-gpu h-full w-full object-cover grayscale opacity-40"
         />
-        <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-black/60' : 'bg-black/40'}`}></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-[#131313] via-[#131313]/80 to-transparent" />
+        <div className="grid-noise fx-noise-drift absolute inset-0 opacity-45" />
+        <div className={`absolute inset-0 ${theme === "dark" ? "bg-black/15" : "bg-black/20"}`} />
       </div>
-      {/* Content */}
-      <div className="relative z-10 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold mb-6">
-            <span className="block text-white">WELCOME TO</span>
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-500 mt-2">
-              KOVIJ FITNESS ZONE
-            </span>
+
+      <motion.div
+        initial={{ opacity: 0, y: 28 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="relative z-10 mx-auto w-full max-w-7xl px-6"
+      >
+        <div ref={heroTextRef} className="max-w-2xl">
+          <span className="mb-6 inline-block bg-[#d32f2f] px-3 py-1 text-xs font-bold uppercase tracking-[0.2em] text-[#fff2f0]">
+            EST. 2024
+          </span>
+
+          <h1 data-hero-reveal className="mb-6 font-['Lexend'] text-[48px] font-extrabold uppercase leading-none md:text-[72px]">
+            FORGE YOUR <br />
+            <span className="text-stroke-red block text-8xl md:inline">ULTIMATE</span> <br />
+            SELF
           </h1>
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-8 h-12">
+
+          <h2 data-hero-reveal className="mb-4 h-10 text-lg font-bold uppercase tracking-wide text-[#e4beba] md:h-12 md:text-xl">
             {text}
             <span className="animate-blink">|</span>
           </h2>
-          <p className="text-gray-300 text-lg md:text-xl max-w-3xl mx-auto mb-10">
-            {settings?.heroDescription || "Achieve your fitness goals with state-of-the-art equipment, expert trainers, and a motivating environment."}
+
+          <p data-hero-reveal className="mb-8 max-w-md text-lg text-[#e4beba]">
+            {settings?.heroDescription ||
+              "Achieve your fitness goals with state-of-the-art equipment, expert trainers, and a motivating environment."}
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <motion.a 
+
+          <div className="flex flex-wrap gap-4">
+            <a
               href="#contact"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-3 bg-gradient-to-r from-red-600 to-red-500 text-white font-bold rounded-full shadow-lg hover:shadow-red-500/30 transition-all duration-300"
+              className="corner-cut-tr fx-hoverlift fx-press bg-[#d32f2f] px-10 py-4 text-sm font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-[#930010]"
             >
-              JOIN NOW
-            </motion.a>
-            <motion.a 
+              START TRAINING
+            </a>
+            <a
               href="#services"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-8 py-3 bg-transparent border-2 border-white text-white font-bold rounded-full shadow-lg hover:bg-white/10 transition-all duration-300"
+              className="corner-cut-bl fx-hoverlift fx-press border-2 border-[#f27a00] px-10 py-4 text-sm font-bold uppercase tracking-[0.16em] text-[#f27a00] transition-colors hover:bg-[#f27a00]/10"
             >
               EXPLORE
-            </motion.a>
+            </a>
           </div>
-        </motion.div>
-      </div>
-      {/* Scroll down indicator */}
-      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-        <a href="#services" className="text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-          </svg>
-        </a>
+        </div>
+      </motion.div>
+
+      <div className="absolute bottom-0 right-0 hidden p-12 lg:block">
+        <div className="origin-right rotate-90 select-none font-['Lexend'] text-9xl font-black uppercase text-[#353534] opacity-20">
+          INTENSITY
+        </div>
       </div>
     </section>
   );

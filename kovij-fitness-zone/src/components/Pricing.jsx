@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { FaCheck } from "react-icons/fa"
+import { FaCheckCircle } from "react-icons/fa"
 import { useTheme } from "../context/ThemeContext"
 
 function Pricing() {
@@ -32,18 +32,19 @@ function Pricing() {
       }`}
     >
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-500">
-              MEMBERSHIP PLANS
-            </span>
+        <div className="text-center mb-14">
+          <span className="mb-3 block text-xs font-bold uppercase tracking-[0.26em] text-[#f27a00]">
+            ENGINEERED FOR PERFORMANCE
+          </span>
+          <h2 className="font-['Lexend'] text-4xl md:text-5xl font-black uppercase text-white">
+            CHOOSE YOUR INTENSITY
           </h2>
-          <p className={`${theme === "dark" ? "text-gray-400" : "text-gray-600"} max-w-3xl mx-auto`}>
-            Choose the perfect membership plan that fits your fitness goals and budget.
+          <p className={`${theme === "dark" ? "text-gray-400" : "text-gray-600"} max-w-3xl mx-auto mt-4`}>
+            No fluff. No distractions. Just pure results. Select the tier that matches your ambition.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-end">
           {plans.map((plan, index) => (
             <motion.div
               key={index}
@@ -51,72 +52,60 @@ function Pricing() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className={`
-                relative rounded-3xl overflow-hidden shadow-xl border-0
-                transition-all duration-300 transform hover:-translate-y-2 hover:scale-105
-                ${plan.popular ? "ring-4 ring-red-500/70" : ""}
-                ${theme === "dark"
-                  ? "bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700"
-                  : "bg-gradient-to-br from-white via-gray-50 to-gray-100"}
-              `}
-              style={{
-                boxShadow: plan.popular
-                  ? "0 8px 32px 0 rgba(255, 0, 0, 0.15)"
-                  : "0 4px 24px 0 rgba(0,0,0,0.07)"
-              }}
+              whileHover={{ y: -10 }}
+              className={`relative border ${
+                plan.popular
+                  ? "border-[#d32f2f] bg-[#2a2a2a] glow-crimson scale-[1.02] z-10"
+                  : "border-[#5b403d] bg-[#201f1f]"
+              }`}
             >
-              {/* Popular Badge */}
               {plan.popular && (
-                <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-red-600 to-yellow-500 text-white text-center py-2 font-bold text-xs tracking-widest shadow-lg z-10 rounded-t-3xl">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#d32f2f] px-4 py-1 text-xs font-black uppercase tracking-[0.16em] text-white">
                   MOST POPULAR
                 </div>
               )}
-              <div
-                className={`p-10 pt-14 flex flex-col h-full bg-clip-padding backdrop-blur-md`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className={`text-2xl font-extrabold tracking-tight ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
+              <div className={`p-8 flex flex-col h-full ${plan.popular ? "pt-10" : ""}`}>
+                <div className="mb-6">
+                  <h3 className={`font-['Lexend'] text-3xl font-black uppercase ${plan.popular ? "text-[#fff2f0]" : "text-white"}`}>
                     {plan.name}
                   </h3>
-                  {/* Status Badge */}
-                  <span
-                    className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold shadow ${
-                      plan.status === "Active"
-                        ? "bg-green-100 text-green-700 border border-green-300"
-                        : "bg-gray-300 text-gray-700 border border-gray-400"
-                    }`}
-                  >
-                    {plan.status}
-                  </span>
+                  <div className="mt-3 flex items-baseline gap-2">
+                    <span className={`font-['Lexend'] text-5xl font-black ${plan.popular ? "text-[#d32f2f]" : "text-[#e5e2e1]"}`}>
+                      ₹{plan.price}
+                    </span>
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-[#ab8985]">/{plan.duration}</span>
+                  </div>
+                  <div className="mt-3">
+                    <span
+                      className={`inline-flex items-center border px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] ${
+                        plan.status === "Active"
+                          ? "border-[#f27a00] text-[#f27a00]"
+                          : "border-neutral-700 text-neutral-500"
+                      }`}
+                    >
+                      {plan.status || "Active"}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-end mb-6">
-                  <span className={`text-5xl font-extrabold ${theme === "dark" ? "text-white" : "text-gray-900"}`}>
-                    ₹{plan.price}
-                  </span>
-                  <span className={`ml-2 mb-1 text-lg ${theme === "dark" ? "text-gray-300" : "text-gray-500"}`}>
-                    /{plan.duration}
-                  </span>
-                </div>
-                <ul className="space-y-4 mb-8 flex-1">
-                  {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start">
-                      <FaCheck className="text-green-500 mt-1 mr-2 flex-shrink-0" />
-                      <span className={theme === "dark" ? "text-gray-300" : "text-gray-700"}>{feature}</span>
+
+                <ul className="space-y-3 mb-8 flex-1 text-[#e4beba]">
+                  {(plan.features || []).map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <FaCheckCircle className={`${plan.popular ? "text-[#d32f2f]" : "text-[#f27a00]"} mt-0.5`} />
+                      <span className="text-sm">{feature}</span>
                     </li>
                   ))}
                 </ul>
+
                 <a
                   href="#contact"
-                  className={`
-                    block text-center py-3 px-6 rounded-full font-bold transition-all duration-300 transform hover:scale-105
-                    ${plan.popular
-                      ? "bg-gradient-to-r from-red-600 to-yellow-500 text-white shadow-lg"
-                      : theme === "dark"
-                        ? "bg-white text-gray-900 shadow"
-                        : "bg-gray-900 text-white shadow"}
-                  `}
+                  className={`w-full py-3 text-center text-xs font-black uppercase tracking-[0.2em] transition ${
+                    plan.popular
+                      ? "corner-cut-tr bg-[#d32f2f] text-white hover:bg-[#930010]"
+                      : "corner-cut-bl border-2 border-[#f27a00] text-[#f27a00] hover:bg-[#f27a00]/10"
+                  }`}
                 >
-                  GET STARTED
+                  {plan.popular ? "GO PRO" : `SELECT ${String(plan.name || "PLAN").toUpperCase()}`}
                 </a>
               </div>
             </motion.div>

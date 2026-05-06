@@ -61,6 +61,36 @@ body {
   font-family: 'Poppins', sans-serif;
 }
 
+/* Motion + performance defaults */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:focus-within {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+::selection {
+  background: rgba(211, 47, 47, 0.35);
+  color: #fff;
+}
+
 @keyframes blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
@@ -68,4 +98,166 @@ body {
 
 .animate-blink {
   animation: blink 1s infinite;
+}
+
+/* Kovij UI utilities (dark industrial) */
+.corner-cut-tr {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+}
+
+.corner-cut-bl {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
+
+.text-stroke-red {
+  -webkit-text-stroke: 1px #d32f2f;
+  color: transparent;
+}
+
+.glow-crimson {
+  box-shadow: 0 0 20px rgba(211, 47, 47, 0.28);
+}
+
+.grid-noise {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+@keyframes floatSlow {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes pulseRing {
+  0% {
+    box-shadow: 0 0 0 0 rgba(211, 47, 47, 0.75);
+  }
+  100% {
+    box-shadow: 0 0 0 26px rgba(211, 47, 47, 0);
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 4.5s ease-in-out infinite;
+}
+
+.animate-pulse-ring {
+  animation: pulseRing 1.8s infinite;
+}
+
+/* Fast UI micro-interactions (GPU-friendly) */
+.fx-gpu {
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.fx-hoverlift {
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 220ms ease, border-color 220ms ease,
+    filter 220ms ease;
+  will-change: transform;
+}
+.fx-hoverlift:hover {
+  transform: translateY(-3px);
+}
+.fx-press:active {
+  transform: translateY(0px) scale(0.98);
+}
+
+.fx-underline {
+  position: relative;
+  display: inline-block;
+}
+.fx-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  height: 2px;
+  width: 100%;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  background: linear-gradient(90deg, rgba(211, 47, 47, 1), rgba(242, 122, 0, 1));
+}
+.fx-underline:hover::after {
+  transform: scaleX(1);
+}
+
+@keyframes kenBurnsSlow {
+  0% {
+    transform: scale(1) translate3d(0, 0, 0);
+  }
+  100% {
+    transform: scale(1.08) translate3d(-1%, -1%, 0);
+  }
+}
+.fx-kenburns {
+  will-change: transform;
+  transform-origin: center;
+  animation: kenBurnsSlow 12s ease-in-out infinite alternate;
+}
+
+@keyframes noiseDrift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 96px 64px;
+  }
+}
+.fx-noise-drift {
+  animation: noiseDrift 10s linear infinite;
+}
+
+@keyframes scanSweep {
+  0% {
+    transform: translateY(-20%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.12;
+  }
+  100% {
+    transform: translateY(120%);
+    opacity: 0;
+  }
+}
+.fx-scan-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.fx-scan-sweep::before {
+  content: "";
+  position: absolute;
+  inset: -40% 0;
+  background: linear-gradient(180deg, transparent, rgba(211, 47, 47, 0.22), transparent);
+  transform: translateY(-20%);
+  animation: scanSweep 4.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes textShine {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 120% 50%;
+  }
+}
+.fx-text-shine {
+  background-image: linear-gradient(90deg, #ffffff 0%, #ffffff 35%, rgba(255, 255, 255, 0.55) 50%, #ffffff 65%, #ffffff 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: textShine 2.8s ease-in-out infinite;
 }

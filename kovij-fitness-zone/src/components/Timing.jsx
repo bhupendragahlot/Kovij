@@ -2,11 +2,8 @@
 
 import { motion } from "framer-motion"
 import { FaClock } from "react-icons/fa"
-import { useTheme } from "../context/ThemeContext"
 
 function Timing() {
-  const { theme } = useTheme()
-
   const schedule = [
     { day: "Monday", hours: ["6–11 am", "4–9 pm"] },
     { day: "Tuesday", hours: ["6–11 am", "4–9 pm"] },
@@ -18,73 +15,70 @@ function Timing() {
   ]
 
   return (
-    <section
-      id="timing"
-      className={`py-20 px-4 sm:px-6 lg:px-8 ${
-        theme === "dark" ? "bg-gradient-to-b from-gray-900 to-black" : "bg-gradient-to-b from-gray-100 to-white"
-      }`}
-    >
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-500">
-              OPENING HOURS
-            </span>
-          </h2>
-          <p className={`${theme === "dark" ? "text-gray-400" : "text-gray-600"} max-w-3xl mx-auto`}>
-            We're open throughout the week to accommodate your busy schedule.
+    <section id="timing" className="bg-[#0e0e0e] px-4 py-20 text-[#e5e2e1] sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-0">
+        <div className="mb-12 text-center">
+          <h2 className="font-['Lexend'] text-4xl font-black uppercase text-white md:text-5xl">OPENING HOURS</h2>
+          <p className="mx-auto mt-3 max-w-2xl text-[#ab8985]">
+            We&apos;re open all week to match your schedule. Train early. Train late. Stay consistent.
           </p>
         </div>
 
         <motion.div
-          className={`rounded-xl overflow-hidden border ${
-            theme === "dark"
-              ? "bg-gray-800/30 backdrop-blur-sm border-gray-700"
-              : "bg-white/70 backdrop-blur-sm border-gray-200 shadow-sm"
-          }`}
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 18 }}
           whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.5 }}
-          viewport={{ once: true }}
+          className="relative overflow-hidden border border-neutral-800 bg-[#131313]"
         >
-          <div
-            className={`p-6 flex items-center justify-center gap-3 ${
-              theme === "dark"
-                ? "bg-gradient-to-r from-red-600/20 to-yellow-600/20"
-                : "bg-gradient-to-r from-red-500/10 to-yellow-500/10"
-            }`}
-          >
-            <FaClock className="text-2xl text-red-500" />
-            <h3 className={`text-xl font-bold ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
-              Weekly Schedule
-            </h3>
+          <div className="absolute left-0 top-0 h-full w-1 bg-[#d32f2f]" />
+
+          <div className="flex flex-col gap-6 p-8 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center border border-[#393939] bg-[#1c1b1b] text-[#d32f2f]">
+                <FaClock />
+              </div>
+              <div>
+                <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-[#ab8985]">Operations</span>
+                <h3 className="font-['Lexend'] text-2xl font-black uppercase text-white">Weekly Schedule</h3>
+              </div>
+            </div>
+
+            <div className="text-left md:text-right">
+              <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-[#ab8985]">Tip</span>
+              <p className="text-sm text-neutral-300">Arrive 10 min early for warm-up and form checks.</p>
+            </div>
           </div>
 
-          <div className={`divide-y ${theme === "dark" ? "divide-gray-700" : "divide-gray-200"}`}>
-            {schedule.map((item, index) => (
-              <div
-                key={index}
-                className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 ${
-                  item.day === "Sunday" ? (theme === "dark" ? "bg-red-900/20" : "bg-red-100/50") : ""
-                }`}
-              >
-                <div className={`font-bold text-lg mb-2 sm:mb-0 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
-                  {item.day}
+          <div className="border-t border-neutral-800">
+            {schedule.map((item, index) => {
+              const isClosed = item.hours.length === 1 && item.hours[0] === "Closed"
+              return (
+                <div
+                  key={index}
+                  className={`flex flex-col gap-3 border-b border-neutral-800 px-8 py-6 transition-colors md:flex-row md:items-center md:justify-between ${
+                    isClosed ? "bg-[#d32f2f]/10" : "hover:bg-white/5"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className={`h-2 w-2 ${isClosed ? "bg-[#d32f2f]" : "bg-[#f27a00]"}`} />
+                    <div className="font-['Lexend'] text-lg font-black uppercase text-white">{item.day}</div>
+                  </div>
+                  <div className="flex flex-col gap-1 md:items-end">
+                    {item.hours.map((hour, idx) => (
+                      <div
+                        key={idx}
+                        className={`text-sm font-bold uppercase tracking-wide ${
+                          hour === "Closed" ? "text-[#ffb4ab]" : "text-neutral-300"
+                        }`}
+                      >
+                        {hour}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-col sm:items-end">
-                  {item.hours.map((hour, idx) => (
-                    <div
-                      key={idx}
-                      className={`${
-                        hour === "Closed" ? "text-red-400" : theme === "dark" ? "text-gray-300" : "text-gray-600"
-                      }`}
-                    >
-                      {hour}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </motion.div>
       </div>

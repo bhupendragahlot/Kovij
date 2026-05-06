@@ -1,13 +1,12 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { FaDumbbell, FaMoon, FaSun } from 'react-icons/fa';
-import { useTheme } from '../context/ThemeContext';
-import { motion } from 'framer-motion';
+import { useEffect, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { motion } from "framer-motion";
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const { theme, toggleTheme } = useTheme();
+  const location = useLocation();
+  const isShopPage = location.pathname === "/shop";
 
   useEffect(() => {
     const handleScroll = () => {
@@ -18,8 +17,8 @@ function Navbar() {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   const toggleMenu = () => {
@@ -31,101 +30,125 @@ function Navbar() {
   };
 
   return (
-    <nav className={`fixed w-full z-50 transition-all duration-300 ${
-      scrolled 
-        ? theme === 'dark' 
-          ? 'bg-black/80 backdrop-blur-md' 
-          : 'bg-white/80 backdrop-blur-md' 
-        : 'bg-transparent'
-    }`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
-            <Link to="/" className="flex items-center">
-              <FaDumbbell className="h-8 w-8 text-red-500" />
-              <span className={`ml-2 text-xl font-bold bg-gradient-to-r from-red-500 to-yellow-500 bg-clip-text text-transparent`}>
-                KOVIJ
-              </span>
+    <nav
+      className={`fixed top-0 z-50 w-full border-b-2 border-red-700 backdrop-blur-md transition-colors ${
+        scrolled ? "bg-neutral-950/95" : "bg-neutral-950/85"
+      }`}
+    >
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-red-600/70 to-transparent opacity-70" />
+      <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-6 py-4">
+        <Link to="/" className="font-['Lexend'] text-2xl font-black italic uppercase tracking-widest text-white">
+          <span className="fx-text-shine">KOVIJ FITNESS</span>
+        </Link>
+
+        <div className="hidden items-center space-x-8 md:flex">
+          {isShopPage ? (
+            <Link
+              to="/"
+              className="font-['Lexend'] text-sm font-bold uppercase tracking-tight text-neutral-400 transition-colors duration-200 hover:text-white"
+            >
+              Home
             </Link>
-          </div>
-          
-          {/* Desktop menu */}
-          <div className="hidden md:block">
-           
-            <div className="ml-10 flex items-center space-x-4">
-              {['home', 'services', 'gallery', 'trainers', 'pricing', 'contact'].map((item) => (
-                <motion.a
-                  key={item}
-                  href={`#${item}`}
-                  className={`hover:text-red-500 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-300 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  {item.charAt(0).toUpperCase() + item.slice(1)}
-                </motion.a>
-              ))}
-              <a href="/shop" target="_blank" rel="noopener noreferrer" className="bg-gradient-to-r from-red-600 to-red-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:from-red-700 hover:to-red-600 transition-all duration-300 transform hover:scale-105">Shop</a>
-              
-              {/* Theme toggle button */}
-              <button 
-                onClick={toggleTheme} 
-                className={`p-2 rounded-full ${theme === 'dark' ? 'bg-gray-800 text-yellow-300' : 'bg-gray-200 text-gray-800'} hover:bg-opacity-80 transition-colors duration-300`}
-                aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+          ) : (
+            [
+              { id: "home", label: "Home", active: true },
+              { id: "services", label: "Services" },
+              { id: "trainers", label: "Trainers" },
+              { id: "pricing", label: "Membership" },
+            ].map((item) => (
+              <motion.a
+                key={item.id}
+                href={`#${item.id}`}
+                className={`fx-underline font-['Lexend'] text-sm font-bold uppercase tracking-tight transition-colors duration-200 ${
+                  item.active ? "text-red-600" : "text-neutral-400 hover:text-white"
+                }`}
               >
-                {theme === 'dark' ? <FaSun className="h-4 w-4" /> : <FaMoon className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
-          
-          {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
-            {/* Theme toggle button for mobile */}
-            <button 
-              onClick={toggleTheme} 
-              className={`p-2 mr-2 rounded-full ${theme === 'dark' ? 'bg-gray-800 text-yellow-300' : 'bg-gray-200 text-gray-800'} hover:bg-opacity-80 transition-colors duration-300`}
-              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {theme === 'dark' ? <FaSun className="h-5 w-5" /> : <FaMoon className="h-5 w-5" />}
-            </button>
-            
-            <button
-              onClick={toggleMenu}
-              className={`inline-flex items-center justify-center p-2 rounded-md ${theme === 'dark' ? 'text-gray-400 hover:text-white hover:bg-gray-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-200'} focus:outline-none`}
-              aria-expanded="false"
-            >
-              <span className="sr-only">Open main menu</span>
-              {!isOpen ? (
-                <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              ) : (
-                <svg className="block h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              )}
-            </button>
-          </div>
+                {item.label}
+              </motion.a>
+            ))
+          )}
+
+          <a
+            href="/shop"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="fx-underline font-['Lexend'] text-sm font-bold uppercase tracking-tight text-neutral-400 transition-colors duration-200 hover:text-white"
+          >
+            Shop
+          </a>
+
+          <a
+            href="#contact"
+            className="corner-cut-tr fx-hoverlift fx-press bg-[#d32f2f] px-6 py-2 font-['Lexend'] text-sm font-black uppercase tracking-widest text-white"
+          >
+            JOIN NOW
+          </a>
         </div>
+
+        <button onClick={toggleMenu} className="text-neutral-300 md:hidden" aria-label="Toggle menu">
+          {!isOpen ? (
+            <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          ) : (
+            <svg className="h-6 w-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          )}
+        </button>
       </div>
 
       {/* Mobile menu */}
-      <div className={`md:hidden ${isOpen ? 'block' : 'hidden'}`}>
-        <div className={`px-2 pt-2 pb-3 space-y-1 sm:px-3 ${theme === 'dark' ? 'bg-black/90 backdrop-blur-md' : 'bg-white/90 backdrop-blur-md'}`}>
-          {['home', 'services', 'gallery', 'trainers', 'pricing', 'contact'].map((item) => (
-            <motion.a
-              key={item}
-              href={`#${item}`}
+      {isOpen && (
+        <div className="border-t border-neutral-800 bg-neutral-950 px-6 pb-5 pt-3 md:hidden">
+          <div className="space-y-2">
+            {isShopPage ? (
+              <Link
+                to="/"
+                onClick={closeMenu}
+                className="block py-2 font-['Lexend'] text-sm font-bold uppercase tracking-tight text-neutral-300"
+              >
+                Home
+              </Link>
+            ) : (
+              [
+                { id: "home", label: "Home" },
+                { id: "services", label: "Services" },
+                { id: "trainers", label: "Trainers" },
+                { id: "pricing", label: "Membership" },
+                { id: "contact", label: "Contact" },
+              ].map((item) => (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  onClick={closeMenu}
+                  className="block py-2 font-['Lexend'] text-sm font-bold uppercase tracking-tight text-neutral-300"
+                >
+                  {item.label}
+                </a>
+              ))
+            )}
+
+            <a
+              href="/shop"
+              target="_blank"
+              rel="noopener noreferrer"
               onClick={closeMenu}
-              className={`hover:bg-gray-800 block px-3 py-2 rounded-md text-base font-medium ${theme === 'dark' ? 'text-white hover:bg-gray-700' : 'text-gray-800 hover:bg-gray-200'}`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="block py-2 font-['Lexend'] text-sm font-bold uppercase tracking-tight text-neutral-300"
             >
-              {item.charAt(0).toUpperCase() + item.slice(1)}
-            </motion.a>
-          ))}
-          <a href="/shop" target="_blank" rel="noopener noreferrer" onClick={closeMenu} className="bg-gradient-to-r from-red-600 to-red-500 block px-3 py-2 rounded-md text-base font-medium text-white">Shop</a>
+              Shop
+            </a>
+
+            <a
+              href="#contact"
+              onClick={closeMenu}
+              className="mt-2 inline-block bg-[#d32f2f] px-4 py-2 font-['Lexend'] text-xs font-bold uppercase tracking-wider text-white"
+            >
+              Join Now
+            </a>
+          </div>
         </div>
-      </div>
+      )}
     </nav>
   );
 }

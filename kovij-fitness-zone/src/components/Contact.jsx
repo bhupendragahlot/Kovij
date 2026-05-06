@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
-import { FaMapMarkerAlt, FaPhone, FaEnvelope, FaFacebook, FaInstagram, FaWhatsapp } from "react-icons/fa"
+import { FaBolt, FaEnvelope, FaFacebook, FaInstagram, FaMapMarkerAlt, FaPhone, FaWhatsapp } from "react-icons/fa"
 import { useTheme } from "../context/ThemeContext"
 
 function Contact() {
@@ -74,22 +74,23 @@ function Contact() {
     <section
       id="contact"
       className={`py-20 px-4 sm:px-6 lg:px-8 ${
-        theme === "dark" ? "bg-gradient-to-b from-gray-900 to-black" : "bg-gradient-to-b from-gray-100 to-white"
+        theme === "dark" ? "bg-[#131313] text-[#e5e2e1]" : "bg-gradient-to-b from-gray-100 to-white"
       }`}
     >
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-500">
-              CONTACT US
-            </span>
+        <div className="mb-10 text-center">
+          <span className="mb-3 block text-xs font-bold uppercase tracking-[0.26em] text-[#f27a00]">
+            SECURE CONTACT CHANNEL
+          </span>
+          <h2 className="font-['Lexend'] text-4xl font-black uppercase text-white md:text-5xl">
+            CONTACT <span className="text-[#d32f2f]">US</span>
           </h2>
-          <p className={`${theme === "dark" ? "text-gray-400" : "text-gray-600"} max-w-3xl mx-auto`}>
-            Have questions or ready to start your fitness journey? Get in touch with us today.
+          <p className={`${theme === "dark" ? "text-[#ab8985]" : "text-gray-600"} mx-auto mt-4 max-w-3xl`}>
+            Send mission specs. We respond fast.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
           {/* Contact Form */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
@@ -98,13 +99,16 @@ function Contact() {
             viewport={{ once: true }}
             className={`rounded-xl p-8 border ${
               theme === "dark"
-                ? "bg-gray-800/30 backdrop-blur-sm border-gray-700"
+                ? "bg-[#201f1f] border-[#393939]"
                 : "bg-white/70 backdrop-blur-sm border-gray-200 shadow-sm"
-            }`}
+            } lg:col-span-7`}
           >
-            <h3 className={`text-2xl font-bold mb-6 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
-              Send us a Message
-            </h3>
+            <div className="mb-6 flex items-center gap-3">
+              <span className="text-[#f27a00] text-sm font-black uppercase tracking-[0.2em]">▶</span>
+              <h3 className={`font-['Lexend'] text-2xl font-black uppercase ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
+                Send a Message
+              </h3>
+            </div>
 
             {submitMessage && (
               <div
@@ -117,49 +121,61 @@ function Contact() {
             )}
 
             <form onSubmit={handleSubmit}>
-              <div className="mb-4">
-                <label htmlFor="name" className={`block mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
-                  Your Name
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${
-                    theme === "dark"
-                      ? "bg-gray-700/50 border border-gray-600 text-white"
-                      : "bg-gray-100 border border-gray-300 text-gray-800"
-                  }`}
-                  placeholder="John Doe"
-                />
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="name"
+                    className={`block mb-2 text-[10px] font-black uppercase tracking-[0.22em] ${
+                      theme === "dark" ? "text-[#ab8985]" : "text-gray-700"
+                    }`}
+                  >
+                    Operative Name
+                  </label>
+                  <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    required
+                    className={`w-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${
+                      theme === "dark" ? "bg-[#131313] border border-[#393939] text-white" : "bg-gray-100 border border-gray-300 text-gray-800"
+                    }`}
+                    placeholder="GHOST"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="email"
+                    className={`block mb-2 text-[10px] font-black uppercase tracking-[0.22em] ${
+                      theme === "dark" ? "text-[#ab8985]" : "text-gray-700"
+                    }`}
+                  >
+                    Comms Channel (Email)
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    className={`w-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${
+                      theme === "dark" ? "bg-[#131313] border border-[#393939] text-white" : "bg-gray-100 border border-gray-300 text-gray-800"
+                    }`}
+                    placeholder="ops@kovij.fit"
+                  />
+                </div>
               </div>
 
-              <div className="mb-4">
-                <label htmlFor="email" className={`block mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${
-                    theme === "dark"
-                      ? "bg-gray-700/50 border border-gray-600 text-white"
-                      : "bg-gray-100 border border-gray-300 text-gray-800"
+              <div className="mt-4">
+                <label
+                  htmlFor="phone"
+                  className={`block mb-2 text-[10px] font-black uppercase tracking-[0.22em] ${
+                    theme === "dark" ? "text-[#ab8985]" : "text-gray-700"
                   }`}
-                  placeholder="john@example.com"
-                />
-              </div>
-
-              <div className="mb-4">
-                <label htmlFor="phone" className={`block mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}>
-                  Phone Number
+                >
+                  Encrypted ID (Phone)
                 </label>
                 <input
                   type="tel"
@@ -167,21 +183,21 @@ function Contact() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
-                  className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${
-                    theme === "dark"
-                      ? "bg-gray-700/50 border border-gray-600 text-white"
-                      : "bg-gray-100 border border-gray-300 text-gray-800"
+                  className={`w-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${
+                    theme === "dark" ? "bg-[#131313] border border-[#393939] text-white" : "bg-gray-100 border border-gray-300 text-gray-800"
                   }`}
-                  placeholder="+91**********"
+                  placeholder="+1 (555) 000-0000"
                 />
               </div>
 
-              <div className="mb-6">
+              <div className="mt-4 mb-6">
                 <label
                   htmlFor="message"
-                  className={`block mb-2 ${theme === "dark" ? "text-gray-300" : "text-gray-700"}`}
+                  className={`block mb-2 text-[10px] font-black uppercase tracking-[0.22em] ${
+                    theme === "dark" ? "text-[#ab8985]" : "text-gray-700"
+                  }`}
                 >
-                  Your Message
+                  Mission Specs (Message)
                 </label>
                 <textarea
                   id="message"
@@ -189,97 +205,89 @@ function Contact() {
                   value={formData.message}
                   onChange={handleChange}
                   required
-                  rows="4"
-                  className={`w-full px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 resize-none ${
-                    theme === "dark"
-                      ? "bg-gray-700/50 border border-gray-600 text-white"
-                      : "bg-gray-100 border border-gray-300 text-gray-800"
+                  rows="6"
+                  className={`w-full px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 resize-none ${
+                    theme === "dark" ? "bg-[#131313] border border-[#393939] text-white" : "bg-gray-100 border border-gray-300 text-gray-800"
                   }`}
-                  placeholder="I'm interested in joining your gym..."
-                ></textarea>
+                  placeholder="REASON FOR CONTACT..."
+                />
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className={`w-full py-3 px-6 font-bold rounded-lg transition-all duration-300 transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed ${
-                  theme === "dark"
-                    ? "bg-gradient-to-r from-red-600 to-red-500 text-white"
-                    : "bg-gradient-to-r from-red-700 to-red-600 text-white"
+                className={`w-full py-4 px-6 text-xs font-black uppercase tracking-[0.22em] transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed ${
+                  theme === "dark" ? "bg-[#d32f2f] text-white hover:bg-[#930010]" : "bg-gradient-to-r from-red-700 to-red-600 text-white"
                 }`}
               >
-                {isSubmitting ? "Sending..." : "Send Message"}
+                {isSubmitting ? "SENDING..." : (
+                  <span className="inline-flex items-center justify-center gap-2">
+                    SEND MISSION SPECS <FaBolt />
+                  </span>
+                )}
               </button>
             </form>
           </motion.div>
 
-          {/* Contact Information */}
+          {/* Base of Operations */}
           <motion.div
             initial={{ opacity: 0, x: 30 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="flex flex-col justify-between"
+            className={`rounded-xl p-8 border ${
+              theme === "dark" ? "bg-[#201f1f] border-[#393939]" : "bg-white/70 backdrop-blur-sm border-gray-200 shadow-sm"
+            } lg:col-span-5`}
           >
-            <div
-              className={`rounded-xl p-8 border mb-8 ${
-                theme === "dark"
-                  ? "bg-gray-800/30 backdrop-blur-sm border-gray-700"
-                  : "bg-white/70 backdrop-blur-sm border-gray-200 shadow-sm"
-              }`}
-            >
-              <h3 className={`text-2xl font-bold mb-6 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
-                Contact Information
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className={`font-['Lexend'] text-2xl font-black uppercase ${theme === "dark" ? "text-white" : "text-gray-800"}`}>
+                  Base of Operations
+                </h3>
+                <span className="text-[10px] font-black uppercase tracking-[0.22em] text-[#f27a00]">HQ</span>
+              </div>
 
-              <div className="space-y-6">
-                <div className="flex items-start">
-                  <div className="bg-red-500 p-3 rounded-lg mr-4">
-                    <FaMapMarkerAlt className="text-white text-xl" />
+              <div className="mt-6 space-y-4">
+                <div className="flex items-start gap-4 border-l-4 border-[#f27a00] bg-[#131313] p-4">
+                  <div className="mt-1 text-[#f27a00]">
+                    <FaMapMarkerAlt />
                   </div>
                   <div>
-                    <h4 className={`font-bold mb-1 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>Address</h4>
+                    <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#ab8985]">HQ Address</div>
                     <a
                       href={settings?.mapEmbedUrl || "https://maps.app.goo.gl/v99oCZ1vtRpuXTB66"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`hover:text-red-400 transition-colors duration-300 ${
-                        theme === "dark" ? "text-gray-400" : "text-gray-600"
-                      }`}
+                      className="mt-1 block text-sm font-bold text-white hover:text-[#f27a00]"
                     >
                       {settings?.address || "120 Feet Rd, Chitresh Nagar, Manpura, Naya Nohra, Rajasthan 324004"}
                     </a>
                   </div>
                 </div>
 
-                <div className="flex items-start">
-                  <div className="bg-red-500 p-3 rounded-lg mr-4">
-                    <FaPhone className="text-white text-xl" />
+                <div className="flex items-start gap-4 border-l-4 border-[#f27a00] bg-[#131313] p-4">
+                  <div className="mt-1 text-[#f27a00]">
+                    <FaPhone />
                   </div>
                   <div>
-                    <h4 className={`font-bold mb-1 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>Phone</h4>
+                    <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#ab8985]">Direct Line</div>
                     <a
                       href={`tel:${settings?.phone || "+919057027053"}`}
-                      className={`hover:text-red-400 transition-colors duration-300 ${
-                        theme === "dark" ? "text-gray-400" : "text-gray-600"
-                      }`}
+                      className="mt-1 block text-sm font-bold text-white hover:text-[#f27a00]"
                     >
                       {settings?.phone || "+919057027053"}
                     </a>
                   </div>
                 </div>
 
-                <div className="flex items-start">
-                  <div className="bg-red-500 p-3 rounded-lg mr-4">
-                    <FaEnvelope className="text-white text-xl" />
+                <div className="flex items-start gap-4 border-l-4 border-[#f27a00] bg-[#131313] p-4">
+                  <div className="mt-1 text-[#f27a00]">
+                    <FaEnvelope />
                   </div>
                   <div>
-                    <h4 className={`font-bold mb-1 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>Email</h4>
+                    <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#ab8985]">Secure Inbox</div>
                     <a
                       href={`mailto:${settings?.email || "info@kovijfitness.com"}`}
-                      className={`hover:text-red-400 transition-colors duration-300 ${
-                        theme === "dark" ? "text-gray-400" : "text-gray-600"
-                      }`}
+                      className="mt-1 block text-sm font-bold text-white hover:text-[#f27a00]"
                     >
                       {settings?.email || "info@kovijfitness.com"}
                     </a>
@@ -288,13 +296,13 @@ function Contact() {
               </div>
 
               <div className="mt-8">
-                <h4 className={`font-bold mb-4 ${theme === "dark" ? "text-white" : "text-gray-800"}`}>Follow Us</h4>
+                <h4 className={`text-[10px] font-black uppercase tracking-[0.22em] mb-4 ${theme === "dark" ? "text-[#ab8985]" : "text-gray-800"}`}>Social</h4>
                 <div className="flex space-x-4">
                   <a
                     href={settings?.facebook || "https://facebook.com"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-blue-600 p-3 rounded-full text-white hover:bg-blue-700 transition-colors duration-300"
+                    className="flex h-12 w-12 items-center justify-center border border-neutral-700 bg-neutral-950 text-neutral-300 hover:border-[#d32f2f] hover:text-[#d32f2f] transition-all duration-200"
                   >
                     <FaFacebook className="text-xl" />
                   </a>
@@ -302,7 +310,7 @@ function Contact() {
                     href={settings?.instagram || "https://www.instagram.com/kovij_fitness_zone?igsh=MWR4aWdiYm0wN210dA=="}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-gradient-to-br from-purple-600 to-pink-500 p-3 rounded-full text-white hover:from-purple-700 hover:to-pink-600 transition-colors duration-300"
+                    className="flex h-12 w-12 items-center justify-center border border-neutral-700 bg-neutral-950 text-neutral-300 hover:border-[#f27a00] hover:text-[#f27a00] transition-all duration-200"
                   >
                     <FaInstagram className="text-xl" />
                   </a>
@@ -310,21 +318,44 @@ function Contact() {
                     href={settings?.whatsapp ? `https://wa.me/${settings.whatsapp}` : "https://wa.me/+919057027053"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-green-600 p-3 rounded-full text-white hover:bg-green-700 transition-colors duration-300"
+                    className="flex h-12 w-12 items-center justify-center border border-neutral-700 bg-neutral-950 text-neutral-300 hover:border-[#f7be1d] hover:text-[#f7be1d] transition-all duration-200"
                   >
                     <FaWhatsapp className="text-xl" />
                   </a>
                 </div>
               </div>
-            </div>
+          </motion.div>
 
-            <div
-              className={`rounded-xl overflow-hidden border h-80 ${
-                theme === "dark"
-                  ? "bg-gray-800/30 backdrop-blur-sm border-gray-700"
-                  : "bg-white/70 backdrop-blur-sm border-gray-200 shadow-sm"
-              }`}
-            >
+          {/* Strategic Map */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.55, delay: 0.05 }}
+            viewport={{ once: true }}
+            className={`rounded-xl overflow-hidden border h-80 relative ${
+              theme === "dark" ? "bg-[#201f1f] border-[#393939]" : "bg-white/70 backdrop-blur-sm border-gray-200 shadow-sm"
+            } lg:col-span-5`}
+          >
+              {theme === "dark" && (
+                <>
+                  <div className="pointer-events-none absolute right-3 top-3 bg-[#d32f2f] px-2 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white">
+                    GPS LOCKED
+                  </div>
+                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                    <div className="flex flex-col items-center">
+                      <div className="animate-float-slow">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#d32f2f] text-white shadow-[0_0_20px_rgba(211,47,47,0.5)]">
+                          <FaMapMarkerAlt />
+                        </div>
+                      </div>
+                      <div className="mt-3 border border-neutral-700 bg-black/60 px-3 py-2 text-center">
+                        <div className="text-[10px] font-black uppercase tracking-[0.22em] text-white">Strategic Map</div>
+                        <div className="text-[10px] uppercase tracking-[0.18em] text-neutral-400">Encrypted Feed Active</div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
               <iframe
                 src={settings?.mapEmbedUrl || "https://www.google.com/maps/embed?pb=!1m14!1m8!1m3!1d3712.1985550394793!2d75.89803922711107!3d25.179997694741587!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x396f911faffd7c31%3A0xec54a1034fdf7b9a!2sKovij%20Fitness%20Zone!5e0!3m2!1sen!2sin!4v1742579483445!5m2!1sen!2sin"}
                 width="100%"
@@ -334,7 +365,6 @@ function Contact() {
                 loading="lazy"
                 title="Kovij Fitness Zone Location"
               ></iframe>
-            </div>
           </motion.div>
         </div>
       </div>
