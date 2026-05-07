@@ -98,12 +98,12 @@ function Navbar() {
             Shop
           </a>
 
-          <a
-            href="#contact"
+          <Link
+            to="/member/join"
             className="corner-cut-tr fx-hoverlift fx-press bg-[#d32f2f] px-6 py-2 font-['Lexend'] text-sm font-black uppercase tracking-widest text-white"
           >
             JOIN NOW
-          </a>
+          </Link>
         </div>
 
         <button
@@ -168,13 +168,13 @@ function Navbar() {
               Shop
             </a>
 
-            <a
-              href="#contact"
+            <Link
+              to="/member/join"
               onClick={closeMenu}
               className="corner-cut-tr fx-hoverlift fx-press mt-2 inline-flex w-full items-center justify-center bg-[#d32f2f] px-4 py-3 font-['Lexend'] text-xs font-black uppercase tracking-widest text-white"
             >
               Join Now
-            </a>
+            </Link>
             </div>
           </div>
         </div>

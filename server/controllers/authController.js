@@ -17,7 +17,13 @@ export const register = async (req, res) => {
 
     // Create JWT token
     const token = jwt.sign(
-      { id: user._id, email: user.email },
+      {
+        id: user._id.toString(),
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        type: 'staff',
+      },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
@@ -44,7 +50,13 @@ export const login = async (req, res) => {
     if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
     const token = jwt.sign(
-      { id: user._id, email: user.email },
+      {
+        id: user._id.toString(),
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        type: 'staff',
+      },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );

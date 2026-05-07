@@ -20,6 +20,23 @@ import AdminSidebar from "./components/admin/AdminSidebar";
 import AdminAnalytics from "./pages/admin/Analytics";
 import AdminSettings from "./pages/admin/Settings";
 import ProtectedRoute from "./components/ProtectedRoute";
+import MemberProtectedRoute from "./components/MemberProtectedRoute";
+import { MemberAuthProvider } from "./context/MemberAuthContext";
+import MemberLogin from "./pages/member/Login";
+import JoinGymForm from "./pages/member/JoinGymForm";
+import MemberDashboard from "./pages/member/Dashboard";
+import MyMembership from "./pages/member/MyMembership";
+import Payments from "./pages/member/Payments";
+import MemberProfile from "./pages/member/Profile";
+import MemberLayout from "./pages/member/MemberLayout";
+import AccountHub from "./pages/member/AccountHub";
+import AccountAddresses from "./pages/member/AccountAddresses";
+import AccountSettings from "./pages/member/AccountSettings";
+import AccountMembershipHistory from "./pages/member/AccountMembershipHistory";
+import MembersList from "./pages/admin/Members/MembersList";
+import MemberDetail from "./pages/admin/Members/MemberDetail";
+import Campaigns from "./pages/admin/Email/Campaigns";
+import BillSender from "./pages/admin/Email/BillSender";
 
 function App() {
   const { theme } = useTheme();
@@ -34,8 +51,27 @@ function App() {
   }, []);
 
   return (
+    <MemberAuthProvider>
     <Router>
       <Routes>
+        {/* Member area (dashboard-like, separate from marketing site) */}
+        <Route path="/member/*" element={<MemberLayout />}>
+          <Route path="login" element={<MemberLogin />} />
+          <Route path="join" element={<JoinGymForm />} />
+          <Route element={<MemberProtectedRoute />}>
+            <Route path="dashboard" element={<MemberDashboard />} />
+            <Route path="join/form" element={<JoinGymForm />} />
+            <Route path="membership" element={<MyMembership />} />
+            <Route path="payments" element={<Payments />} />
+            <Route path="profile" element={<MemberProfile />} />
+            <Route path="account" element={<AccountHub />} />
+            <Route path="account/addresses" element={<AccountAddresses />} />
+            <Route path="account/membership-history" element={<AccountMembershipHistory />} />
+            <Route path="account/settings" element={<AccountSettings />} />
+          </Route>
+        </Route>
+
+        {/* Marketing site (with Navbar + Footer) */}
         <Route
           path="/*"
           element={
@@ -78,10 +114,15 @@ function App() {
             <Route path="products/edit/:id" element={<ProductForm />} />
             <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="settings" element={<AdminSettings />} />
+            <Route path="members" element={<MembersList />} />
+            <Route path="members/:id" element={<MemberDetail />} />
+            <Route path="email/campaigns" element={<Campaigns />} />
+            <Route path="email/bill" element={<BillSender />} />
           </Route>
         </Route>
       </Routes>
     </Router>
+    </MemberAuthProvider>
   );
 }
 

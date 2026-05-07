@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useTheme } from "../../../context/ThemeContext"
 import { Plus, Search, Edit, Trash2, Eye, Calendar, Star, EyeOff } from "lucide-react"
 import axios from "axios";
+import { formatIstDdMmYyyyHm } from "../../../utils/date";
 const API_URL = "/api/plans"
 
 const PlansList = () => {
@@ -139,7 +140,7 @@ const handleDelete = async (id) => {
               </div>
               <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700 mt-auto">
                 <span className={`text-xs ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>
-                  Created: {new Date(plan.createdAt).toLocaleDateString()}
+                  Created: {formatIstDdMmYyyyHm(plan.createdAt)}
                 </span>
                 <div className="flex items-center space-x-2">
                   <button

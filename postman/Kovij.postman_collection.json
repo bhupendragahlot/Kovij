@@ -1,0 +1,199 @@
+{
+  "info": {
+    "name": "Kovij Gym Membership API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "memberToken", "value": "" },
+    { "key": "staffToken", "value": "" },
+    { "key": "firebaseIdToken", "value": "PASTE_FIREBASE_ID_TOKEN" },
+    { "key": "memberId", "value": "" },
+    { "key": "planId", "value": "" },
+    { "key": "paymentId", "value": "" },
+    { "key": "campaignId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Member Auth",
+      "item": [
+        {
+          "name": "POST /api/member/auth/google",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"{{firebaseIdToken}}\"\n}"
+            },
+            "url": "{{baseUrl}}/api/member/auth/google"
+          }
+        },
+        {
+          "name": "GET /api/member/auth/me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{memberToken}}" }],
+            "url": "{{baseUrl}}/api/member/auth/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Membership",
+      "item": [
+        {
+          "name": "POST /api/membership/join",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{memberToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"personalDetails\": {\n    \"fullName\": \"Test User\",\n    \"age\": 28,\n    \"gender\": \"male\",\n    \"mobile\": \"9999999999\",\n    \"email\": \"test@example.com\",\n    \"address\": { \"city\": \"Jaipur\", \"state\": \"RJ\", \"line1\": \"\" }\n  },\n  \"healthDetails\": {\n    \"heightCm\": 175,\n    \"weightKg\": 72,\n    \"medicalCondition\": { \"has\": false, \"details\": \"\" },\n    \"injuries\": \"\",\n    \"allergies\": \"\"\n  },\n  \"fitnessGoal\": { \"goalKind\": \"general_fitness\", \"customText\": \"\" },\n  \"selectedPlanId\": \"{{planId}}\",\n  \"payment\": {\n    \"registrationFee\": 500,\n    \"membershipFee\": 2000,\n    \"mode\": \"upi\",\n    \"status\": \"paid\"\n  }\n}"
+            },
+            "url": "{{baseUrl}}/api/membership/join"
+          }
+        },
+        {
+          "name": "GET /api/membership/me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{memberToken}}" }],
+            "url": "{{baseUrl}}/api/membership/me"
+          }
+        },
+        {
+          "name": "GET /api/membership/:userId",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{memberToken}}" }],
+            "url": "{{baseUrl}}/api/membership/{{memberId}}"
+          }
+        },
+        {
+          "name": "POST /api/membership/update",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{memberToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"newPlanId\": \"{{planId}}\",\n  \"changeType\": \"upgrade\"\n}"
+            },
+            "url": "{{baseUrl}}/api/membership/update"
+          }
+        },
+        {
+          "name": "GET /api/membership/history/me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{memberToken}}" }],
+            "url": "{{baseUrl}}/api/membership/history/me"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Payments",
+      "item": [
+        {
+          "name": "POST /api/payments/record",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{memberToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"membership\",\n  \"amount\": 500,\n  \"mode\": \"cash\",\n  \"status\": \"paid\"\n}"
+            },
+            "url": "{{baseUrl}}/api/payments/record"
+          }
+        },
+        {
+          "name": "GET /api/payments/me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{memberToken}}" }],
+            "url": "{{baseUrl}}/api/payments/me"
+          }
+        },
+        {
+          "name": "GET /api/payments/:id/bill",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{memberToken}}" }],
+            "url": "{{baseUrl}}/api/payments/{{paymentId}}/bill?emailCopy=1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Members",
+      "item": [
+        {
+          "name": "GET /api/admin/members",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{staffToken}}" }],
+            "url": "{{baseUrl}}/api/admin/members"
+          }
+        },
+        {
+          "name": "POST /api/admin/payments/:id/send-bill",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{staffToken}}" }],
+            "url": "{{baseUrl}}/api/admin/payments/{{paymentId}}/send-bill"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin — Campaigns",
+      "item": [
+        {
+          "name": "POST /api/campaigns",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{staffToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Festive offer\",\n  \"type\": \"festival\",\n  \"subject\": \"Happy holidays from Kovij\",\n  \"bodyHtml\": \"<p>Special renewal discount this week!</p>\",\n  \"audienceFilter\": \"activeMembers\"\n}"
+            },
+            "url": "{{baseUrl}}/api/campaigns"
+          }
+        },
+        {
+          "name": "POST /api/campaigns/:id/send",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{staffToken}}" }],
+            "url": "{{baseUrl}}/api/campaigns/{{campaignId}}/send"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Plans (public)",
+      "item": [
+        {
+          "name": "GET /api/plans",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/plans"
+          }
+        }
+      ]
+    }
+  ]
+}

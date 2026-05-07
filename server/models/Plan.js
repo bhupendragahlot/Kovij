@@ -16,6 +16,11 @@ const planSchema = new mongoose.Schema({
     required: true,
     enum: ['day', 'week', 'month', 'year']
   },
+  /** Optional override; if set, used instead of mapping from `duration` */
+  durationInDays: {
+    type: Number,
+    min: 1,
+  },
   features: [{
     type: String,
     required: true

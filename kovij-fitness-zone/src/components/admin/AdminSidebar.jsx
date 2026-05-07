@@ -1,6 +1,6 @@
 
 import { useLocation, useNavigate } from "react-router-dom"
-import { Home, Users, Calendar, ShoppingBag, LogOut, Menu, X, Settings,  Dumbbell,BarChart3 } from "lucide-react"
+import { Home, Users, Calendar, ShoppingBag, LogOut, Menu, X, Settings, Dumbbell, BarChart3, UserCircle, Mail, Receipt } from "lucide-react"
 import { useTheme } from '../../context/ThemeContext';
 
 const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
@@ -28,6 +28,21 @@ const AdminSidebar = ({ sidebarOpen, setSidebarOpen }) => {
       name: "Products",
       path: "/admin/products",
       icon: ShoppingBag,
+    },
+    {
+      name: "Members",
+      path: "/admin/members",
+      icon: UserCircle,
+    },
+    {
+      name: "Campaigns",
+      path: "/admin/email/campaigns",
+      icon: Mail,
+    },
+    {
+      name: "Bill email",
+      path: "/admin/email/bill",
+      icon: Receipt,
     },
     {
       name: "Analytics",
