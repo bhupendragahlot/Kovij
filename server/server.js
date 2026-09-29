@@ -64,6 +64,7 @@ app.use("/uploads", express.static(uploadDir));
 
 const apiRouter = express.Router();
 apiRouter.use(apiLimiter);
+app.use("/api", apiRouter);
 
 apiRouter.use("/", emailRoutes);
 apiRouter.use("/auth", authRoutes);
@@ -78,7 +79,6 @@ apiRouter.use("/campaigns", campaignRoutes);
 apiRouter.use("/admin/members", adminMemberRoutes);
 apiRouter.use("/admin/payments", adminPaymentRoutes);
 
-app.use("/api", apiRouter);
 
 mongoose
   .connect(process.env.MONGO_URI)
