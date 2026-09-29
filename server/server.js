@@ -4,7 +4,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import path from "path";
-import helmet from "helmet";
+// import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import morgan from "morgan";
 import fs from "fs";
@@ -43,7 +43,7 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+// app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(
   cors({
     origin: process.env.CORS_ORIGIN || true,
