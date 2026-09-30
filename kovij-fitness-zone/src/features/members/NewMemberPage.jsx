@@ -14,7 +14,7 @@ import { openReceipt } from "../payments/api";
 import { useIdempotencyKey } from "../../shared/hooks/useIdempotencyKey";
 import { useOnlineStatus } from "../../shared/hooks/useOnlineStatus";
 import { useUnsavedChangesGuard } from "../../shared/hooks/useUnsavedChangesGuard";
-import { Button, Card, CardHeader, FormError, InlineAlert, PageHeader, SkeletonList, Switch, useToast } from "../../shared/ui";
+import { Button, Card, CardHeader, ErrorState, FormError, InlineAlert, PageHeader, SkeletonList, Switch, useToast } from "../../shared/ui";
 import { formatINR, formatPhone } from "../../shared/lib/format";
 
 function DuplicateNotice({ matches, onForce, forced }) {
@@ -54,6 +54,7 @@ export default function NewMemberPage() {
   const settings = useSettings();
   const canOverridePrice = usePermission("price.override");
   const canSell = usePermission("memberships.sell");
+  const canRegister = usePermission("members.edit");
   const create = useCreateMember();
   const idempotency = useIdempotencyKey();
 
@@ -131,6 +132,17 @@ export default function NewMemberPage() {
   };
 
   const submitLabel = !withPlan || !plan ? "Register member" : sale.collect === "now" ? `Register and collect ${formatINR(total)}` : "Register, payment due";
+
+  if (!canRegister) {
+    return (
+      <>
+        <PageHeader title="New member" back={{ to: "/admin/members", label: "Members" }} />
+        <Card>
+          <ErrorState error={{ status: 403, message: "Registering members is done at the front desk. Ask a desk colleague or the manager." }} />
+        </Card>
+      </>
+    );
+  }
 
   return (
     <>

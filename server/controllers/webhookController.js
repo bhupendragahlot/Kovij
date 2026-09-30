@@ -2,7 +2,7 @@ import { AppError } from '../middleware/errorHandler.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { logger } from '../utils/logger.js';
 import { gatewayConfig, recordGatewayPayment, verifyWebhookSignature } from '../services/onlinePaymentService.js';
-import { sendReceipt } from '../services/receiptService.js';
+import { notifyMembershipActivated, sendReceipt } from '../services/receiptService.js';
 
 const RECORD_EVENTS = new Set(['payment.captured', 'order.paid']);
 
@@ -39,6 +39,7 @@ export const razorpayWebhook = asyncHandler(async (req, res) => {
     });
     if (!result.replayed) {
       sendReceipt(result.payment._id, { auto: true }).catch((e) => logger.warn(`Online receipt failed for ${result.payment._id}: ${e.message}`));
+      notifyMembershipActivated(result.activatedMembership).catch((e) => logger.warn(`Activation notice failed: ${e.message}`));
     }
     res.json({ success: true, recorded: !result.replayed, replayed: result.replayed });
   } catch (e) {

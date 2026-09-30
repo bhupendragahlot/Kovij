@@ -21,7 +21,7 @@ function PerformanceRow({ perf }) {
   return (
     <div className="mt-4 rounded-tile bg-surface-2 p-3">
       <p className="mb-1.5 text-[12px] font-semibold text-ink-3">Last 30 days</p>
-      <dl className="grid grid-cols-3 gap-2 sm:grid-cols-5" aria-label="Coaching in the last 30 days">
+      <dl className="grid grid-cols-3 gap-x-2 gap-y-2.5" aria-label="Coaching in the last 30 days">
       {items.map((i) => (
         <div key={i.label} className="min-w-0">
           <dt className="truncate text-[12px] text-ink-3">{i.label}</dt>

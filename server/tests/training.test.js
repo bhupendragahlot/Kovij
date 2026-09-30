@@ -143,6 +143,12 @@ test('schedules: validation, ordering and a readable summary', () => {
   assert.equal(normalizeSchedule(week)[0].shifts[0].start, '06:00');
   assert.equal(summarizeSchedule(week), 'Mon–Fri 6 am–11 am, 4 pm–9 pm · Sat 6 am–11 am');
   assert.equal(summarizeSchedule([]), '');
+  const alternate = [1, 3, 5].map((day) => ({ day, shifts: [{ start: '07:00', end: '10:00' }] }));
+  assert.equal(summarizeSchedule(alternate), 'Mon, Wed, Fri 7 am–10 am');
+  assert.equal(
+    summarizeSchedule([...[1, 2, 3, 5].map((day) => ({ day, shifts: [{ start: '06:00', end: '09:30' }] })), { day: 0, shifts: [{ start: '08:00', end: '12:00' }] }]),
+    'Sun 8 am–12 pm · Mon–Wed, Fri 6 am–9:30 am'
+  );
   assert.equal(formatClock('00:30'), '12:30 am');
   assert.equal(formatClock('12:00'), '12 pm');
 

@@ -121,7 +121,7 @@ function MembersTab({ filters, setFilters, myTrainer }) {
       ),
     },
     { id: "status", header: "Membership", hideBelow: "lg", cell: (m) => <StatusBadge kind="member" status={m.state} size="sm" /> },
-    { id: "trainer", header: "Trainer", hideBelow: "lg", cell: (m) => <span className="text-ink-2">{m.trainer?.name || "—"}</span> },
+    { id: "trainer", header: "Trainer", hideBelow: "lg", cell: (m) => <span className="whitespace-nowrap text-ink-2">{m.trainer?.name || "—"}</span> },
     { id: "plan", header: "Workout plan", cell: planCell },
     { id: "last", header: "Last session", cell: (m) => <span className="whitespace-nowrap text-ink-2">{lastSession(m)}</span> },
     { id: "visits", header: "Visits (30 days)", align: "right", hideBelow: "xl", cell: (m) => m.visits30 },

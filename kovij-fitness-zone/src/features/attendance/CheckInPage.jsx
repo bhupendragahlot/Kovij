@@ -197,14 +197,18 @@ function TodayList({ attendance }) {
                 <Link to={`/admin/members/${a.memberId._id}`} className="block truncate text-sm font-semibold text-ink hover:underline">
                   {a.memberId.name}
                 </Link>
-                {a.checkedOutAt && <span className="block text-[12px] text-ink-3">Left {formatTime(a.checkedOutAt)}, {formatDuration(a.durationMinutes)}</span>}
+                {a.checkedOutAt && (
+                  <span className="block truncate text-[12px] text-ink-3">
+                    Left {formatTime(a.checkedOutAt)} · {formatDuration(a.durationMinutes)}
+                  </span>
+                )}
               </span>
               {a.membershipStatus !== "active" && (
                 <Badge tone="warn" size="sm" icon={DoorOpen}>
                   Let in once
                 </Badge>
               )}
-              {a.status !== "in" && <VisitStatusBadge status={a.status} />}
+              {a.status === "no_check_out" && <VisitStatusBadge status={a.status} />}
               <Menu
                 label={`Actions for ${a.memberId.name}`}
                 trigger={(props) => <IconButton {...props} icon={Ellipsis} label={`Actions for ${a.memberId.name}`} size="sm" />}

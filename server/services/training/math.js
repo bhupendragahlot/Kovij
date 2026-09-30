@@ -258,24 +258,36 @@ export function formatClock(hhmm) {
   return `${h12}${m ? `:${String(m).padStart(2, '0')}` : ''} ${h < 12 ? 'am' : 'pm'}`;
 }
 
+/** [1,2,3,5] → "Mon–Wed, Fri" (runs of 3+ days use a dash). */
+function dayRuns(days) {
+  const runs = [];
+  for (const d of days) {
+    const last = runs[runs.length - 1];
+    if (last && last.to === d - 1) last.to = d;
+    else runs.push({ from: d, to: d });
+  }
+  return runs
+    .flatMap((r) =>
+      r.to - r.from >= 2
+        ? [`${WEEKDAY_SHORT[r.from]}–${WEEKDAY_SHORT[r.to]}`]
+        : Array.from({ length: r.to - r.from + 1 }, (_, i) => WEEKDAY_SHORT[r.from + i])
+    )
+    .join(', ');
+}
+
 /**
  * One line a member or desk can read: "Mon–Fri 6 am–11 am, 4 pm–9 pm · Sat 6 am–11 am".
- * Consecutive days with the same shifts are grouped. Empty string when there is no schedule.
+ * Days with the same shifts are grouped ("Mon, Wed, Fri 7 am–10 am"). Empty when there is no schedule.
  */
 export function summarizeSchedule(schedule = []) {
-  const days = normalizeSchedule(schedule);
-  const key = (d) => d.shifts.map((s) => `${s.start}-${s.end}`).join(',');
-  const groups = [];
-  for (const d of days) {
-    const last = groups[groups.length - 1];
-    if (last && last.key === key(d) && last.to === d.day - 1) last.to = d.day;
-    else groups.push({ from: d.day, to: d.day, key: key(d), shifts: d.shifts });
+  const groups = new Map();
+  for (const d of normalizeSchedule(schedule)) {
+    const key = d.shifts.map((s) => `${s.start}-${s.end}`).join(',');
+    if (!groups.has(key)) groups.set(key, { days: [], shifts: d.shifts });
+    groups.get(key).days.push(d.day);
   }
-  return groups
-    .map((g) => {
-      const label = g.from === g.to ? WEEKDAY_SHORT[g.from] : `${WEEKDAY_SHORT[g.from]}–${WEEKDAY_SHORT[g.to]}`;
-      return `${label} ${g.shifts.map((s) => `${formatClock(s.start)}–${formatClock(s.end)}`).join(', ')}`;
-    })
+  return [...groups.values()]
+    .map((g) => `${dayRuns(g.days)} ${g.shifts.map((s) => `${formatClock(s.start)}–${formatClock(s.end)}`).join(', ')}`)
     .join(' · ');
 }
 

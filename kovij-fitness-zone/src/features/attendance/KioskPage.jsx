@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useBlocker, useNavigate } from "react-router-dom";
+import { useBlocker, useLocation, useNavigate } from "react-router-dom";
 import {
   Camera,
   CircleAlert,
@@ -402,7 +402,10 @@ function KioskSetup({ onStart }) {
                 <Input type="password" inputMode="numeric" autoComplete="new-password" maxLength={6} value={pin2} onChange={(e) => setPin2(e.target.value.replace(/\D/g, ""))} />
               </Field>
             </div>
-            <Field label="Camera">
+            <div className="flex flex-col gap-1.5">
+              <p className="text-sm font-semibold text-ink" aria-hidden>
+                Camera
+              </p>
               <SegmentedControl
                 label="Camera"
                 block
@@ -413,7 +416,7 @@ function KioskSetup({ onStart }) {
                   { value: "environment", label: "Back" },
                 ]}
               />
-            </Field>
+            </div>
             <Switch checked={sound} onChange={setSound} label="Beep on each scan" description="A rising tone for welcome, a low tone for “see the desk”." />
             <InlineAlert tone="info">
               On a shared tablet, also turn on screen pinning (Android) or Guided Access (iPad) so the browser can't be closed.
@@ -490,10 +493,23 @@ function KioskRunner({ config, onExit }) {
   }, [mode, exitOpen]);
 
   // Browser back, or any link, needs the PIN. Session expiry may still go to the sign-in page.
-  const blocker = useBlocker(useCallback(({ nextLocation }) => !allowLeave.current && !nextLocation.pathname.startsWith("/admin/login"), []));
+  const blocker = useBlocker(
+    useCallback(
+      ({ nextLocation }) => !allowLeave.current && !nextLocation.state?.kioskGuard && !nextLocation.pathname.startsWith("/admin/login"),
+      []
+    )
+  );
   useEffect(() => {
     if (blocker.state === "blocked") setExitOpen(true);
   }, [blocker.state]);
+
+  // A kiosk opened in a fresh tab has nothing behind it, so "back" would leave the app where no
+  // PIN can be asked. One extra history entry keeps the first "back" inside the app.
+  const location = useLocation();
+  const guarded = Boolean(location.state?.kioskGuard);
+  useEffect(() => {
+    if (!guarded) navigate(location.pathname, { state: { kioskGuard: true } });
+  }, [guarded, navigate, location.pathname]);
 
   const process = useCallback(
     async (code) => {

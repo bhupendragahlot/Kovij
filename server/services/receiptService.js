@@ -176,6 +176,29 @@ export async function loadReceipt(paymentId, { memberId } = {}) {
 }
 
 /**
+ * A payment settled the last due on a waiting membership, so it started: tell the member once
+ * (in-app + the existing welcome email). Safe to call from every payment path.
+ */
+export async function notifyMembershipActivated(membership, { createdBy } = {}) {
+  if (!membership) return null;
+  const settings = await getSettingsDoc();
+  const until = toGymTime(membership.endDate).format('DD MMM YYYY');
+  return notifyMember({
+    memberId: membership.memberId,
+    kind: 'membership_active',
+    title: `Your ${membership.planName || 'membership'} is active`,
+    body: `Paid in full. Your plan runs until ${until}.`,
+    link: '/member/membership',
+    email: {
+      templateKey: 'welcome',
+      vars: { planName: membership.planName, startDate: membership.startDate, endDate: membership.endDate, gymName: settings.gymName },
+    },
+    dedupeKey: `membership-active:${membership._id}`,
+    createdBy,
+  });
+}
+
+/**
  * Tell the member about a payment and email them the receipt (through notifyMember, so it shows
  * in the member app and respects their email choice).
  *   auto: true   sent once per payment (dedupeKey), e.g. after an online or UPI payment is confirmed

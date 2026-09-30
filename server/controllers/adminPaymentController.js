@@ -3,7 +3,6 @@ import Member from '../models/Member.js';
 import Membership from '../models/Membership.js';
 import { getSettingsDoc } from '../models/Settings.js';
 import { can } from '../config/permissions.js';
-import { queueEmail } from '../services/emailService.js';
 import {
   assertModeAccepted,
   buildPaymentFilter,
@@ -14,7 +13,7 @@ import {
   roundMoney,
 } from '../services/paymentService.js';
 import { memberSearchFilter } from '../services/memberService.js';
-import { loadReceipt, paymentModeLabel, paymentTypeLabel, sendReceipt } from '../services/receiptService.js';
+import { loadReceipt, notifyMembershipActivated, paymentModeLabel, paymentTypeLabel, sendReceipt } from '../services/receiptService.js';
 import { reviewUpiReference } from '../services/upiVerificationService.js';
 import { publicGatewayStatus } from '../services/onlinePaymentService.js';
 import { sendCsv, toCsv } from '../services/csvExport.js';
@@ -22,6 +21,7 @@ import { withTransaction } from '../utils/db.js';
 import { escapeRegex } from '../utils/strings.js';
 import { toGymTime } from '../utils/time.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { logger } from '../utils/logger.js';
 import { AppError } from '../middleware/errorHandler.js';
 
 const canSeeRevenue = (req) => can(req.staffUser.role, 'revenue.view');
@@ -199,18 +199,9 @@ export const collectPayment = asyncHandler(async (req, res) => {
   );
 
   if (activatedMembership) {
-    const member = await Member.findById(payment.memberId).lean();
-    queueEmail({
-      to: member?.email,
-      templateKey: 'welcome',
-      vars: {
-        name: member?.name,
-        planName: activatedMembership.planName,
-        startDate: activatedMembership.startDate,
-        endDate: activatedMembership.endDate,
-        gymName: settings.gymName,
-      },
-    }).catch(() => {});
+    notifyMembershipActivated(activatedMembership, { createdBy: req.staffUser.id }).catch((e) =>
+      logger.warn(`Activation notice failed for ${activatedMembership._id}: ${e.message}`)
+    );
   }
   res.json({ success: true, payment, due, partial, balance: due ? due.amount : 0, activatedMembership });
 });

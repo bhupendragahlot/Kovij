@@ -35,6 +35,9 @@ export function TrainerMembersDialog({ open, trainer, onClose }) {
   const [q, setQ] = useState("");
   const [page, setPage] = useState(1);
   const [adding, setAdding] = useState([]);
+  // Toasts sit behind an open dialog, so confirm changes inside the drawer too.
+  const [notice, setNotice] = useState(null);
+  const [pickerKey, setPickerKey] = useState(0);
   const term = useDebouncedValue(q.trim(), 250);
   const list = useTrainerMembers(trainer?._id, { q: term || undefined, page, limit: LIMIT }, { enabled: open });
   const assign = useAssignTrainerMembers();
@@ -47,6 +50,7 @@ export function TrainerMembersDialog({ open, trainer, onClose }) {
     setQ("");
     setPage(1);
     setAdding([]);
+    setNotice(null);
     assign.reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
@@ -58,10 +62,12 @@ export function TrainerMembersDialog({ open, trainer, onClose }) {
       { trainerId: trainer._id, memberIds: adding.map((m) => m._id) },
       {
         onSuccess: (d) => {
-          toast.success(`${d.assigned} ${d.assigned === 1 ? "member" : "members"} assigned to ${trainer.name}`, {
-            description: d.moved ? `${d.moved} moved from another trainer.` : undefined,
-          });
+          const title = `${d.assigned === 1 ? adding[0].name : `${d.assigned} members`} assigned to ${trainer.name}`;
+          const description = d.moved ? `${d.moved} moved from another trainer.` : undefined;
+          toast.success(title, { description });
+          setNotice([title, description].filter(Boolean).join(". "));
           setAdding([]);
+          setPickerKey((k) => k + 1);
         },
       }
     );
@@ -76,7 +82,14 @@ export function TrainerMembersDialog({ open, trainer, onClose }) {
     if (!ok) return;
     unassign.mutate(
       { trainerId: trainer._id, memberId: m._id },
-      { onSuccess: () => toast.success(`${m.name} removed from ${trainer.name}`), onError: (e) => toast.error("Couldn't remove the member", { description: e.message }) }
+      {
+        onSuccess: () => {
+          toast.success(`${m.name} removed from ${trainer.name}`);
+          setNotice(`${m.name} removed from ${trainer.name}`);
+        },
+        // Shown by the FormError at the top of the drawer.
+        onError: () => setNotice(null),
+      }
     );
   };
 
@@ -91,8 +104,13 @@ export function TrainerMembersDialog({ open, trainer, onClose }) {
             <InlineAlert tone="warning">{trainer.name} is marked as not working here. Change that to assign members.</InlineAlert>
           ) : (
             <>
-              <FormError error={assign.error} />
-              <MemberMultiPicker value={adding} onChange={setAdding} max={200} error={assign.error?.fields?.memberIds} />
+              {notice && (
+                <InlineAlert tone="success" className="mb-3">
+                  {notice}
+                </InlineAlert>
+              )}
+              <FormError error={assign.error || unassign.error} />
+              <MemberMultiPicker key={pickerKey} value={adding} onChange={(v) => (setAdding(v), setNotice(null))} max={200} error={assign.error?.fields?.memberIds} />
               {adding.length > 0 && (
                 <Button className="mt-3" variant="primary" icon={UserPlus} block loading={assign.isPending} disabled={!online} onClick={onAssign}>
                   Assign {adding.length} {adding.length === 1 ? "member" : "members"}

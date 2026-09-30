@@ -11,7 +11,7 @@ import { asyncHandler } from '../utils/asyncHandler.js';
 import { logger } from '../utils/logger.js';
 import { toObjectId } from '../utils/db.js';
 import { roundMoney, submitUpiReference } from '../services/paymentService.js';
-import { loadReceipt, paymentModeLabel, paymentTypeLabel, sendReceipt } from '../services/receiptService.js';
+import { loadReceipt, notifyMembershipActivated, paymentModeLabel, paymentTypeLabel, sendReceipt } from '../services/receiptService.js';
 import { upiIntentForDue } from '../services/upiVerificationService.js';
 import {
   fetchGatewayPayment,
@@ -177,6 +177,7 @@ export const verifyOnlinePayment = asyncHandler(async (req, res) => {
   const result = await recordGatewayPayment({ orderId, gatewayPaymentId, amountPaise: gp.amount, method: gp.method, source: 'checkout' });
   if (!result.replayed) {
     sendReceipt(result.payment._id, { auto: true }).catch((e) => logger.warn(`Online receipt failed for ${result.payment._id}: ${e.message}`));
+    notifyMembershipActivated(result.activatedMembership).catch((e) => logger.warn(`Activation notice failed: ${e.message}`));
   }
   const payment = await Payment.findById(result.payment._id).populate('membershipId', 'planName').lean();
   res.json({ success: true, status: 'paid', replayed: result.replayed, payment: toMemberPayment(payment), activatedMembership: Boolean(result.activatedMembership) });

@@ -10,7 +10,7 @@ import { withTransaction } from '../utils/db.js';
 import { logger } from '../utils/logger.js';
 import { notifyMember } from './notify.js';
 import { assertUtrUnused, buildUpiLink, collectDue, roundMoney } from './paymentService.js';
-import { paymentTypeLabel, sendReceipt } from './receiptService.js';
+import { notifyMembershipActivated, paymentTypeLabel, sendReceipt } from './receiptService.js';
 import './emailTemplates/paymentTemplates.js';
 
 /** What the member app needs to open a UPI app (or show a QR) for one of the member's dues. */
@@ -99,6 +99,7 @@ export async function reviewUpiReference(dueId, { decision, reason, amount }, st
   if (result.missing) await explainNothingToVerify(dueId);
 
   sendReceipt(result.payment._id, { auto: true, createdBy: staff.id }).catch((e) => logger.warn(`UPI receipt failed for ${result.payment._id}: ${e.message}`));
+  notifyMembershipActivated(result.activatedMembership, { createdBy: staff.id }).catch((e) => logger.warn(`Activation notice failed: ${e.message}`));
   const due = await Payment.findById(dueId).lean();
   return { decision, payment: result.payment, due, activatedMembership: result.activatedMembership };
 }

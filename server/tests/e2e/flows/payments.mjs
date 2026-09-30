@@ -23,6 +23,11 @@ await setPayments({ upiId: 'kovij@okicici', payeeName: 'Kovij Fitness', allowPar
 const plan = await createPlan(T, { price: 1500 });
 const dueFor = async (memberId) =>
   (await call('GET', `/admin/payments?status=pending&memberId=${memberId}`, { token: T })).body.payments;
+const inboxKinds = async (token) => {
+  const r = await call('GET', '/member/notifications', { token });
+  const list = r.body?.notifications || r.body?.items || [];
+  return r.status === 200 ? list.map((n) => n.kind) : null;
+};
 const finance = async () => (await call('GET', `/admin/finance/overview?month=${thisMonth}`, { token: T })).body;
 
 // ── Permissions: trainers never reach money; the front desk can collect but not refund or see revenue
@@ -133,6 +138,8 @@ const finance = async () => (await call('GET', `/admin/finance/overview?month=${
   await call('POST', `/admin/payments/${due._id}/collect`, { token: D, body: { mode: 'cash' }, idem: key() });
   const done = await call('GET', '/membership/me', { token: mt });
   check('paying the rest activates the plan', done.body.membership?.status === 'active' && done.body.dues?.amount === 0, { s: done.body.membership?.status, d: done.body.dues });
+  const kinds = await inboxKinds(mt);
+  check('member is told the plan is active (in-app)', kinds === null || kinds.includes('membership_active'), kinds);
 }
 
 // ── Desk payments: accepted modes, filters, totals per mode, CSV, refunds (excluded from revenue)
@@ -264,6 +271,8 @@ let ptPayment;
   check('no receipt for an unpaid bill (409)', (await call('GET', `/member/payments/${otherDue.id}/receipt`, { token: other.token })).status === 409);
   check('member views one payment', (await call('GET', `/member/payments/${due.id}`, { token: mt })).body.payment?.status === 'paid');
   check('member emails themselves a copy', (await call('POST', `/member/payments/${due.id}/email-receipt`, { token: mt })).status === 200);
+  const kinds = await inboxKinds(mt);
+  check('member was told about the rejection and got the receipt (in-app)', kinds === null || (kinds.includes('payment_verification') && kinds.includes('receipt')), kinds);
   check('legacy portal list still works', (await call('GET', '/payments/me', { token: mt })).body.payments?.some((p) => p._id === due.id));
   check('legacy portal bill still works', (await call('GET', `/payments/${due.id}/bill`, { token: mt, raw: true })).text?.includes(due.invoiceNo));
 
