@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const role = z.enum(['admin', 'manager', 'staff']);
+const role = z.enum(['admin', 'manager', 'staff', 'trainer']);
 const password = z.string().min(8, 'Use at least 8 characters').max(128);
 
 export const loginSchema = z.object({

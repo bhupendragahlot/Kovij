@@ -34,6 +34,25 @@ const TrainersPage = lazy(() => import("./features/catalog/TrainersPage"));
 const CampaignsPage = lazy(() => import("./features/campaigns/CampaignsPage"));
 const SettingsPage = lazy(() => import("./features/settings/SettingsPage"));
 const NotFoundPage = lazy(() => import("./layouts/crm/NotFoundPage"));
+// Platform modules (each file owned by one module; see docs/platform/README.md)
+const RenewalsPage = lazy(() => import("./features/renewals/RenewalsPage"));
+const AttendancePage = lazy(() => import("./features/attendance/AttendancePage"));
+const KioskPage = lazy(() => import("./features/attendance/KioskPage"));
+const RevenuePage = lazy(() => import("./features/finance/RevenuePage"));
+const ExpensesPage = lazy(() => import("./features/expenses/ExpensesPage"));
+const WorkoutsPage = lazy(() => import("./features/workouts/WorkoutsPage"));
+const WorkoutPlanPage = lazy(() => import("./features/workouts/WorkoutPlanPage"));
+const ExerciseLibraryPage = lazy(() => import("./features/workouts/ExerciseLibraryPage"));
+const DietPlansPage = lazy(() => import("./features/diet/DietPlansPage"));
+const DietPlanPage = lazy(() => import("./features/diet/DietPlanPage"));
+const AnnouncementsPage = lazy(() => import("./features/announcements/AnnouncementsPage"));
+const ActivityLogPage = lazy(() => import("./features/activity/ActivityLogPage"));
+const ReportsPage = lazy(() => import("./features/reports/ReportsPage"));
+const SupportInboxPage = lazy(() => import("./features/support/SupportInboxPage"));
+const ForgotPasswordPage = lazy(() => import("./features/auth/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("./features/auth/ResetPasswordPage"));
+
+const standalone = (page) => <Suspense fallback={<div className="min-h-dvh bg-canvas" />}>{page}</Suspense>;
 
 const staffShell = (
   <Suspense fallback={<div className="min-h-dvh bg-canvas" />}>
@@ -55,6 +74,20 @@ const router = createBrowserRouter([
     ),
     handle: { title: "Sign in" },
   },
+  { path: "/admin/forgot-password", element: standalone(<ForgotPasswordPage />), handle: { title: "Reset password" } },
+  { path: "/admin/reset-password", element: standalone(<ResetPasswordPage />), handle: { title: "Choose a new password" } },
+  {
+    // Full-screen QR check-in for a tablet at the entrance (staff signed in, no app chrome).
+    path: "/admin/kiosk",
+    element: standalone(
+      <ConfirmProvider>
+        <RequireStaff>
+          <KioskPage />
+        </RequireStaff>
+      </ConfirmProvider>
+    ),
+    handle: { title: "Check-in kiosk" },
+  },
   {
     path: "/admin",
     element: staffShell,
@@ -72,6 +105,19 @@ const router = createBrowserRouter([
       { path: "campaigns", element: <CampaignsPage />, handle: { title: "Campaigns" } },
       { path: "email/campaigns", element: <Navigate to="/admin/campaigns" replace /> },
       { path: "settings", element: <SettingsPage />, handle: { title: "Settings" } },
+      { path: "renewals", element: <RenewalsPage />, handle: { title: "Renewals" } },
+      { path: "attendance", element: <AttendancePage />, handle: { title: "Attendance" } },
+      { path: "revenue", element: <RevenuePage />, handle: { title: "Revenue" } },
+      { path: "expenses", element: <ExpensesPage />, handle: { title: "Expenses" } },
+      { path: "workouts", element: <WorkoutsPage />, handle: { title: "Workout plans" } },
+      { path: "workouts/:id", element: <WorkoutPlanPage />, handle: { title: "Workout plan" } },
+      { path: "exercises", element: <ExerciseLibraryPage />, handle: { title: "Exercise library" } },
+      { path: "diets", element: <DietPlansPage />, handle: { title: "Diet plans" } },
+      { path: "diets/:id", element: <DietPlanPage />, handle: { title: "Diet plan" } },
+      { path: "announcements", element: <AnnouncementsPage />, handle: { title: "Announcements" } },
+      { path: "activity", element: <ActivityLogPage />, handle: { title: "Activity log" } },
+      { path: "reports", element: <ReportsPage />, handle: { title: "Reports" } },
+      { path: "support", element: <SupportInboxPage />, handle: { title: "Support inbox" } },
       { path: "*", element: <NotFoundPage />, handle: { title: "Not found" } },
     ],
   },

@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { KeyRound, Monitor, Moon, Plus, Sun, UserRoundX, UserRoundCheck } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useSaveStaff, useSettings, useStaff, useUpdateSettings } from "./api";
-import { usePermission } from "../auth/permissions";
-import { selectStaffUser } from "../auth/sessionSlice";
+import { can, usePermission } from "../auth/permissions";
+import { selectRole, selectStaffUser } from "../auth/sessionSlice";
+import { SETTINGS_SECTIONS } from "./settingsExtensions";
 import { useThemeControls } from "../../app/theme";
 import { useUrlState } from "../../shared/hooks/useUrlState";
 import {
@@ -289,9 +290,14 @@ export default function SettingsPage() {
   const canManage = usePermission("settings.manage");
   const canManageStaff = usePermission("staff.manage");
 
+  const role = useSelector(selectRole);
+  const sections = SETTINGS_SECTIONS.filter((s) => can(role, s.permission));
+  const section = sections.find((s) => s.value === tab);
+
   const tabs = [
     { value: "gym", label: "Gym and billing" },
     { value: "website", label: "Website" },
+    ...sections.map(({ value, label }) => ({ value, label })),
     canManageStaff && { value: "staff", label: "Staff" },
     { value: "appearance", label: "Appearance" },
   ].filter(Boolean);
@@ -315,6 +321,16 @@ export default function SettingsPage() {
             <Card padding="lg">
               <SettingsForm fields={tab === "gym" ? GYM_FIELDS : WEBSITE_FIELDS} settings={settings.data} readOnly={!canManage} />
             </Card>
+          ))}
+        {section &&
+          (settings.isPending ? (
+            <Card><SkeletonList rows={4} /></Card>
+          ) : settings.isError ? (
+            <Card><ErrorState error={settings.error} onRetry={() => settings.refetch()} /></Card>
+          ) : (
+            <Suspense fallback={<Card><SkeletonList rows={4} /></Card>}>
+              <section.Component settings={settings.data} readOnly={!canManage} />
+            </Suspense>
           ))}
         {tab === "staff" && canManageStaff && <StaffSection />}
         {tab === "appearance" && <AppearanceSection />}

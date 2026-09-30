@@ -1,14 +1,19 @@
-import { useState } from "react";
-import { useParams, useSearchParams } from "react-router-dom";
+import { Suspense, useState } from "react";
+import { useSelector } from "react-redux";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import {
   Ban,
+  CalendarPlus,
+  Camera,
   Ellipsis,
   FileText,
   IndianRupee,
   Mail,
   MessageCircle,
+  PauseCircle,
   Pencil,
   Phone,
+  PlayCircle,
   RefreshCw,
   ScanLine,
   Send,
@@ -17,10 +22,18 @@ import {
 import { useCancelMembership, useMember } from "./api";
 import { SellPlanDialog } from "./SellPlanDialog";
 import { EditMemberDialog } from "./EditMemberDialog";
+import { ExtendPlanDialog, FreezePlanDialog } from "./MembershipActions";
+import { useUnfreezeAction } from "./useUnfreezeAction";
+import { MembershipTimeline } from "./MembershipTimeline";
+import { ProfilePhotoDialog } from "./PhotoField";
+import { MemberStateBadge, PlanStatusBadge } from "./StatusBadges";
+import { REFERRAL_CHANNEL_LABEL } from "./memberStatus";
 import { useCheckInFlow } from "../attendance/useCheckInFlow";
 import { CollectPaymentDialog, ReceiptButton, RecordPaymentDialog } from "../payments/components";
 import { useSendReceipt } from "../payments/api";
-import { usePermission } from "../auth/permissions";
+import { can } from "../auth/permissions";
+import { selectRole } from "../auth/sessionSlice";
+import { PROFILE_ACTIONS, PROFILE_TABS } from "./profileExtensions";
 import { http } from "../../app/http";
 import {
   Avatar,
@@ -42,15 +55,10 @@ import {
   useConfirm,
   useToast,
 } from "../../shared/ui";
-import {
-  daysUntil,
-  formatDate,
-  formatINR,
-  formatRelativeTime,
-  formatPhone,
-  phoneHref,
-} from "../../shared/lib/format";
+import { daysUntil, formatDate, formatINR, formatRelativeTime, formatPhone, phoneHref } from "../../shared/lib/format";
 import { GOAL_LABEL, LEAD_SOURCE_LABEL, PAYMENT_MODE_LABEL, PAYMENT_TYPE_LABEL } from "../../shared/domain/status";
+
+const CURRENT = ["active", "paused"];
 
 function DetailList({ items }) {
   return (
@@ -65,6 +73,17 @@ function DetailList({ items }) {
         ))}
     </dl>
   );
+}
+
+const dayCount = (n) => `${n} ${n === 1 ? "day" : "days"}`;
+
+function planSubline(member, c) {
+  if (member.state === "expired") return `Ended ${formatDate(c.endDate)}`;
+  if (member.state === "upcoming") return `Starts ${formatDate(c.startDate)}`;
+  if (member.state === "pending") return "Starts when payment is collected";
+  if (member.state === "paused") return `Frozen until ${formatDate(c.freeze?.endDate)}, then ends ${formatDate(c.endDate)}`;
+  const left = daysUntil(c.endDate);
+  return `Ends ${formatDate(c.endDate)}, ${left === 0 ? "today" : `${dayCount(left)} left`}`;
 }
 
 function PlanTile({ member, memberships }) {
@@ -82,23 +101,22 @@ function PlanTile({ member, memberships }) {
   const total = Math.max(1, Math.round((new Date(c.endDate) - new Date(c.startDate)) / 86_400_000));
   const left = daysUntil(c.endDate);
   const showMeter = ["active", "expiring"].includes(member.state);
+  const booked = member.state !== "paused" && c.freeze;
   return (
     <Card>
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-semibold text-ink-2">Plan</p>
-        <StatusBadge kind="member" status={member.state} size="sm" />
+        <MemberStateBadge status={member.state} size="sm" />
       </div>
       <p className="mt-2 truncate text-lg font-bold">{c.planName}</p>
-      <p className="mt-0.5 text-[13px] text-ink-3">
-        {member.state === "expired"
-          ? `Ended ${formatDate(c.endDate)}`
-          : member.state === "upcoming"
-            ? `Starts ${formatDate(c.startDate)}`
-            : member.state === "pending"
-              ? "Starts when payment is collected"
-              : `Ends ${formatDate(c.endDate)}, ${left === 0 ? "today" : `${left} ${left === 1 ? "day" : "days"} left`}`}
-      </p>
+      <p className="mt-0.5 text-[13px] text-ink-3">{planSubline(member, c)}</p>
       {showMeter && <Meter className="mt-3" value={total - Math.max(0, left)} max={total} label="Plan days used" />}
+      {booked && (
+        <p className="mt-3 flex items-center gap-1.5 text-[13px] font-semibold text-info">
+          <PauseCircle className="size-3.5" aria-hidden />
+          Freeze booked from {formatDate(c.freeze.startDate)} for {dayCount(c.freeze.days)}
+        </p>
+      )}
       {next && member.state !== "upcoming" && (
         <p className="mt-3 text-[13px] font-semibold text-info">
           Then {next.planName} from {formatDate(next.startDate)}
@@ -114,8 +132,21 @@ export default function MemberProfilePage() {
   const detail = useMember(id);
   const { checkIn, isPending: checkingIn, dialog: checkInDialog } = useCheckInFlow();
   const cancelMembership = useCancelMembership(id);
+  const unfreeze = useUnfreezeAction();
   const sendReceipt = useSendReceipt();
-  const canCancel = usePermission("membership.cancel");
+  const role = useSelector(selectRole);
+  const allowed = (p) => can(role, p);
+  const canEdit = allowed("members.edit");
+  const canCheckIn = allowed("attendance.checkin");
+  const canSell = allowed("memberships.sell");
+  const canFreeze = allowed("memberships.freeze");
+  const canExtend = allowed("memberships.extend");
+  const canCancel = allowed("membership.cancel");
+  const canCollect = allowed("payments.collect");
+  const canSeePayments = allowed("payments.view");
+  const canSeeHealth = allowed("members.health.view");
+  const extraTabs = PROFILE_TABS.filter((t) => can(role, t.permission));
+  const extraActions = PROFILE_ACTIONS.filter((a) => can(role, a.permission));
   const confirm = useConfirm();
   const toast = useToast();
   const [tab, setTab] = useState("overview");
@@ -129,10 +160,11 @@ export default function MemberProfilePage() {
 
   const { member, profile, memberships, payments, attendance } = detail.data;
   const dues = payments.filter((p) => p.status === "pending");
-  const cancellable = memberships.find((m) => ["active", "upcoming", "pending"].includes(m.status));
+  const current = memberships.find((m) => CURRENT.includes(m.status));
+  const cancellable = memberships.find((m) => [...CURRENT, "upcoming", "pending"].includes(m.status));
 
   // "Pay" from elsewhere: settle the oldest due if there is one, otherwise record a new payment.
-  const payAction = action === "pay";
+  const payAction = action === "pay" && canCollect;
   const payDue = payAction && dues.length ? dues[dues.length - 1] : null;
 
   const onCancelPlan = async () => {
@@ -144,14 +176,19 @@ export default function MemberProfilePage() {
       tone: "danger",
     });
     if (!ok) return;
-    cancelMembership.mutate(cancellable._id, {
-      onSuccess: () => toast.success(`${cancellable.planName} cancelled`),
-      onError: (e) => toast.error("Couldn't cancel the plan", { description: e.message }),
-    });
+    cancelMembership.mutate(
+      { membershipId: cancellable._id },
+      {
+        onSuccess: () => toast.success(`${cancellable.planName} cancelled`),
+        onError: (e) => toast.error("Couldn't cancel the plan", { description: e.message }),
+      }
+    );
   };
 
   const tel = phoneHref(member.phone);
   const whatsapp = phoneHref(member.phone, "whatsapp");
+  const joinedOn = member.joinedAt || member.createdAt;
+  const referral = member.referral;
 
   const paymentColumns = [
     { id: "date", header: "Date", cell: (p) => <span className="whitespace-nowrap">{formatDate(p.paidAt || p.createdAt)}</span> },
@@ -165,7 +202,7 @@ export default function MemberProfilePage() {
       header: <span className="sr-only">Actions</span>,
       align: "right",
       cell: (p) =>
-        p.status === "pending" ? (
+        p.status === "pending" && canCollect ? (
           <Button size="sm" variant="primary" onClick={() => setCollectTarget(p)}>
             Collect
           </Button>
@@ -184,7 +221,7 @@ export default function MemberProfilePage() {
         </p>
       </div>
       <StatusBadge kind="payment" status={p.status} size="sm" />
-      {p.status === "pending" ? (
+      {p.status === "pending" && canCollect ? (
         <Button size="sm" variant="primary" onClick={() => setCollectTarget(p)}>
           Collect
         </Button>
@@ -194,6 +231,16 @@ export default function MemberProfilePage() {
     </div>
   );
 
+  const planMenu = current
+    ? [
+        canFreeze &&
+          (current.freeze
+            ? { label: current.status === "paused" ? "Unfreeze plan" : "Remove booked freeze", icon: PlayCircle, onSelect: () => unfreeze.run(member, current) }
+            : { label: "Freeze plan", icon: PauseCircle, onSelect: () => openAction("freeze") }),
+        canExtend && { label: "Add free days", icon: CalendarPlus, onSelect: () => openAction("extend") },
+      ].filter(Boolean)
+    : [];
+
   return (
     <>
       <PageHeader title={member.name} back={{ to: "/admin/members", label: "Members" }} className="md:mb-4" />
@@ -201,27 +248,39 @@ export default function MemberProfilePage() {
       <Card padding="lg" className="mb-4">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-center">
           <div className="flex min-w-0 flex-1 items-center gap-4">
-            <Avatar name={member.name} src={member.profilePhoto} size="xl" />
+            <div className="relative shrink-0">
+              <Avatar name={member.name} src={member.profilePhoto} size="xl" />
+              {canEdit && (
+                <IconButton
+                  icon={Camera}
+                  label={member.profilePhoto ? "Change photo" : "Add photo"}
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => openAction("photo")}
+                  className="absolute -bottom-1 -right-1 rounded-full"
+                />
+              )}
+            </div>
             <div className="min-w-0">
               <p className="text-[13px] font-semibold text-ink-3">
-                {member.memberCode || "No member code"}, joined {formatDate(member.createdAt)}
+                {member.memberCode || "No member code"}, joined {formatDate(joinedOn)}
                 {member.source && member.source !== "desk" ? ` (${member.source === "google" ? "online" : LEAD_SOURCE_LABEL[member.source] || member.source})` : ""}
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {tel && (
-                  <a href={tel} className="inline-flex h-9 items-center gap-1.5 rounded-full bg-surface-2 px-3 text-sm font-semibold hover:bg-surface-3">
+                  <a href={tel} className="inline-flex h-11 items-center gap-1.5 rounded-full bg-surface-2 px-3.5 text-sm font-semibold hover:bg-surface-3 md:h-9">
                     <Phone className="size-4" aria-hidden />
                     <span className="tabular">{formatPhone(member.phone)}</span>
                   </a>
                 )}
                 {whatsapp && (
-                  <a href={whatsapp} target="_blank" rel="noreferrer" className="inline-flex h-9 items-center gap-1.5 rounded-full bg-surface-2 px-3 text-sm font-semibold hover:bg-surface-3">
+                  <a href={whatsapp} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center gap-1.5 rounded-full bg-surface-2 px-3.5 text-sm font-semibold hover:bg-surface-3 md:h-9">
                     <MessageCircle className="size-4" aria-hidden />
                     WhatsApp
                   </a>
                 )}
                 {member.email && (
-                  <a href={`mailto:${member.email}`} className="inline-flex h-9 max-w-full items-center gap-1.5 rounded-full bg-surface-2 px-3 text-sm font-semibold hover:bg-surface-3">
+                  <a href={`mailto:${member.email}`} className="inline-flex h-11 max-w-full items-center gap-1.5 rounded-full bg-surface-2 px-3.5 text-sm font-semibold hover:bg-surface-3 md:h-9">
                     <Mail className="size-4 shrink-0" aria-hidden />
                     <span className="truncate">{member.email}</span>
                   </a>
@@ -230,22 +289,36 @@ export default function MemberProfilePage() {
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="primary" icon={ScanLine} onClick={() => checkIn(member)} loading={checkingIn}>
-              Check in
-            </Button>
-            <Button variant="secondary" icon={RefreshCw} onClick={() => openAction("renew")}>
-              {member.current && member.state !== "expired" ? "Renew" : "Add plan"}
-            </Button>
-            <Button variant="secondary" icon={IndianRupee} onClick={() => (dues.length ? setCollectTarget(dues[dues.length - 1]) : openAction("pay"))}>
-              {dues.length ? `Collect ${formatINR(member.dues)}` : "Record payment"}
-            </Button>
+            {canCheckIn && (
+              <Button variant="primary" icon={ScanLine} onClick={() => checkIn(member)} loading={checkingIn}>
+                Check in
+              </Button>
+            )}
+            {canSell && (
+              <Button variant="secondary" icon={RefreshCw} onClick={() => openAction("renew")}>
+                {member.current && member.state !== "expired" ? "Renew" : "Add plan"}
+              </Button>
+            )}
+            {canCollect && (
+              <Button variant="secondary" icon={IndianRupee} onClick={() => (dues.length ? setCollectTarget(dues[dues.length - 1]) : openAction("pay"))}>
+                {dues.length ? `Collect ${formatINR(member.dues)}` : "Record payment"}
+              </Button>
+            )}
+            {extraActions.map(({ key, Component }) => (
+              <Suspense key={key} fallback={null}>
+                <Component member={member} />
+              </Suspense>
+            ))}
             <Menu
               label="More actions"
               trigger={(props) => <IconButton {...props} icon={Ellipsis} label="More actions" variant="secondary" />}
               items={[
-                { label: "Edit details", icon: Pencil, onSelect: () => openAction("edit") },
+                canEdit && { label: "Edit details", icon: Pencil, onSelect: () => openAction("edit") },
+                canEdit && { label: member.profilePhoto ? "Change photo" : "Add photo", icon: Camera, onSelect: () => openAction("photo") },
                 member.email && { label: "Send email", icon: Send, href: `mailto:${member.email}` },
-                profile?.idProof?.url && { label: "View ID proof", icon: FileText, onSelect: () => openIdProof(id, toast) },
+                canEdit && profile?.idProof?.url && { label: "View ID proof", icon: FileText, onSelect: () => openIdProof(id, toast) },
+                planMenu.length > 0 && { type: "separator" },
+                ...planMenu,
                 canCancel && cancellable && { type: "separator" },
                 canCancel && cancellable && { label: `Cancel ${cancellable.planName}`, icon: Ban, tone: "danger", onSelect: onCancelPlan },
               ]}
@@ -254,13 +327,15 @@ export default function MemberProfilePage() {
         </div>
       </Card>
 
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className={`mb-6 grid grid-cols-1 gap-4 ${canSeePayments ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
         <PlanTile member={member} memberships={memberships} />
-        <Card>
-          <p className="text-sm font-semibold text-ink-2">Dues</p>
-          <p className={`mt-2 text-lg font-bold ${member.dues > 0 ? "text-warn" : ""}`}>{member.dues > 0 ? formatINR(member.dues) : "Nothing due"}</p>
-          <p className="mt-0.5 text-[13px] text-ink-3">{dues.length ? `${dues.length} unpaid ${dues.length === 1 ? "bill" : "bills"}` : "All bills paid"}</p>
-        </Card>
+        {canSeePayments && (
+          <Card>
+            <p className="text-sm font-semibold text-ink-2">Dues</p>
+            <p className={`mt-2 text-lg font-bold ${member.dues > 0 ? "text-warn" : ""}`}>{member.dues > 0 ? formatINR(member.dues) : "Nothing due"}</p>
+            <p className="mt-0.5 text-[13px] text-ink-3">{dues.length ? `${dues.length} unpaid ${dues.length === 1 ? "bill" : "bills"}` : "All bills paid"}</p>
+          </Card>
+        )}
         <Card>
           <p className="text-sm font-semibold text-ink-2">Visits</p>
           <p className="mt-2 text-lg font-bold">{attendance.last30Days} in the last 30 days</p>
@@ -276,20 +351,43 @@ export default function MemberProfilePage() {
         tabs={[
           { value: "overview", label: "Overview" },
           { value: "plans", label: "Plans", count: memberships.length },
-          { value: "payments", label: "Payments", count: payments.length },
-        ]}
+          canSeePayments && { value: "payments", label: "Payments", count: payments.length },
+          ...extraTabs.map(({ value, label }) => ({ value, label })),
+        ].filter(Boolean)}
       />
 
       {tab === "overview" && (
         <TabPanel value="overview" className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Card>
-            <CardHeader title="Details" action={<Button size="sm" variant="ghost" icon={Pencil} onClick={() => openAction("edit")}>Edit</Button>} />
+            <CardHeader
+              title="Details"
+              action={
+                canEdit && (
+                  <Button size="sm" variant="ghost" icon={Pencil} onClick={() => openAction("edit")}>
+                    Edit
+                  </Button>
+                )
+              }
+            />
             <DetailList
               items={[
                 { label: "Mobile", value: formatPhone(member.phone) },
                 { label: "Email", value: member.email },
                 { label: "Gender", value: member.gender && { male: "Male", female: "Female", other: "Other", prefer_not_say: "Prefer not to say" }[member.gender] },
                 { label: "Date of birth", value: member.dob && formatDate(member.dob) },
+                { label: "Joined", value: formatDate(joinedOn) },
+                { label: "Trainer", value: member.assignedTrainer ? [member.assignedTrainer.name, member.assignedTrainer.role].filter(Boolean).join(", ") : "Not assigned" },
+                { label: "Heard about us", value: REFERRAL_CHANNEL_LABEL[referral?.channel] },
+                {
+                  label: "Referred by",
+                  value: referral?.referredByMemberId ? (
+                    <Link to={`/admin/members/${referral.referredByMemberId}`} className="font-semibold text-brand-ink hover:underline">
+                      {referral.referredBy?.name || referral.referredByName || "A member"}
+                    </Link>
+                  ) : (
+                    referral?.referredByName
+                  ),
+                },
                 { label: "Address", value: [member.address?.line1, member.address?.city, member.address?.state].filter(Boolean).join(", ") },
                 { label: "Emergency contact", value: [member.emergencyContact?.name, formatPhone(member.emergencyContact?.phone)].filter(Boolean).join(", ") },
               ]}
@@ -301,44 +399,56 @@ export default function MemberProfilePage() {
               </div>
             )}
           </Card>
-          <Card>
-            <CardHeader title="Health" description="Visible to staff and trainers only." />
-            {profile ? (
-              <>
-                {profile.medicalCondition?.has && (
-                  <div className="mb-4">
-                    <Badge tone="bad">Medical condition</Badge>
-                    <p className="mt-2 text-sm">{profile.medicalCondition.details || "Details not given"}</p>
-                  </div>
-                )}
-                <DetailList
-                  items={[
-                    { label: "Height", value: profile.heightCm && `${profile.heightCm} cm` },
-                    { label: "Weight", value: profile.weightKg && `${profile.weightKg} kg` },
-                    { label: "BMI", value: profile.bmi || null },
-                    { label: "Blood group", value: profile.bloodGroup },
-                    { label: "Goal", value: GOAL_LABEL[profile.fitnessGoal?.goalKind] },
-                    { label: "Injuries", value: profile.injuries },
-                    { label: "Allergies", value: profile.allergies },
-                  ]}
+          {canSeeHealth && (
+            <Card>
+              <CardHeader title="Health" description="Visible to staff and trainers only." />
+              {profile ? (
+                <>
+                  {profile.medicalCondition?.has && (
+                    <div className="mb-4">
+                      <Badge tone="bad">Medical condition</Badge>
+                      <p className="mt-2 text-sm">{profile.medicalCondition.details || "Details not given"}</p>
+                    </div>
+                  )}
+                  <DetailList
+                    items={[
+                      { label: "Height", value: profile.heightCm && `${profile.heightCm} cm` },
+                      { label: "Weight", value: profile.weightKg && `${profile.weightKg} kg` },
+                      { label: "BMI", value: profile.bmi || null },
+                      { label: "Blood group", value: profile.bloodGroup },
+                      { label: "Goal", value: GOAL_LABEL[profile.fitnessGoal?.goalKind] },
+                      { label: "Injuries", value: profile.injuries },
+                      { label: "Allergies", value: profile.allergies },
+                    ]}
+                  />
+                </>
+              ) : (
+                <EmptyState
+                  compact
+                  icon={UserRound}
+                  title="No health details yet"
+                  body="Add height, weight and any medical notes so trainers can plan safely."
+                  action={canEdit && <Button variant="secondary" onClick={() => openAction("edit")}>Add health details</Button>}
                 />
-              </>
-            ) : (
-              <EmptyState compact icon={UserRound} title="No health details yet" body="Add height, weight and any medical notes so trainers can plan safely." />
-            )}
-          </Card>
+              )}
+            </Card>
+          )}
         </TabPanel>
       )}
 
       {tab === "plans" && (
-        <TabPanel value="plans">
-          <Card padding="none">
+        <TabPanel value="plans" className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          <Card padding="none" className="self-start">
+            <div className="px-4 pt-4 md:px-5 md:pt-5">
+              <CardHeader title="Plans" className="mb-2" />
+            </div>
             {memberships.length === 0 ? (
               <EmptyState
+                compact
                 icon={RefreshCw}
                 title="No plans yet"
                 body="Add a plan to let this member check in."
-                action={<Button variant="primary" onClick={() => openAction("renew")}>Add plan</Button>}
+                action={canSell && <Button variant="primary" onClick={() => openAction("renew")}>Add plan</Button>}
               />
             ) : (
               <ol className="divide-y divide-line">
@@ -350,17 +460,28 @@ export default function MemberProfilePage() {
                         {formatDate(m.startDate)} to {formatDate(m.endDate)}
                         {m.price != null ? `, ${formatINR(m.price)}` : ""}
                       </p>
+                      {(m.frozenDays > 0 || m.bonusDays > 0) && (
+                        <p className="text-[13px] text-ink-3">
+                          {[m.frozenDays > 0 && `Frozen ${dayCount(m.frozenDays)}`, m.bonusDays > 0 && `${dayCount(m.bonusDays)} added`].filter(Boolean).join(", ")}
+                        </p>
+                      )}
                     </div>
-                    <StatusBadge kind="membership" status={m.status} size="sm" />
+                    <PlanStatusBadge status={m.status} size="sm" />
                   </li>
                 ))}
               </ol>
             )}
           </Card>
+          <Card padding="none">
+            <div className="px-4 pt-4 md:px-5 md:pt-5">
+              <CardHeader title="History" description="Every change to this member's plans." className="mb-2" />
+            </div>
+            <MembershipTimeline memberId={member._id} />
+          </Card>
         </TabPanel>
       )}
 
-      {tab === "payments" && (
+      {tab === "payments" && canSeePayments && (
         <TabPanel value="payments">
           <Card padding="none" className="overflow-hidden">
             <DataTable
@@ -392,17 +513,39 @@ export default function MemberProfilePage() {
         </TabPanel>
       )}
 
-      <SellPlanDialog open={action === "renew"} onClose={() => openAction(null)} member={member} memberships={memberships} />
-      <RecordPaymentDialog open={payAction && !payDue} onClose={() => openAction(null)} member={member} />
-      <CollectPaymentDialog
-        payment={collectTarget || payDue}
-        memberName={member.name}
-        onClose={() => {
-          setCollectTarget(null);
-          if (payAction) openAction(null);
-        }}
-      />
-      <EditMemberDialog open={action === "edit"} onClose={() => openAction(null)} member={member} profile={profile} />
+      {extraTabs.map(
+        ({ value, Component }) =>
+          tab === value && (
+            <TabPanel key={value} value={value}>
+              <Suspense fallback={<SkeletonList rows={3} />}>
+                <Component member={member} profile={profile} memberships={memberships} payments={payments} attendance={attendance} />
+              </Suspense>
+            </TabPanel>
+          )
+      )}
+
+      {canSell && <SellPlanDialog open={action === "renew"} onClose={() => openAction(null)} member={member} memberships={memberships} />}
+      {canCollect && (
+        <>
+          <RecordPaymentDialog open={payAction && !payDue} onClose={() => openAction(null)} member={member} />
+          <CollectPaymentDialog
+            payment={collectTarget || payDue}
+            memberName={member.name}
+            onClose={() => {
+              setCollectTarget(null);
+              if (payAction) openAction(null);
+            }}
+          />
+        </>
+      )}
+      {canEdit && (
+        <>
+          <EditMemberDialog open={action === "edit"} onClose={() => openAction(null)} member={member} profile={profile} />
+          <ProfilePhotoDialog open={action === "photo"} onClose={() => openAction(null)} member={member} />
+        </>
+      )}
+      {canFreeze && <FreezePlanDialog open={action === "freeze" && Boolean(current) && !current?.freeze} onClose={() => openAction(null)} member={member} membership={current} />}
+      {canExtend && <ExtendPlanDialog open={action === "extend" && Boolean(current)} onClose={() => openAction(null)} member={member} membership={current} />}
       {checkInDialog}
     </>
   );

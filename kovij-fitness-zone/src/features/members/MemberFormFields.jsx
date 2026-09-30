@@ -1,5 +1,8 @@
 import { Field, Input, Select, Switch, Textarea } from "../../shared/ui";
 import { GOAL_LABEL } from "../../shared/domain/status";
+import { gymDayKey } from "../../shared/lib/format";
+import { MemberPicker } from "./MemberPicker";
+import { REFERRAL_CHANNEL_LABEL } from "./memberStatus";
 
 export function ContactFields({ value, onChange, errors = {}, phoneHint }) {
   const set = (k) => (e) => onChange({ ...value, [k]: e.target.value });
@@ -24,7 +27,7 @@ export function ContactFields({ value, onChange, errors = {}, phoneHint }) {
         </Select>
       </Field>
       <Field label="Date of birth" optional error={errors.dob}>
-        <Input type="date" value={value.dob} onChange={set("dob")} max={new Date().toISOString().slice(0, 10)} />
+        <Input type="date" value={value.dob} onChange={set("dob")} max={gymDayKey()} />
       </Field>
     </div>
   );
@@ -104,6 +107,50 @@ export function HealthFields({ value, onChange, errors = {} }) {
       <Field label="Injuries" optional error={errors.injuries} className="sm:col-span-3">
         <Input value={value.injuries} onChange={set("injuries")} maxLength={1000} />
       </Field>
+    </div>
+  );
+}
+
+/** Joining date and how they found the gym (with the referring member, if any). */
+export function JoiningFields({ value, onChange, errors = {}, excludeId }) {
+  const set = (k) => (e) => onChange({ ...value, [k]: e.target.value });
+  const showReferrer = value.referralChannel === "friend" || Boolean(value.referredBy) || Boolean(value.referredByName);
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <Field label="Joined on" error={errors.joinedAt} hint="Change it for members who joined before they were added here.">
+        <Input type="date" value={value.joinedAt} onChange={set("joinedAt")} min="1990-01-01" max={gymDayKey()} />
+      </Field>
+      <Field label="How they heard about us" optional error={errors.referralChannel}>
+        <Select value={value.referralChannel} onChange={set("referralChannel")}>
+          <option value="">Not asked</option>
+          {Object.entries(REFERRAL_CHANNEL_LABEL).map(([k, label]) => (
+            <option key={k} value={k}>
+              {label}
+            </option>
+          ))}
+        </Select>
+      </Field>
+      {showReferrer && (
+        <div className="flex flex-col gap-4 sm:col-span-2">
+          <div>
+            <p className="mb-1.5 text-sm font-semibold text-ink">
+              Referred by <span className="font-normal text-ink-3">(optional)</span>
+            </p>
+            <MemberPicker
+              label="Referred by"
+              value={value.referredBy}
+              onChange={(referredBy) => onChange({ ...value, referredBy, referredByName: "", referralChannel: value.referralChannel || "friend" })}
+              error={errors.referredBy}
+              excludeId={excludeId}
+            />
+          </div>
+          {!value.referredBy && (
+            <Field label="Or their name, if they aren't a member" optional error={errors.referredByName}>
+              <Input value={value.referredByName} onChange={set("referredByName")} maxLength={120} autoComplete="off" />
+            </Field>
+          )}
+        </div>
+      )}
     </div>
   );
 }

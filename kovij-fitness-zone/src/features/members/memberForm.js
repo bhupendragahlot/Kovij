@@ -1,4 +1,5 @@
 /** Member form state helpers: blank state, form → API payloads, API → form, server field errors → form keys. */
+import { gymDayKey } from "../../shared/lib/format";
 
 export const EMPTY_DETAILS = {
   name: "",
@@ -12,7 +13,17 @@ export const EMPTY_DETAILS = {
   emergencyName: "",
   emergencyPhone: "",
   notes: "",
+  /** `YYYY-MM-DD` in gym time. */
+  joinedAt: "",
+  referralChannel: "",
+  /** The referring member ({ _id, name, memberCode, phone }) picked from search. */
+  referredBy: null,
+  /** Free-text name when the person who referred them isn't a member. */
+  referredByName: "",
 };
+
+/** A new registration starts with today's date as the joining date. */
+export const newMemberDetails = () => ({ ...EMPTY_DETAILS, joinedAt: gymDayKey() });
 
 export const EMPTY_HEALTH = {
   heightCm: "",
@@ -28,8 +39,17 @@ export const EMPTY_HEALTH = {
 
 const blank = (v) => (v === "" || v == null ? undefined : v);
 
-/** Form state → API `details` object. */
-export function toDetailsPayload(d) {
+/** Referral part of the payload; `null` (when editing) clears a referral that was removed. */
+function toReferralPayload(d, { clearable }) {
+  const channel = blank(d.referralChannel);
+  const referredByMemberId = d.referredBy?._id;
+  const referredByName = referredByMemberId ? undefined : blank(d.referredByName?.trim());
+  if (!channel && !referredByMemberId && !referredByName) return clearable ? null : undefined;
+  return { channel, referredByMemberId, referredByName };
+}
+
+/** Form state → API `details` object. Pass `{ clearable: true }` when editing an existing member. */
+export function toDetailsPayload(d, { clearable = false } = {}) {
   return {
     name: d.name.trim(),
     phone: d.phone.trim(),
@@ -39,6 +59,8 @@ export function toDetailsPayload(d) {
     address: { line1: blank(d.line1), city: blank(d.city), state: blank(d.state) },
     emergencyContact: { name: blank(d.emergencyName), phone: blank(d.emergencyPhone) },
     notes: blank(d.notes),
+    joinedAt: blank(d.joinedAt),
+    referral: toReferralPayload(d, { clearable }),
   };
 }
 
@@ -62,6 +84,8 @@ export function toHealthPayload(h) {
 
 /** API member/profile → form state (for editing). */
 export function fromMember(member = {}, profile = {}) {
+  const ref = member.referral || {};
+  const referrer = ref.referredByMemberId ? { _id: ref.referredByMemberId, name: ref.referredBy?.name || ref.referredByName || "Member", memberCode: ref.referredBy?.memberCode } : null;
   return {
     details: {
       ...EMPTY_DETAILS,
@@ -76,6 +100,10 @@ export function fromMember(member = {}, profile = {}) {
       emergencyName: member.emergencyContact?.name || "",
       emergencyPhone: member.emergencyContact?.phone || "",
       notes: member.notes || "",
+      joinedAt: gymDayKey(member.joinedAt || member.createdAt || new Date()),
+      referralChannel: ref.channel || "",
+      referredBy: referrer,
+      referredByName: referrer ? "" : ref.referredByName || "",
     },
     health: {
       ...EMPTY_HEALTH,
@@ -92,14 +120,24 @@ export function fromMember(member = {}, profile = {}) {
   };
 }
 
+const FIELD_KEYS = {
+  "address.line1": "line1",
+  "address.city": "city",
+  "address.state": "state",
+  "emergencyContact.name": "emergencyName",
+  "emergencyContact.phone": "emergencyPhone",
+  "referral.channel": "referralChannel",
+  "referral.referredByMemberId": "referredBy",
+  "referral.referredByName": "referredByName",
+};
+
 /** Map server field paths (details.phone) to form keys (phone). */
 export function fieldErrorsFor(error, prefix) {
   const out = {};
   for (const [path, msg] of Object.entries(error?.fields || {})) {
     if (!path.startsWith(`${prefix}.`)) continue;
     const key = path.slice(prefix.length + 1);
-    const map = { "address.line1": "line1", "address.city": "city", "address.state": "state", "emergencyContact.name": "emergencyName", "emergencyContact.phone": "emergencyPhone" };
-    out[map[key] || key] = msg;
+    out[FIELD_KEYS[key] || key] = msg;
   }
   return out;
 }

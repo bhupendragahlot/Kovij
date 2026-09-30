@@ -4,8 +4,8 @@ import Membership from '../models/Membership.js';
 import PlanHistory from '../models/PlanHistory.js';
 import Payment from '../models/Payment.js';
 import { getSettingsDoc } from '../models/Settings.js';
-import { addDays, getPlanOrThrow, planSnapshot, recordPlanHistory } from '../services/membershipService.js';
-import { createPayment } from '../services/paymentService.js';
+import { CURRENT_STATUSES, cancelMembershipRecord, getPlanOrThrow } from '../services/membershipService.js';
+import { requestMembership } from '../services/salesService.js';
 import { nextMemberCode } from '../services/memberService.js';
 import { queueEmail } from '../services/emailService.js';
 import { withTransaction } from '../utils/db.js';
@@ -20,48 +20,8 @@ function bmi(heightCm, weightKg) {
   return Math.round((weightKg / (h * h)) * 10) / 10;
 }
 
-/**
- * Create a `pending` membership plus pending dues priced by the server.
- * The desk activates it by collecting payment (see paymentService.collectPendingPayment).
- */
-async function requestPlan({ memberId, plan, settings, changeType, fromPlanId }, session) {
-  const isFirstPlan = !(await Membership.exists({ memberId }).session(session));
-  const snapshot = planSnapshot(plan);
-  const now = new Date();
-  const [membership] = await Membership.create(
-    [
-      {
-        memberId,
-        ...snapshot,
-        startDate: now,
-        endDate: addDays(now, snapshot.durationDays),
-        status: 'pending',
-        source: 'self',
-      },
-    ],
-    { session }
-  );
-  await recordPlanHistory({ memberId, membershipId: membership._id, fromPlanId, toPlanId: plan._id, changeType }, session);
-
-  const opts = { session, invoicePrefix: settings.invoicePrefix };
-  const dues = [];
-  const registrationFee = Number(settings.registrationFee) || 0;
-  if (isFirstPlan && registrationFee > 0) {
-    dues.push(await createPayment({ memberId, membershipId: membership._id, type: 'registration', amount: registrationFee, status: 'pending' }, opts));
-  }
-  if (snapshot.price > 0) {
-    dues.push(
-      await createPayment(
-        { memberId, membershipId: membership._id, type: isFirstPlan ? 'membership' : 'renewal', amount: snapshot.price, status: 'pending' },
-        opts
-      )
-    );
-  }
-  return { membership, amountDue: dues.reduce((sum, p) => sum + p.amount, 0) };
-}
-
 async function assertNoOpenMembership(memberId) {
-  const open = await Membership.findOne({ memberId, status: { $in: ['active', 'pending', 'upcoming'] } }).lean();
+  const open = await Membership.findOne({ memberId, status: { $in: [...CURRENT_STATUSES, 'pending', 'upcoming'] } }).lean();
   if (!open) return;
   if (open.status === 'pending') {
     throw new AppError('Your registration is waiting for payment at the front desk', 409, 'PENDING_PAYMENT');
@@ -91,6 +51,7 @@ export const join = asyncHandler(async (req, res) => {
       'address.line1': personalDetails.address.line1,
     });
     if (profilePhotoUrl) current.profilePhoto = profilePhotoUrl;
+    if (!current.joinedAt) current.joinedAt = new Date();
     if (!current.memberCode) current.memberCode = await nextMemberCode(settings.invoicePrefix, session);
     await current.save({ session });
 
@@ -111,7 +72,7 @@ export const join = asyncHandler(async (req, res) => {
       { upsert: true, session }
     );
 
-    const result = await requestPlan({ memberId, plan, settings, changeType: 'join' }, session);
+    const result = await requestMembership({ memberId, plan, settings }, session);
     return { ...result, member: current.toObject() };
   });
 
@@ -135,7 +96,7 @@ export const join = asyncHandler(async (req, res) => {
 
 async function memberOverview(memberId) {
   const [memberships, profile, member, dues] = await Promise.all([
-    Membership.find({ memberId, status: { $in: ['active', 'pending', 'upcoming'] } }).populate('planId').sort({ startDate: 1 }).lean(),
+    Membership.find({ memberId, status: { $in: [...CURRENT_STATUSES, 'pending', 'upcoming'] } }).populate('planId').sort({ startDate: 1 }).lean(),
     MemberProfile.findOne({ memberId }).lean(),
     Member.findById(memberId).lean(),
     Payment.find({ memberId, status: 'pending' }).select('amount').lean(),
@@ -151,7 +112,7 @@ export const getMine = asyncHandler(async (req, res) => {
     success: true,
     member,
     profile,
-    membership: pick('active') || pick('pending') || pick('upcoming'),
+    membership: pick('active') || pick('paused') || pick('pending') || pick('upcoming'),
     upcoming: pick('upcoming'),
     dues: { amount: dues.reduce((sum, p) => sum + p.amount, 0), count: dues.length },
   });
@@ -160,7 +121,7 @@ export const getMine = asyncHandler(async (req, res) => {
 /** GET /api/membership/:userId — staff, or the member themself. */
 export const getByMemberId = asyncHandler(async (req, res) => {
   const paramId = req.params.userId || req.params.memberId;
-  const membership = await Membership.findOne({ memberId: paramId, status: 'active' }).populate('planId').lean();
+  const membership = await Membership.findOne({ memberId: paramId, status: { $in: CURRENT_STATUSES } }).populate('planId').lean();
   const profile = await MemberProfile.findOne({ memberId: paramId }).lean();
   const member = await Member.findById(paramId).lean();
   if (!member) throw new AppError('Member not found', 404, 'NOT_FOUND');
@@ -179,17 +140,10 @@ export const updatePlan = asyncHandler(async (req, res) => {
   if (await Membership.exists({ memberId, status: { $in: ['pending', 'upcoming'] } })) {
     throw new AppError('You already have a plan change waiting', 409, 'RENEWAL_EXISTS');
   }
-  const [newPlan, settings, current] = await Promise.all([
-    getPlanOrThrow(newPlanId),
-    getSettingsDoc(),
-    Membership.findOne({ memberId, status: 'active' }).lean(),
-  ]);
+  const [newPlan, settings] = await Promise.all([getPlanOrThrow(newPlanId), getSettingsDoc()]);
 
   const { membership, amountDue } = await withTransaction((session) =>
-    requestPlan(
-      { memberId, plan: newPlan, settings, changeType: changeType || 'renew', fromPlanId: current?.planId },
-      session
-    )
+    requestMembership({ memberId, plan: newPlan, settings, changeType }, session)
   );
 
   res.status(201).json({
@@ -202,17 +156,14 @@ export const updatePlan = asyncHandler(async (req, res) => {
 /** POST /api/membership/cancel — withdraw a waiting request, else cancel the active plan. */
 export const cancel = asyncHandler(async (req, res) => {
   const memberId = req.member.memberId;
-  const pending = await Membership.findOne({ memberId, status: 'pending' });
+  const pending = await Membership.findOne({ memberId, status: 'pending' }).lean();
   if (pending) {
-    pending.status = 'cancelled';
-    await pending.save();
-    await Payment.updateMany({ membershipId: pending._id, status: 'pending' }, { $set: { status: 'failed', note: 'Request withdrawn by member' } });
+    await withTransaction((session) => cancelMembershipRecord({ membershipId: pending._id, memberId, source: 'self' }, session));
     return res.json({ success: true, message: 'Request withdrawn' });
   }
-  const m = await Membership.findOne({ memberId, status: 'active' });
+  const m = await Membership.findOne({ memberId, status: { $in: CURRENT_STATUSES } }).lean();
   if (!m) throw new AppError('No active membership', 400, 'NO_ACTIVE');
-  m.status = 'cancelled';
-  await m.save();
+  await withTransaction((session) => cancelMembershipRecord({ membershipId: m._id, memberId, source: 'self' }, session));
   res.json({ success: true, message: 'Membership cancelled' });
 });
 

@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { memberApi } from "../../lib/memberApi";
 import { useMemberAuth } from "../../context/MemberAuthContext";
-import GoogleSignInButton from "../../components/member/GoogleSignInButton";
+import MemberAuthPanel from "../../features/member-auth/MemberAuthPanel";
 
 const steps = ["Personal", "Health", "Goals", "Plan & pay", "Uploads", "Review"];
 const base = import.meta.env.VITE_API_BASE_URL || "";
@@ -245,26 +245,11 @@ export default function JoinGymForm() {
   return (
     !member ? (
       <div className="kv-container flex min-h-[70vh] flex-col items-center justify-center py-16">
-        <div className="w-full max-w-md rounded-2xl border border-neutral-800 bg-neutral-950/80 p-8 shadow-xl">
-          <h1 className="mb-2 text-center font-['Lexend'] text-2xl font-black uppercase text-white">
-            Join the gym
-          </h1>
-          <p className="mb-6 text-center text-sm text-neutral-400">
-            Please sign in with Google to create your gym account and continue.
-          </p>
-          {loading ? (
-            <p className="text-center text-sm text-neutral-400">Checking session…</p>
-          ) : (
-            <div className="flex justify-center">
-              <GoogleSignInButton />
-            </div>
-          )}
-          <p className="mt-8 text-center text-xs text-neutral-600">
-            <Link to="/" className="text-red-500 hover:underline">
-              Back to home
-            </Link>
-          </p>
-        </div>
+        {loading ? (
+          <p className="text-sm text-neutral-400">Checking your session…</p>
+        ) : (
+          <MemberAuthPanel title="Join the gym" subtitle="Sign in or create your account to continue." />
+        )}
       </div>
     ) : (
     isJoinGate ? (

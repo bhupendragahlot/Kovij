@@ -44,6 +44,8 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Push notification and notification-click handling (owned by the engagement module).
+        importScripts: ["/push-handler.js"],
         globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api\//, /^\/uploads\//],

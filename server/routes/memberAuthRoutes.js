@@ -1,17 +1,19 @@
 import express from 'express';
-import { googleLogin, me } from '../controllers/memberAuthController.js';
+import { createSession, me } from '../controllers/memberAuthController.js';
 import { uploadMemberDocs } from '../controllers/memberUploadController.js';
 import { getMyProfile, updateMyProfile } from '../controllers/memberProfileController.js';
 import { memberAuth } from '../middleware/memberAuth.js';
 import { validate } from '../middleware/validate.js';
-import { googleAuthSchema } from '../validators/auth.schema.js';
+import { memberSessionSchema } from '../validators/auth.schema.js';
 import { updateMemberProfileSchema } from '../validators/memberProfile.schema.js';
 import { authGoogleLimiter } from '../middleware/rateLimiter.js';
 import { uploadMemberFiles } from '../services/storageService.js';
 
 const router = express.Router();
 
-router.post('/google', authGoogleLimiter, validate(googleAuthSchema), googleLogin);
+router.post('/session', authGoogleLimiter, validate(memberSessionSchema), createSession);
+// Older app builds still post Google sign-ins here.
+router.post('/google', authGoogleLimiter, validate(memberSessionSchema), createSession);
 router.get('/me', memberAuth, me);
 router.get('/profile', memberAuth, getMyProfile);
 router.patch('/profile', memberAuth, validate(updateMemberProfileSchema), updateMyProfile);

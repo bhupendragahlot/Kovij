@@ -25,10 +25,12 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['admin', 'manager', 'staff'],
+    enum: ['admin', 'manager', 'staff', 'trainer'],
     default: 'staff',
   },
   isActive: { type: Boolean, default: true },
+  /** Set whenever the password changes; sessions issued earlier are rejected by adminAuth. */
+  passwordChangedAt: { type: Date },
   lastLoginAt: { type: Date },
   createdAt: {
     type: Date,

@@ -106,4 +106,4 @@ export const GOAL_LABEL = {
   other: "Other",
 };
 
-export const ROLE_LABEL = { admin: "Owner (admin)", manager: "Manager", staff: "Front desk" };
+export const ROLE_LABEL = { admin: "Owner (admin)", manager: "Manager", staff: "Front desk", trainer: "Trainer" };

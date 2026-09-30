@@ -3,7 +3,9 @@ import User from '../models/User.js';
 import { AppError } from './errorHandler.js';
 import { readBearerToken } from '../utils/bearer.js';
 
-export const STAFF_ROLES = ['admin', 'manager', 'staff'];
+import { STAFF_ROLES } from '../config/permissions.js';
+
+export { STAFF_ROLES };
 
 /**
  * Resolve the staff user behind a verified token. The user is re-read on every request so
@@ -19,9 +21,13 @@ export async function loadStaffFromToken(token) {
   if (decoded.type === 'member' || !decoded.id) {
     throw new AppError('This area is for gym staff only', 403, 'FORBIDDEN');
   }
-  const user = await User.findById(decoded.id).select('username name email role isActive').lean();
+  const user = await User.findById(decoded.id).select('username name email role isActive passwordChangedAt').lean();
   if (!user || user.isActive === false) {
     throw new AppError('Your staff account is not active', 401, 'ACCOUNT_INACTIVE');
+  }
+  // A password change (or reset) signs out every session issued before it.
+  if (user.passwordChangedAt && decoded.iat * 1000 < new Date(user.passwordChangedAt).getTime() - 1000) {
+    throw new AppError('Your password was changed. Sign in again.', 401, 'SESSION_REVOKED');
   }
   if (!STAFF_ROLES.includes(user.role)) {
     throw new AppError('This area is for gym staff only', 403, 'FORBIDDEN');

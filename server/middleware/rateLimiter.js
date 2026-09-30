@@ -1,7 +1,11 @@
 import rateLimit from 'express-rate-limit';
 
+/** The e2e suite runs many flows from one IP; it may switch limits off, but only when NODE_ENV=test. */
+const disabled = process.env.NODE_ENV === 'test' && process.env.DISABLE_RATE_LIMITS === 'true';
+
 const limiter = (windowMs, max, message) =>
   rateLimit({
+    skip: () => disabled,
     windowMs,
     max,
     standardHeaders: true,

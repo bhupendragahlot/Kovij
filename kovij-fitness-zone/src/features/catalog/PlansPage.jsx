@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Archive, Eye, EyeOff, Layers, Pencil, Plus, Star, Trash2 } from "lucide-react";
 import { plansResource } from "./api";
 import { usePermission } from "../auth/permissions";
+import { useOnlineStatus } from "../../shared/hooks/useOnlineStatus";
 import {
   Badge,
   Button,
@@ -11,6 +12,7 @@ import {
   ErrorState,
   Field,
   FormError,
+  InlineAlert,
   Input,
   PageHeader,
   Select,
@@ -23,27 +25,50 @@ import {
 } from "../../shared/ui";
 import { cn } from "../../shared/lib/cn";
 import { formatINR } from "../../shared/lib/format";
-import { PLAN_DURATION_LABEL } from "../../shared/domain/status";
+
+/** Plan lengths and how many days each sells for (server: DURATION_DAYS in membershipService.js). */
+const LENGTHS = [
+  { value: "month", label: "Monthly", days: 30 },
+  { value: "quarter", label: "Quarterly", days: 90 },
+  { value: "half_year", label: "Half-yearly", days: 182 },
+  { value: "year", label: "Yearly", days: 365 },
+  { value: "week", label: "Weekly", days: 7 },
+  { value: "day", label: "Day pass", days: 1 },
+];
+const LENGTH = Object.fromEntries(LENGTHS.map((l) => [l.value, l]));
+
+/** How long a plan runs, in words the desk can read out. */
+const planLengthLabel = (p) => (p.durationInDays ? `${p.durationInDays} days` : LENGTH[p.duration] ? `${LENGTH[p.duration].label}, ${LENGTH[p.duration].days} days` : p.duration);
+const planDays = (p) => Number(p.durationInDays) || LENGTH[p.duration]?.days || 30;
 
 const EMPTY = { name: "", price: "", duration: "month", durationInDays: "", description: "", features: [], popular: false, status: "Active", showOnFrontend: true };
 
 function PlanDialog({ open, plan, onClose }) {
   const save = plansResource.useSave();
   const toast = useToast();
+  const online = useOnlineStatus();
   const [form, setForm] = useState(EMPTY);
+  const [clientErrors, setClientErrors] = useState({});
 
   useEffect(() => {
     if (!open) return;
     save.reset();
+    setClientErrors({});
     setForm(plan ? { ...EMPTY, ...plan, price: String(plan.price ?? ""), durationInDays: plan.durationInDays ? String(plan.durationInDays) : "" } : EMPTY);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const set = (patch) => setForm((f) => ({ ...f, ...patch }));
-  const errors = save.error?.fields || {};
+  const errors = { ...(save.error?.fields || {}), ...clientErrors };
 
   const submit = (e) => {
     e.preventDefault();
+    const next = {};
+    if (!form.name.trim()) next.name = "Give the plan a name";
+    if (form.price === "" || Number(form.price) < 0) next.price = "Enter the price in rupees";
+    if (form.durationInDays && !(Number.isInteger(Number(form.durationInDays)) && Number(form.durationInDays) >= 1)) next.durationInDays = "Use whole days, 1 or more";
+    setClientErrors(next);
+    if (Object.keys(next).length) return;
     const payload = {
       name: form.name,
       price: Number(form.price),
@@ -55,7 +80,7 @@ function PlanDialog({ open, plan, onClose }) {
       status: form.status,
       showOnFrontend: form.showOnFrontend,
     };
-    save.mutate({ id: plan?._id, payload }, { onSuccess: () => (toast.success(plan ? "Plan saved" : `${form.name} created`), onClose()) });
+    save.mutate({ id: plan?._id, payload }, { onSuccess: () => (toast.success(plan ? "Plan saved" : "Plan created", { description: form.name }), onClose()) });
   };
 
   return (
@@ -71,12 +96,17 @@ function PlanDialog({ open, plan, onClose }) {
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button type="submit" form="plan-form" variant="primary" loading={save.isPending}>
+          <Button type="submit" form="plan-form" variant="primary" loading={save.isPending} disabled={!online}>
             {plan ? "Save plan" : "Create plan"}
           </Button>
         </>
       }
     >
+      {!online && (
+        <InlineAlert tone="offline" className="mb-4">
+          Saving plans needs a connection. Reconnect to continue.
+        </InlineAlert>
+      )}
       <FormError error={save.error} />
       <form id="plan-form" onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2" noValidate>
         <Field label="Plan name" error={errors.name} required className="sm:col-span-2">
@@ -86,15 +116,15 @@ function PlanDialog({ open, plan, onClose }) {
           <Input prefix="₹" type="number" inputMode="decimal" min="0" value={form.price} onChange={(e) => set({ price: e.target.value })} />
         </Field>
         <Field label="Length" error={errors.duration}>
-          <Select value={form.duration} onChange={(e) => set({ duration: e.target.value })}>
-            {Object.entries(PLAN_DURATION_LABEL).map(([v, l]) => (
-              <option key={v} value={v}>
-                {l}
+          <Select value={form.duration} onChange={(e) => set({ duration: e.target.value })} disabled={Boolean(form.durationInDays)}>
+            {LENGTHS.map((l) => (
+              <option key={l.value} value={l.value}>
+                {l.label} ({l.days} {l.days === 1 ? "day" : "days"})
               </option>
             ))}
           </Select>
         </Field>
-        <Field label="Exact number of days" optional hint="Overrides the length above, e.g. 45 for a festival offer." error={errors.durationInDays} className="sm:col-span-2">
+        <Field label="Custom number of days" optional hint="For a custom plan, e.g. 45 days for a festival offer. Replaces the length above." error={errors.durationInDays} className="sm:col-span-2">
           <Input type="number" inputMode="numeric" min="1" value={form.durationInDays} onChange={(e) => set({ durationInDays: e.target.value })} suffix="days" />
         </Field>
         <Field label="What's included" optional hint="Shown on the website pricing cards." error={errors.features} className="sm:col-span-2">
@@ -177,9 +207,12 @@ export default function PlansPage() {
                         {p.name}
                         {p.popular && <Star className="size-3.5 fill-current text-brand-ink" aria-label="Most popular" />}
                       </p>
-                      <p className="text-[13px] text-ink-3">{p.durationInDays ? `${p.durationInDays} days` : PLAN_DURATION_LABEL[p.duration] || p.duration}</p>
+                      <p className="text-[13px] text-ink-3">{planLengthLabel(p)}</p>
                     </div>
-                    <p className="text-2xl font-bold tracking-tight">{formatINR(p.price)}</p>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold tracking-tight">{formatINR(p.price)}</p>
+                      {planDays(p) >= 60 && <p className="text-[13px] text-ink-3">{formatINR((Number(p.price) / planDays(p)) * 30)} a month</p>}
+                    </div>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     {inactive ? <Badge size="sm" icon={Archive}>Not for sale</Badge> : <Badge size="sm" tone="good">On sale</Badge>}

@@ -1,11 +1,17 @@
 import { useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { CircleCheck, DoorOpen, Ellipsis, ScanLine, Search, Undo2, UserPlus } from "lucide-react";
-import { useAttendance, useUndoCheckIn } from "./api";
+import { CircleCheck, DoorOpen, Ellipsis, LogIn, LogOut, MonitorSmartphone, QrCode, ScanLine, Search, Undo2, UserPlus } from "lucide-react";
+import { useAttendance, useCheckOut, useUndoCheckIn, useUndoCheckOut } from "./api";
 import { useCheckInFlow } from "./useCheckInFlow";
+import { ScanDialog } from "./ScanDialog";
+import { VisitStatusBadge } from "./components";
+import { formatDuration } from "./lib";
 import { useMembers } from "../members/api";
+import { usePermission } from "../auth/permissions";
 import { useDebouncedValue } from "../../shared/hooks/useDebouncedValue";
 import { useIsDesktop } from "../../shared/hooks/useMediaQuery";
+import { useOnlineStatus } from "../../shared/hooks/useOnlineStatus";
+import { newIdempotencyKey } from "../../shared/lib/apiClient";
 import {
   Avatar,
   Badge,
@@ -26,10 +32,30 @@ import {
 } from "../../shared/ui";
 import { formatNumber, formatPhone, formatShortDate, formatTime } from "../../shared/lib/format";
 
-function SearchPanel({ checkedInToday }) {
+/** Check-out with a toast named after the button. */
+function useDeskCheckOut() {
+  const checkOut = useCheckOut();
+  const toast = useToast();
+  const run = (visit, name) =>
+    checkOut.mutate(
+      { attendanceId: visit._id, idempotencyKey: newIdempotencyKey() },
+      {
+        onSuccess: (res) =>
+          toast.success(`${name} checked out`, {
+            description: res.alreadyCheckedOut ? `Already left at ${formatTime(res.attendance.checkedOutAt)}` : `In the gym for ${formatDuration(res.attendance.minutesInGym)} today`,
+          }),
+        onError: (e) => toast.error("Couldn't check out", { description: e.message }),
+      }
+    );
+  return { run, isPending: checkOut.isPending };
+}
+
+function SearchPanel({ visitsToday }) {
   const [q, setQ] = useState("");
   const inputRef = useRef(null);
   const term = useDebouncedValue(q.trim(), 200);
+  const online = useOnlineStatus();
+  const checkOut = useDeskCheckOut();
   const { checkIn, isPending, dialog } = useCheckInFlow({
     onCheckedIn: () => {
       setQ("");
@@ -41,9 +67,10 @@ function SearchPanel({ checkedInToday }) {
 
   const onKeyDown = (e) => {
     // Enter checks in the only match, the fastest path at a busy desk.
-    if (e.key === "Enter" && members.length === 1 && !checkedInToday.has(members[0]._id)) {
+    const only = members.length === 1 ? members[0] : null;
+    if (e.key === "Enter" && only && visitsToday.get(only._id)?.status !== "in") {
       e.preventDefault();
-      checkIn(members[0]);
+      checkIn(only);
     }
   };
 
@@ -83,7 +110,8 @@ function SearchPanel({ checkedInToday }) {
         ) : (
           <ul className="-mx-2 flex flex-col gap-1">
             {members.map((m) => {
-              const here = checkedInToday.get(m._id);
+              const visit = visitsToday.get(m._id);
+              const inGym = visit?.status === "in";
               return (
                 <li key={m._id} className="flex items-center gap-3 rounded-tile px-2 py-2.5 hover:bg-surface-2">
                   <Avatar name={m.name} src={m.profilePhoto} size="lg" />
@@ -95,22 +123,32 @@ function SearchPanel({ checkedInToday }) {
                       {m.current?.endDate && ["active", "expiring"].includes(m.state) && (
                         <span className="text-xs text-ink-3">until {formatShortDate(m.current.endDate)}</span>
                       )}
+                      {inGym && (
+                        <Badge tone="good" icon={CircleCheck} size="sm">
+                          In at {formatTime(visit.lastInAt || visit.checkedInAt)}
+                        </Badge>
+                      )}
+                      {visit && visit.status === "out" && (
+                        <Badge tone="neutral" icon={LogOut} size="sm">
+                          Left at {formatTime(visit.checkedOutAt)}
+                        </Badge>
+                      )}
                     </span>
                   </Link>
-                  {here ? (
-                    <Badge tone="good" icon={CircleCheck}>
-                      In at {formatTime(here.checkedInAt)}
-                    </Badge>
+                  {inGym ? (
+                    <Button variant="secondary" icon={LogOut} onClick={() => checkOut.run(visit, m.name)} disabled={checkOut.isPending || !online} className="max-sm:px-3">
+                      Check out
+                    </Button>
                   ) : (
                     <Button
                       // Only members who can walk straight in get the loud button; others open the "plan not active" choice.
                       variant={["active", "expiring"].includes(m.state) ? "primary" : "secondary"}
-                      icon={ScanLine}
+                      icon={visit ? LogIn : ScanLine}
                       onClick={() => checkIn(m)}
-                      disabled={isPending}
+                      disabled={isPending || !online}
                       className="max-sm:px-3"
                     >
-                      Check in
+                      {visit ? "Check in again" : "Check in"}
                     </Button>
                   )}
                 </li>
@@ -126,12 +164,23 @@ function SearchPanel({ checkedInToday }) {
 
 function TodayList({ attendance }) {
   const undo = useUndoCheckIn();
+  const undoOut = useUndoCheckOut();
+  const checkOut = useDeskCheckOut();
   const toast = useToast();
   const items = attendance.data?.items || [];
+  const inGym = attendance.data?.summary?.inGym;
 
   return (
     <Card padding="lg">
-      <CardHeader title="Here today" description={attendance.data ? `${formatNumber(attendance.data.total)} checked in so far` : undefined} />
+      <CardHeader
+        title="Here today"
+        description={attendance.data ? `${formatNumber(attendance.data.total)} checked in so far${inGym != null ? `, ${formatNumber(inGym)} in the gym now` : ""}` : undefined}
+        action={
+          <Link to="/admin/attendance" className="text-sm font-semibold text-brand-ink hover:underline">
+            Full day
+          </Link>
+        }
+      />
       {attendance.isPending ? (
         <SkeletonList rows={5} />
       ) : attendance.isError && !attendance.data ? (
@@ -144,18 +193,32 @@ function TodayList({ attendance }) {
             <li key={a._id} className="flex items-center gap-3 rounded-tile px-2 py-2">
               <span className="tabular w-16 shrink-0 text-[13px] font-semibold text-ink-3">{formatTime(a.checkedInAt)}</span>
               <Avatar name={a.memberId.name} src={a.memberId.profilePhoto} size="sm" />
-              <Link to={`/admin/members/${a.memberId._id}`} className="min-w-0 flex-1 truncate text-sm font-semibold text-ink hover:underline">
-                {a.memberId.name}
-              </Link>
+              <span className="min-w-0 flex-1">
+                <Link to={`/admin/members/${a.memberId._id}`} className="block truncate text-sm font-semibold text-ink hover:underline">
+                  {a.memberId.name}
+                </Link>
+                {a.checkedOutAt && <span className="block text-[12px] text-ink-3">Left {formatTime(a.checkedOutAt)}, {formatDuration(a.durationMinutes)}</span>}
+              </span>
               {a.membershipStatus !== "active" && (
                 <Badge tone="warn" size="sm" icon={DoorOpen}>
                   Let in once
                 </Badge>
               )}
+              {a.status !== "in" && <VisitStatusBadge status={a.status} />}
               <Menu
                 label={`Actions for ${a.memberId.name}`}
                 trigger={(props) => <IconButton {...props} icon={Ellipsis} label={`Actions for ${a.memberId.name}`} size="sm" />}
                 items={[
+                  a.status === "in" && { label: "Check out", icon: LogOut, onSelect: () => checkOut.run(a, a.memberId.name) },
+                  a.checkedOutAt && {
+                    label: "Undo check-out",
+                    icon: Undo2,
+                    onSelect: () =>
+                      undoOut.mutate(a._id, {
+                        onSuccess: () => toast.info(`Check-out for ${a.memberId.name} undone`),
+                        onError: (e) => toast.error("Couldn't undo", { description: e.message }),
+                      }),
+                  },
                   {
                     label: "Undo check-in",
                     icon: Undo2,
@@ -179,19 +242,33 @@ function TodayList({ attendance }) {
 export default function CheckInPage() {
   const attendance = useAttendance();
   const isDesktop = useIsDesktop();
+  const canCheckIn = usePermission("attendance.checkin");
   const [tab, setTab] = useState("search");
-  const checkedInToday = useMemo(
-    () => new Map((attendance.data?.items || []).map((a) => [a.memberId._id, a])),
-    [attendance.data]
-  );
+  const [scanOpen, setScanOpen] = useState(false);
+  const visitsToday = useMemo(() => new Map((attendance.data?.items || []).map((a) => [a.memberId._id, a])), [attendance.data]);
 
   return (
     <>
-      <PageHeader title="Check-in" description="Find the member, tap once. Visits are counted once per day." />
+      <PageHeader
+        title="Check-in"
+        description="Find the member or scan their QR code. Visits are counted once per day."
+        actions={
+          canCheckIn && (
+            <>
+              <ButtonLink to="/admin/kiosk" variant="ghost" icon={MonitorSmartphone}>
+                Kiosk mode
+              </ButtonLink>
+              <Button variant="primary" icon={QrCode} onClick={() => setScanOpen(true)}>
+                Scan QR
+              </Button>
+            </>
+          )
+        }
+      />
       {isDesktop ? (
         <div className="grid grid-cols-12 items-start gap-4">
           <div className="col-span-7">
-            <SearchPanel checkedInToday={checkedInToday} />
+            <SearchPanel visitsToday={visitsToday} />
           </div>
           <div className="col-span-5">
             <TodayList attendance={attendance} />
@@ -210,10 +287,11 @@ export default function CheckInPage() {
             ]}
           />
           <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
-            {tab === "search" ? <SearchPanel checkedInToday={checkedInToday} /> : <TodayList attendance={attendance} />}
+            {tab === "search" ? <SearchPanel visitsToday={visitsToday} /> : <TodayList attendance={attendance} />}
           </div>
         </>
       )}
+      {canCheckIn && <ScanDialog open={scanOpen} onClose={() => setScanOpen(false)} />}
     </>
   );
 }

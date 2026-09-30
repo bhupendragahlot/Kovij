@@ -1,36 +1,38 @@
 import cron from 'node-cron';
-import Membership from '../models/Membership.js';
-import Member from '../models/Member.js';
-import { getSettingsDoc } from '../models/Settings.js';
-import { queueEmail } from '../services/emailService.js';
 import { rollOverMemberships } from '../services/membershipService.js';
 import { logger } from '../utils/logger.js';
 import { GYM_TZ } from '../utils/time.js';
 
-/** 01:00 gym time: expire ended plans, start queued renewals, and email members whose plan lapsed. */
-export async function runExpiryJob(now = new Date()) {
-  const toNotify = await Membership.find({ status: 'active', endDate: { $lt: now } }).select('memberId').lean();
-  const { expired, started } = await rollOverMemberships(now);
-
-  // Don't send "your plan ended" to someone whose renewal just started.
-  const renewed = new Set(
-    (await Membership.distinct('memberId', { status: 'active', memberId: { $in: toNotify.map((m) => m.memberId) } })).map(String)
-  );
-  const settings = await getSettingsDoc();
-  for (const m of toNotify) {
-    if (renewed.has(String(m.memberId))) continue;
-    const member = await Member.findById(m.memberId).select('email name').lean();
-    if (!member?.email) continue;
-    await queueEmail({ to: member.email, templateKey: 'expired', vars: { name: member.name, gymName: settings.gymName } });
-    await Membership.findByIdAndUpdate(m._id, { lastNotifiedAt: new Date() });
-  }
-  logger.info(`Expiry job: ${expired} expired, ${started} renewals started`);
+/**
+ * Membership housekeeping, every hour: plans whose end has passed become `expired`, and queued
+ * renewals (`upcoming`) whose start has come become `active`. Idempotent and cheap (two
+ * updateMany calls). Member messages about expiry are sent by the reminders job (reminderCron.js).
+ */
+export async function runHousekeepingJob(now = new Date()) {
+  const result = await rollOverMemberships(now);
+  if (result.expired || result.started) logger.info(`Housekeeping: ${result.expired} plans expired, ${result.started} renewals started`);
+  return result;
 }
+
+/** @deprecated Old name; expiry emails now come from the reminders job. */
+export const runExpiryJob = runHousekeepingJob;
+
+let running = false;
 
 export function startExpiryCron() {
   cron.schedule(
-    '0 1 * * *',
-    () => runExpiryJob().catch((e) => logger.error(`expiryCron: ${e.message}`)),
+    '0 * * * *',
+    async () => {
+      if (running) return;
+      running = true;
+      try {
+        await runHousekeepingJob();
+      } catch (e) {
+        logger.error(`housekeeping cron: ${e.message}`);
+      } finally {
+        running = false;
+      }
+    },
     { timezone: GYM_TZ }
   );
 }

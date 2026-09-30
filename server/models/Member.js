@@ -29,7 +29,25 @@ const memberSchema = new mongoose.Schema(
       phone: { type: String, trim: true, set: canonicalPhone },
     },
     notes: { type: String, default: '' },
-    source: { type: String, enum: ['google', 'desk', 'lead'], default: 'google' },
+    source: { type: String, enum: ['google', 'app', 'desk', 'lead'], default: 'google' },
+    /** When the member actually joined the gym (may predate this record). Falls back to createdAt. */
+    joinedAt: { type: Date },
+    referral: {
+      /** How they heard about the gym. */
+      channel: { type: String, enum: ['friend', 'instagram', 'google', 'walk_in', 'website', 'other'] },
+      referredByMemberId: { type: mongoose.Schema.Types.ObjectId, ref: 'Member' },
+      referredByName: { type: String, trim: true },
+    },
+    /** Trainer responsible for this member's programme (workouts, diet, progress). */
+    assignedTrainerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Trainer' },
+    /** Member's own choices about what we send them. Reminders about their money/plan can't be turned off. */
+    notificationPrefs: {
+      email: { type: Boolean, default: true },
+      push: { type: Boolean, default: true },
+      announcements: { type: Boolean, default: true },
+      birthday: { type: Boolean, default: true },
+      workoutUpdates: { type: Boolean, default: true },
+    },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     isActive: { type: Boolean, default: true },
@@ -45,5 +63,6 @@ memberSchema.index({ memberCode: 1 }, { unique: true, ...presentString('memberCo
 // Phones are not unique: families often share one number. Duplicates are flagged in the UI instead.
 memberSchema.index({ phone: 1 });
 memberSchema.index({ createdAt: -1 });
+memberSchema.index({ assignedTrainerId: 1 });
 
 export default mongoose.model('Member', memberSchema);

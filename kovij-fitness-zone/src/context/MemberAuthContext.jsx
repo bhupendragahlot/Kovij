@@ -1,9 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import { memberApi } from "../lib/memberApi";
-
-/** Firebase (~300 KB) is only needed at the moment of Google sign-in/out, so load it on demand. */
-const loadFirebase = () => Promise.all([import("firebase/auth"), import("../firebase/firebase")]);
+import { signInWithGoogle, signOutFirebase } from "../features/member-auth/firebaseAuth";
 
 const MemberAuthContext = createContext(null);
 
@@ -36,28 +34,32 @@ export function MemberAuthProvider({ children }) {
     loadMe();
   }, [loadMe]);
 
-  const loginWithGoogle = async () => {
-    setError(null);
-    const [{ signInWithPopup }, { auth, googleProvider }] = await loadFirebase();
-    const cred = await signInWithPopup(auth, googleProvider);
-    const idToken = await cred.user.getIdToken();
-    const { data } = await axios.post(`${base}/api/member/auth/google`, { idToken });
+  /**
+   * Trade a signed-in Firebase user (Google, email or phone) for a gym session.
+   * `extra` answers the server's follow-up questions: `{ name }` for NEEDS_NAME,
+   * `{ memberId }` for CHOOSE_MEMBER. Those come back as axios errors with `response.data.code`.
+   */
+  const exchangeSession = useCallback(async (firebaseUser, extra = {}) => {
+    const idToken = await firebaseUser.getIdToken();
+    const { data } = await axios.post(`${base}/api/member/auth/session`, { idToken, ...extra });
     if (!data?.token) throw new Error("No token from server");
     localStorage.setItem("memberToken", data.token);
     setMember(data.member);
-    return data.member;
-  };
+    return data;
+  }, []);
 
-  const logout = async () => {
-    try {
-      const [{ signOut }, { auth }] = await loadFirebase();
-      await signOut(auth);
-    } catch {
-      /* ignore */
-    }
+  const loginWithGoogle = useCallback(async () => {
+    setError(null);
+    const user = await signInWithGoogle();
+    const data = await exchangeSession(user);
+    return data.member;
+  }, [exchangeSession]);
+
+  const logout = useCallback(async () => {
+    await signOutFirebase();
     localStorage.removeItem("memberToken");
     setMember(null);
-  };
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -65,11 +67,12 @@ export function MemberAuthProvider({ children }) {
       loading,
       error,
       setError,
+      exchangeSession,
       loginWithGoogle,
       logout,
       refreshMember: loadMe,
     }),
-    [member, loading, error, loadMe]
+    [member, loading, error, loadMe, exchangeSession, loginWithGoogle, logout]
   );
 
   return <MemberAuthContext.Provider value={value}>{children}</MemberAuthContext.Provider>;

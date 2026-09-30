@@ -21,7 +21,8 @@ export function SellPlanDialog({ open, onClose, member, memberships = [] }) {
   const idempotency = useIdempotencyKey();
   const toast = useToast();
 
-  const active = memberships.find((m) => m.status === "active");
+  // A frozen plan is still the current plan: renewals start after its (moved) end date.
+  const active = memberships.find((m) => m.status === "active" || m.status === "paused");
   const blocking = memberships.find((m) => m.status === "upcoming" || m.status === "pending");
   const isFirstPlan = memberships.length === 0;
   const [sale, setSale] = useState(EMPTY_SALE);
@@ -30,8 +31,9 @@ export function SellPlanDialog({ open, onClose, member, memberships = [] }) {
     if (!open) return;
     sell.reset();
     idempotency.reset();
-    // Default to renewing the same plan: the most common desk action.
-    const samePlan = plans.data?.find((p) => p._id === String(active?.planId));
+    // Default to renewing the same plan (the current one, else the last one): the most common desk action.
+    const previous = active || memberships.find((m) => m.status === "expired" || m.status === "cancelled");
+    const samePlan = plans.data?.find((p) => p._id === String(previous?.planId));
     setSale({ ...EMPTY_SALE, planId: samePlan?._id || "" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, plans.data]);
@@ -69,7 +71,7 @@ export function SellPlanDialog({ open, onClose, member, memberships = [] }) {
       open={open}
       onClose={onClose}
       title={active ? `Renew ${member?.name?.split(" ")[0] || "plan"}` : `Add a plan for ${member?.name?.split(" ")[0] || "member"}`}
-      description={active ? `Current plan: ${active.planName}, ends ${formatDate(active.endDate)}.` : undefined}
+      description={active ? `Current plan: ${active.planName}, ${active.status === "paused" ? "frozen, " : ""}ends ${formatDate(active.endDate)}.` : undefined}
       size="lg"
       placement="side"
       footer={
@@ -104,6 +106,7 @@ export function SellPlanDialog({ open, onClose, member, memberships = [] }) {
             onChange={setSale}
             errors={{ ...fieldErrors, ...clientError, mode: fieldErrors["payment.mode"] || fieldErrors.mode }}
             activeEndDate={active?.endDate}
+            canStartToday={!active?.freeze}
             isFirstPlan={isFirstPlan}
             registrationFee={settings.data?.registrationFee || 0}
             canOverridePrice={canOverridePrice}

@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
 import { useUpdateMember } from "./api";
-import { AddressFields, ContactFields, HealthFields } from "./MemberFormFields";
+import { AddressFields, ContactFields, HealthFields, JoiningFields } from "./MemberFormFields";
 import { fieldErrorsFor, fromMember, toDetailsPayload, toHealthPayload } from "./memberForm";
-import { Button, Dialog, FormError, useConfirm, useToast } from "../../shared/ui";
+import { usePermission } from "../auth/permissions";
+import { useOnlineStatus } from "../../shared/hooks/useOnlineStatus";
+import { Button, Dialog, FormError, InlineAlert, useConfirm, useToast } from "../../shared/ui";
 
 export function EditMemberDialog({ open, onClose, member, profile }) {
   const update = useUpdateMember(member?._id);
   const toast = useToast();
   const confirm = useConfirm();
+  const online = useOnlineStatus();
+  const canSeeHealth = usePermission("members.health.view");
   const [form, setForm] = useState(() => fromMember(member, profile));
   const [initial, setInitial] = useState(form);
 
@@ -31,7 +35,7 @@ export function EditMemberDialog({ open, onClose, member, profile }) {
   const submit = (e) => {
     e.preventDefault();
     update.mutate(
-      { details: toDetailsPayload(form.details), health: toHealthPayload(form.health) },
+      { details: toDetailsPayload(form.details, { clearable: true }), health: canSeeHealth ? toHealthPayload(form.health) : undefined },
       {
         onSuccess: () => {
           toast.success("Details saved");
@@ -53,24 +57,35 @@ export function EditMemberDialog({ open, onClose, member, profile }) {
           <Button variant="secondary" onClick={close}>
             Cancel
           </Button>
-          <Button type="submit" form="edit-member" variant="primary" loading={update.isPending} disabled={!dirty}>
+          <Button type="submit" form="edit-member" variant="primary" loading={update.isPending} disabled={!dirty || !online}>
             Save details
           </Button>
         </>
       }
     >
+      {!online && (
+        <InlineAlert tone="offline" className="mb-4">
+          Saving needs a connection. Your changes stay here until you reconnect.
+        </InlineAlert>
+      )}
       <FormError error={update.error} />
       <form id="edit-member" onSubmit={submit} className="flex flex-col gap-8" noValidate>
         <section aria-label="Contact">
           <ContactFields value={form.details} onChange={(details) => setForm({ ...form, details })} errors={fieldErrorsFor(update.error, "details")} />
         </section>
+        <section aria-label="Joining">
+          <h3 className="mb-3 text-[15px] font-semibold">Joining</h3>
+          <JoiningFields value={form.details} onChange={(details) => setForm({ ...form, details })} errors={fieldErrorsFor(update.error, "details")} excludeId={member?._id} />
+        </section>
         <section aria-label="Address and notes">
           <AddressFields value={form.details} onChange={(details) => setForm({ ...form, details })} errors={fieldErrorsFor(update.error, "details")} />
         </section>
-        <section aria-label="Health">
-          <h3 className="mb-3 text-[15px] font-semibold">Health</h3>
-          <HealthFields value={form.health} onChange={(health) => setForm({ ...form, health })} errors={fieldErrorsFor(update.error, "health")} />
-        </section>
+        {canSeeHealth && (
+          <section aria-label="Health">
+            <h3 className="mb-3 text-[15px] font-semibold">Health</h3>
+            <HealthFields value={form.health} onChange={(health) => setForm({ ...form, health })} errors={fieldErrorsFor(update.error, "health")} />
+          </section>
+        )}
       </form>
     </Dialog>
   );

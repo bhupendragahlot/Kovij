@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { money, optionalEmail, optionalText } from './common.js';
+import { money, optionalText } from './common.js';
 
 const bool = z.boolean();
 
@@ -17,21 +17,6 @@ export const planSchema = z.object({
 });
 export const planPatchSchema = planSchema.partial();
 
-export const trainerSchema = z.object({
-  name: z.string().trim().min(1, 'Name is required').max(120),
-  role: z.string().trim().min(1, 'Title is required').max(80),
-  image: optionalText(1000),
-  instagram: optionalText(300),
-  description: optionalText(1000),
-  phone: optionalText(20),
-  email: optionalEmail,
-  specialties: z.array(z.string().trim().min(1).max(60)).max(12).default([]),
-  shift: optionalText(120),
-  isActive: bool.default(true),
-  showOnFrontend: bool.default(true),
-});
-export const trainerPatchSchema = trainerSchema.partial();
-
 export const productSchema = z.object({
   name: z.string().trim().min(1).max(120),
   category: z.enum(['protein', 'preworkout', 'vitamins', 'accessories']),
@@ -47,25 +32,6 @@ export const productSchema = z.object({
   brand: z.string().trim().min(1).max(80),
 });
 export const productPatchSchema = productSchema.partial();
-
-export const settingsSchema = z
-  .object({
-    gymName: optionalText(120),
-    registrationFee: money,
-    invoicePrefix: z.string().trim().regex(/^[A-Za-z]{1,8}$/, 'Use 1–8 letters'),
-    expiringWindowDays: z.coerce.number().int().min(1).max(60),
-    heroBackgroundImage: optionalText(1000),
-    heroHeadline: optionalText(200),
-    heroDescription: optionalText(500),
-    address: optionalText(300),
-    phone: optionalText(20),
-    email: optionalEmail,
-    facebook: optionalText(300),
-    instagram: optionalText(300),
-    whatsapp: optionalText(20),
-    mapEmbedUrl: optionalText(2000),
-  })
-  .partial();
 
 export const contactSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(120),

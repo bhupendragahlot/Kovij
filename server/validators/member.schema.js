@@ -1,11 +1,29 @@
 import { z } from 'zod';
 import { dayKey, money, objectId, optionalEmail, optionalText, pagination, paymentMode, phone } from './common.js';
+import { gymDayKey } from '../utils/time.js';
 
-export const listMembersQuery = z.object({
+/** Gym-day date that can't be in the future (joining date). */
+const pastDay = dayKey.refine((v) => v <= gymDayKey(), 'Can’t be in the future').refine((v) => v >= '1990-01-01', 'Check the year');
+
+const memberFilters = {
   q: optionalText(100),
-  state: z.enum(['all', 'active', 'expiring', 'upcoming', 'pending', 'expired', 'none', 'dues']).default('all'),
-  sort: z.enum(['recent', 'name', 'ending']).optional(),
-  ...pagination,
+  state: z.enum(['all', 'active', 'expiring', 'paused', 'upcoming', 'pending', 'expired', 'none', 'dues']).default('all'),
+  sort: z.enum(['recent', 'name', 'ending', 'joined']).optional(),
+  joinedFrom: dayKey.optional(),
+  joinedTo: dayKey.optional(),
+  trainerId: z.union([z.literal('none'), objectId]).optional(),
+};
+const joinedRangeOk = (v) => !v.joinedFrom || !v.joinedTo || v.joinedFrom <= v.joinedTo;
+const joinedRangeError = { message: 'The start date must be before the end date', path: ['joinedTo'] };
+
+export const listMembersQuery = z.object({ ...memberFilters, ...pagination }).refine(joinedRangeOk, joinedRangeError);
+
+export const exportMembersQuery = z.object(memberFilters).refine(joinedRangeOk, joinedRangeError);
+
+export const referralSchema = z.object({
+  channel: z.enum(['friend', 'instagram', 'google', 'walk_in', 'website', 'other']).optional(),
+  referredByMemberId: objectId.optional(),
+  referredByName: optionalText(120),
 });
 
 export const memberDetailsSchema = z.object({
@@ -17,8 +35,17 @@ export const memberDetailsSchema = z.object({
   address: z
     .object({ line1: optionalText(200), city: optionalText(80), state: optionalText(80) })
     .optional(),
-  emergencyContact: z.object({ name: optionalText(120), phone: optionalText(20) }).optional(),
+  emergencyContact: z
+    .object({
+      name: optionalText(120),
+      phone: optionalText(20).refine((v) => !v || /^\+?[0-9 ()-]{7,20}$/.test(v), 'Enter a valid phone number'),
+    })
+    .optional(),
   notes: optionalText(2000),
+  /** `YYYY-MM-DD`; defaults to today at registration. */
+  joinedAt: pastDay.optional(),
+  /** `null` clears it when editing. */
+  referral: referralSchema.nullable().optional(),
 });
 
 export const healthSchema = z
@@ -74,10 +101,6 @@ export const duplicateCheckQuery = z.object({
   excludeId: objectId.optional(),
 });
 
-export const attendanceQuery = z.object({ date: dayKey.optional() });
+export const cancelMembershipSchema = z.object({ reason: optionalText(200) });
 
-export const checkInSchema = z.object({
-  memberId: objectId,
-  override: z.boolean().default(false),
-  overrideReason: optionalText(200),
-});
+export const membershipParams = z.object({ id: objectId, membershipId: objectId });

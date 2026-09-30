@@ -1,89 +1,146 @@
-import Attendance from '../models/Attendance.js';
-import Member from '../models/Member.js';
-import { currentMembershipState } from '../services/membershipService.js';
+import * as attendance from '../services/attendanceService.js';
+import { currentGymMonth } from '../services/attendanceRules.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
-import { AppError } from '../middleware/errorHandler.js';
-import { GYM_TZ, gymDayKey } from '../utils/time.js';
 
-const MEMBER_FIELDS = 'name memberCode phone profilePhoto';
+// ── Staff (/api/admin/attendance) ──────────────────────────────────────────
 
-function membershipSummary({ state, membership }) {
-  if (!membership) return { state };
-  const daysLeft = Math.ceil((new Date(membership.endDate) - Date.now()) / 86_400_000);
-  return { state, planName: membership.planName, endDate: membership.endDate, daysLeft };
-}
-
-/** GET /api/admin/attendance?date=YYYY-MM-DD */
+/** GET /api/admin/attendance?date=YYYY-MM-DD&memberId= — one day: visits, per-hour counts, desk log. */
 export const listAttendance = asyncHandler(async (req, res) => {
-  const day = req.validated.query.date || gymDayKey();
-  const [items, byHour] = await Promise.all([
-    Attendance.find({ dayKey: day }).sort({ checkedInAt: -1 }).populate('memberId', MEMBER_FIELDS).lean(),
-    Attendance.aggregate([
-      { $match: { dayKey: day } },
-      { $group: { _id: { $hour: { date: '$checkedInAt', timezone: GYM_TZ } }, n: { $sum: 1 } } },
-    ]),
-  ]);
-  const hours = Array.from({ length: 24 }, (_, hour) => ({ hour, count: 0 }));
-  for (const h of byHour) hours[h._id].count = h.n;
-  res.json({ success: true, date: day, total: items.length, items: items.filter((i) => i.memberId), byHour: hours });
+  const { date, memberId } = req.validated.query;
+  res.json({ success: true, ...(await attendance.dayView({ date, memberId })) });
 });
 
 /**
- * POST /api/admin/attendance — check a member in.
- * One visit per member per day: repeating the request returns the existing visit (200).
- * Members without an active plan are refused unless the desk overrides with a reason.
+ * POST /api/admin/attendance — check a member in at the desk.
+ * One visit per member per day: repeating the request returns the open visit (200). After a
+ * check-out it reopens the visit (member came back). Members without an active plan are refused
+ * (409 MEMBERSHIP_INACTIVE) unless the desk overrides with a reason.
  */
 export const checkIn = asyncHandler(async (req, res) => {
-  const { memberId, override, overrideReason } = req.validated.body;
-  const member = await Member.findById(memberId).select(MEMBER_FIELDS).lean();
-  if (!member) throw new AppError('Member not found', 404, 'NOT_FOUND');
-
-  const standing = await currentMembershipState(memberId);
-  const summary = membershipSummary(standing);
-  const dayKey = gymDayKey();
-
-  const existing = await Attendance.findOne({ memberId, dayKey }).lean();
-  if (existing) {
-    return res.json({ success: true, alreadyCheckedIn: true, attendance: existing, member, membership: summary });
-  }
-
-  if (standing.state !== 'active' && !override) {
-    throw new AppError(
-      standing.state === 'none' ? `${member.name} has no plan yet` : `${member.name}'s plan is not active`,
-      409,
-      'MEMBERSHIP_INACTIVE',
-      { member, membership: summary }
-    );
-  }
-  if (standing.state !== 'active' && override && !overrideReason) {
-    throw new AppError('Add a reason to let this member in without an active plan', 422, 'VALIDATION_ERROR', {
-      fields: { overrideReason: 'Add a reason' },
-    });
-  }
-
-  try {
-    const attendance = await Attendance.create({
-      memberId,
-      dayKey,
-      method: 'desk',
-      membershipStatus: ['active', 'expired', 'pending'].includes(standing.state) ? standing.state : 'none',
-      overrideReason: overrideReason || '',
-      recordedBy: req.staffUser.id,
-    });
-    res.status(201).json({ success: true, alreadyCheckedIn: false, attendance, member, membership: summary });
-  } catch (e) {
-    // Two desks tapped at the same moment: the unique index kept one; return it.
-    if (e?.code !== 11000) throw e;
-    const attendance = await Attendance.findOne({ memberId, dayKey }).lean();
-    res.json({ success: true, alreadyCheckedIn: true, attendance, member, membership: summary });
-  }
+  const { memberId, override, overrideReason, method } = req.validated.body;
+  const { status, ...result } = await attendance.checkIn({ memberId, method, override, overrideReason, staff: req.staffUser });
+  res.status(status).json({ success: true, ...result });
 });
 
-/** DELETE /api/admin/attendance/:id — undo a mistaken check-in (same day only). */
+/** POST /api/admin/attendance/scan — a QR code (or, at the desk, a typed member code). */
+export const scan = asyncHandler(async (req, res) => {
+  const { code, mode, source } = req.validated.body;
+  const { status, ...result } = await attendance.scan({ code, mode, source, staff: req.staffUser });
+  res.status(status).json({ success: true, ...result });
+});
+
+/** POST /api/admin/attendance/:id/check-out */
+export const checkOut = asyncHandler(async (req, res) => {
+  const result = await attendance.checkOut({ attendanceId: req.params.id, method: req.validated.body.method, staff: req.staffUser });
+  res.json({ success: true, ...result });
+});
+
+/** DELETE /api/admin/attendance/:id/check-out — undo a mistaken check-out (today only). */
+export const undoCheckOut = asyncHandler(async (req, res) => {
+  const result = await attendance.undoCheckOut({ attendanceId: req.params.id, staff: req.staffUser });
+  res.json({ success: true, ...result });
+});
+
+/** DELETE /api/admin/attendance/:id — undo a mistaken check-in (today only). */
 export const undoCheckIn = asyncHandler(async (req, res) => {
-  const row = await Attendance.findById(req.params.id);
-  if (!row) throw new AppError('Check-in not found', 404, 'NOT_FOUND');
-  if (row.dayKey !== gymDayKey()) throw new AppError('Only today’s check-ins can be undone', 409, 'TOO_LATE');
-  await row.deleteOne();
+  await attendance.undoCheckIn({ attendanceId: req.params.id, staff: req.staffUser });
   res.json({ success: true });
+});
+
+/** GET /api/admin/attendance/month?month=YYYY-MM — visits per day and totals. */
+export const monthView = asyncHandler(async (req, res) => {
+  const month = req.validated.query.month || currentGymMonth();
+  res.json({ success: true, ...(await attendance.monthView({ month })) });
+});
+
+/** GET /api/admin/attendance/month/members?month=&q=&page=&limit= — visits per member. */
+export const monthMembers = asyncHandler(async (req, res) => {
+  const { month, q, page, limit } = req.validated.query;
+  res.json({ success: true, month: month || currentGymMonth(), ...(await attendance.monthMembers({ month: month || currentGymMonth(), q, page, limit })) });
+});
+
+/** GET /api/admin/attendance/export?month=YYYY-MM&kind=visits|members — CSV download. */
+export const exportCsv = asyncHandler(async (req, res) => {
+  const month = req.validated.query.month || currentGymMonth();
+  const { kind } = req.validated.query;
+  const csv = await attendance.exportMonthCsv({ month, kind });
+  res.set('Content-Type', 'text/csv; charset=utf-8');
+  res.set('Content-Disposition', `attachment; filename="attendance-${kind === 'members' ? 'members-' : ''}${month}.csv"`);
+  res.set('Cache-Control', 'no-store');
+  res.send(csv);
+});
+
+/** GET /api/admin/attendance/members/:memberId/summary */
+export const memberSummary = asyncHandler(async (req, res) => {
+  const member = await attendance.ensureMember(req.params.memberId);
+  res.json({ success: true, member, ...(await attendance.memberStats(member._id)) });
+});
+
+/** GET /api/admin/attendance/members/:memberId/month?month=YYYY-MM */
+export const memberMonth = asyncHandler(async (req, res) => {
+  const member = await attendance.ensureMember(req.params.memberId);
+  const month = req.validated.query.month || currentGymMonth();
+  res.json({ success: true, ...(await attendance.memberMonth(member._id, { month, staffView: true })) });
+});
+
+/** GET /api/admin/attendance/members/:memberId/history?page=&limit= */
+export const memberHistory = asyncHandler(async (req, res) => {
+  const member = await attendance.ensureMember(req.params.memberId);
+  const { page, limit } = req.validated.query;
+  res.json({ success: true, ...(await attendance.memberHistory(member._id, { page, limit, staffView: true })) });
+});
+
+/** GET /api/admin/attendance/members/:memberId/qr — the member's current entry code, for printing a card. */
+export const memberQr = asyncHandler(async (req, res) => {
+  res.set('Cache-Control', 'no-store');
+  res.json({ success: true, ...(await attendance.memberQr(req.params.memberId)) });
+});
+
+/** POST /api/admin/attendance/members/:memberId/qr/reissue — replace a lost or shared code. */
+export const reissueQr = asyncHandler(async (req, res) => {
+  const result = await attendance.reissueQr({ memberId: req.params.memberId, reason: req.validated.body.reason, staff: req.staffUser });
+  res.set('Cache-Control', 'no-store');
+  res.status(201).json({ success: true, ...result });
+});
+
+// ── Member app (/api/member/attendance) ────────────────────────────────────
+
+const selfId = async (req) => (await attendance.ensureMember(req.member.memberId))._id;
+
+/** GET /api/member/attendance/today */
+export const myToday = asyncHandler(async (req, res) => {
+  res.json({ success: true, ...(await attendance.memberToday(await selfId(req))) });
+});
+
+/** GET /api/member/attendance/history?page=&limit= */
+export const myHistory = asyncHandler(async (req, res) => {
+  const { page, limit } = req.validated.query;
+  res.json({ success: true, ...(await attendance.memberHistory(await selfId(req), { page, limit })) });
+});
+
+/** GET /api/member/attendance/month?month=YYYY-MM */
+export const myMonth = asyncHandler(async (req, res) => {
+  const month = req.validated.query.month || currentGymMonth();
+  res.json({ success: true, ...(await attendance.memberMonth(await selfId(req), { month })) });
+});
+
+/** GET /api/member/attendance/streak */
+export const myStreak = asyncHandler(async (req, res) => {
+  const stats = await attendance.memberStats(await selfId(req));
+  res.json({
+    success: true,
+    current: stats.streak.current,
+    longest: stats.streak.longest,
+    last30Days: stats.last30Days,
+    thisMonth: stats.thisMonth,
+    total: stats.total,
+    lastVisitAt: stats.lastVisitAt,
+  });
+});
+
+/** GET /api/member/attendance/qr — the string the member app shows as a QR code. */
+export const myQr = asyncHandler(async (req, res) => {
+  const { token, version, memberCode, name } = await attendance.memberQr(await selfId(req));
+  res.set('Cache-Control', 'no-store');
+  res.json({ success: true, token, version, memberCode, name, format: 'qr' });
 });

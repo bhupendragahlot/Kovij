@@ -15,8 +15,12 @@ const emailLogSchema = new mongoose.Schema(
     lastError: { type: String, default: '' },
     sentAt: { type: Date },
     subject: { type: String, default: '' },
+    /** The member notification this email belongs to; its email status follows this log's outcome. */
+    notificationId: { type: mongoose.Schema.Types.ObjectId, ref: 'Notification' },
   },
   { timestamps: true }
 );
+
+emailLogSchema.index({ notificationId: 1 }, { partialFilterExpression: { notificationId: { $type: 'objectId' } } });
 
 export default mongoose.model('EmailLog', emailLogSchema);

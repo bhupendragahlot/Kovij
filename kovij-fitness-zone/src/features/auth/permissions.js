@@ -1,25 +1,12 @@
 import { useSelector } from "react-redux";
 import { selectRole } from "./sessionSlice";
+import { can } from "./permissionRules";
 
 /**
- * What each role may do. Mirrors the server's requireRole checks; the server stays the
- * authority; this only hides controls that would be refused.
- *   admin   owner: everything
- *   manager money and people: prices, plans, revenue, campaigns
- *   staff   front desk: check-ins, members, collecting payments
+ * Role checks for the UI. The rules live in permissionRules.js (a mirror of the server's);
+ * the server stays the authority, this only hides controls that would be refused.
  */
-const RULES = {
-  "revenue.view": ["admin", "manager"],
-  "plans.manage": ["admin", "manager"],
-  "trainers.manage": ["admin", "manager"],
-  "campaigns.manage": ["admin", "manager"],
-  "membership.cancel": ["admin", "manager"],
-  "price.override": ["admin", "manager"],
-  "settings.manage": ["admin"],
-  "staff.manage": ["admin"],
-};
-
-export const can = (role, action) => Boolean(role && RULES[action]?.includes(role));
+export { can };
 
 export function usePermission(action) {
   const role = useSelector(selectRole);

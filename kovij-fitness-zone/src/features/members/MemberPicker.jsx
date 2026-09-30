@@ -2,21 +2,23 @@ import { useId, useState } from "react";
 import { X } from "lucide-react";
 import { useMembers } from "./api";
 import { useDebouncedValue } from "../../shared/hooks/useDebouncedValue";
-import { Avatar, SearchInput, StatusBadge } from "../../shared/ui";
+import { MemberStateBadge } from "./StatusBadges";
+import { Avatar, SearchInput } from "../../shared/ui";
 import { cn } from "../../shared/lib/cn";
 import { formatPhone } from "../../shared/lib/format";
 
 /**
  * Pick one member by searching. Once chosen, shows the member as a removable chip.
- * Combobox semantics: arrows move through matches, Enter selects.
+ * Combobox semantics: arrows move through matches, Enter selects. `excludeId` hides one member
+ * (e.g. the member being edited, when picking who referred them).
  */
-export function MemberPicker({ value, onChange, error, label = "Member" }) {
+export function MemberPicker({ value, onChange, error, label = "Member", excludeId }) {
   const listId = useId();
   const [q, setQ] = useState("");
   const [active, setActive] = useState(0);
   const term = useDebouncedValue(q.trim(), 200);
   const results = useMembers({ q: term, limit: 6 }, { enabled: !value && term.length >= 2 });
-  const options = results.data?.members || [];
+  const options = (results.data?.members || []).filter((m) => m._id !== excludeId);
 
   if (value) {
     return (
@@ -71,7 +73,7 @@ export function MemberPicker({ value, onChange, error, label = "Member" }) {
                   <span className="block truncate text-sm font-semibold">{m.name}</span>
                   <span className="block truncate text-xs text-ink-3">{[m.memberCode, formatPhone(m.phone)].filter(Boolean).join(", ")}</span>
                 </span>
-                <StatusBadge kind="member" status={m.state} size="sm" />
+                <MemberStateBadge status={m.state} size="sm" />
               </button>
             </li>
           ))}

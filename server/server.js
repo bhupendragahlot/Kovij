@@ -10,22 +10,11 @@ import morgan from "morgan";
 import fs from "fs";
 import { fileURLToPath } from "url";
 
-import emailRoutes from "./routes/emailRoutes.js";
-import authRoutes from "./routes/authRoutes.js";
-import trainerRoutes from "./routes/trainerRoutes.js";
-import productRoutes from "./routes/productRoutes.js";
-import planRoutes from "./routes/planRoutes.js";
-import settingsRoutes from "./routes/settingsRoutes.js";
-import memberAuthRoutes from "./routes/memberAuthRoutes.js";
-import membershipRoutes from "./routes/membershipRoutes.js";
-import paymentRoutes from "./routes/paymentRoutes.js";
-import campaignRoutes from "./routes/campaignRoutes.js";
-import adminMemberRoutes from "./routes/adminMemberRoutes.js";
-import adminPaymentRoutes from "./routes/adminPaymentRoutes.js";
-import adminOpsRoutes from "./routes/adminOpsRoutes.js";
+import { mountApiRoutes } from "./routes/index.js";
 import Member from "./models/Member.js";
 import { errorHandler, AppError } from "./middleware/errorHandler.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
+import { activityLog } from "./middleware/activityLog.js";
 import { PUBLIC_AVATAR_DIR, LEGACY_MEMBER_DIR } from "./services/storageService.js";
 import { runStartupMigrations } from "./migrations/index.js";
 import { contentSecurityPolicy } from "./config/csp.js";
@@ -60,7 +49,8 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json({ limit: "1mb" }));
+// Keep the raw bytes too: payment webhooks verify signatures against the exact body.
+app.use(express.json({ limit: "1mb", verify: (req, res, buf) => { req.rawBody = buf; } }));
 app.use(mongoSanitize());
 app.use(morgan("combined", { stream: { write: (msg) => logger.info(msg.trim()) } }));
 app.use(cookieParser());
@@ -81,21 +71,11 @@ app.get(
 
 const apiRouter = express.Router();
 apiRouter.use(apiLimiter);
+apiRouter.use(activityLog);
 app.use("/api", apiRouter);
 
-apiRouter.use("/", emailRoutes);
-apiRouter.use("/auth", authRoutes);
-apiRouter.use("/trainers", trainerRoutes);
-apiRouter.use("/products", productRoutes);
-apiRouter.use("/plans", planRoutes);
-apiRouter.use("/settings", settingsRoutes);
-apiRouter.use("/member/auth", memberAuthRoutes);
-apiRouter.use("/membership", membershipRoutes);
-apiRouter.use("/payments", paymentRoutes);
-apiRouter.use("/campaigns", campaignRoutes);
-apiRouter.use("/admin/members", adminMemberRoutes);
-apiRouter.use("/admin/payments", adminPaymentRoutes);
-apiRouter.use("/admin", adminOpsRoutes);
+mountApiRoutes(apiRouter);
+
 apiRouter.use((req, res, next) => next(new AppError("Endpoint not found", 404, "NOT_FOUND")));
 
 

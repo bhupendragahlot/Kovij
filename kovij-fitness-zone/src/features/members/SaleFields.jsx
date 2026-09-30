@@ -55,7 +55,7 @@ export function PlanChoice({ plans, value, onChange, error }) {
  * Plan + start + payment fields. Used by "Register member" and "Renew plan".
  * The price summary is shown so the desk reads out the exact amount before charging.
  */
-export function SaleFields({ plans, sale, onChange, errors = {}, activeEndDate, isFirstPlan, registrationFee = 0, canOverridePrice }) {
+export function SaleFields({ plans, sale, onChange, errors = {}, activeEndDate, canStartToday = true, isFirstPlan, registrationFee = 0, canOverridePrice }) {
   const plan = plans.find((p) => p._id === sale.planId);
   const { lines, total } = saleSummary({ plan, sale, registrationFee, isFirstPlan });
   const set = (patch) => onChange({ ...sale, ...patch });
@@ -64,7 +64,10 @@ export function SaleFields({ plans, sale, onChange, errors = {}, activeEndDate, 
     <div className="flex flex-col gap-5">
       <PlanChoice plans={plans} value={sale.planId} onChange={(planId) => set({ planId, priceOverride: "" })} error={errors.planId} />
 
-      {activeEndDate && (
+      {activeEndDate && !canStartToday && (
+        <p className="text-[13px] text-ink-3">The current plan is frozen, so the new plan starts after {formatDate(activeEndDate)}. Unfreeze it first to switch plans today.</p>
+      )}
+      {activeEndDate && canStartToday && (
         <Field label="Starts" hint={sale.start === "today" ? "The current plan ends today and the new one starts now." : undefined}>
           <SegmentedControl
             label="When the plan starts"

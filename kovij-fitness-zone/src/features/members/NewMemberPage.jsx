@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { UserPlus } from "lucide-react";
-import { useCreateMember, useDuplicateCheck } from "./api";
+import { uploadMemberPhoto, useCreateMember, useDuplicateCheck } from "./api";
 import { SaleFields } from "./SaleFields";
 import { EMPTY_SALE, saleSummary, salePayload } from "./sale";
-import { AddressFields, ContactFields, HealthFields } from "./MemberFormFields";
-import { EMPTY_DETAILS, EMPTY_HEALTH, fieldErrorsFor, toDetailsPayload, toHealthPayload } from "./memberForm";
+import { AddressFields, ContactFields, HealthFields, JoiningFields } from "./MemberFormFields";
+import { EMPTY_HEALTH, fieldErrorsFor, newMemberDetails, toDetailsPayload, toHealthPayload } from "./memberForm";
+import { PhotoPicker } from "./PhotoField";
 import { useSellablePlans } from "../catalog/api";
 import { useSettings } from "../settings/api";
 import { usePermission } from "../auth/permissions";
@@ -52,12 +53,16 @@ export default function NewMemberPage() {
   const plans = useSellablePlans();
   const settings = useSettings();
   const canOverridePrice = usePermission("price.override");
+  const canSell = usePermission("memberships.sell");
   const create = useCreateMember();
   const idempotency = useIdempotencyKey();
 
-  const [details, setDetails] = useState(EMPTY_DETAILS);
+  const [initialDetails] = useState(newMemberDetails);
+  const [details, setDetails] = useState(initialDetails);
   const [health, setHealth] = useState(EMPTY_HEALTH);
-  const [withPlan, setWithPlan] = useState(true);
+  const [photo, setPhoto] = useState(null);
+  const [savingPhoto, setSavingPhoto] = useState(false);
+  const [withPlan, setWithPlan] = useState(canSell);
   const [sale, setSale] = useState(EMPTY_SALE);
   const [force, setForce] = useState(false);
   const [clientErrors, setClientErrors] = useState({});
@@ -68,8 +73,9 @@ export default function NewMemberPage() {
   const matches = serverMatches || duplicates.data;
 
   const dirty = useMemo(
-    () => JSON.stringify(details) !== JSON.stringify(EMPTY_DETAILS) || JSON.stringify(health) !== JSON.stringify(EMPTY_HEALTH) || Boolean(sale.planId),
-    [details, health, sale.planId]
+    () =>
+      JSON.stringify(details) !== JSON.stringify(initialDetails) || JSON.stringify(health) !== JSON.stringify(EMPTY_HEALTH) || Boolean(sale.planId) || Boolean(photo),
+    [details, initialDetails, health, sale.planId, photo]
   );
   useUnsavedChangesGuard(dirty && !done);
 
@@ -98,7 +104,7 @@ export default function NewMemberPage() {
     create.mutate(
       { payload, idempotencyKey: idempotency.keyFor(payload) },
       {
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           setDone(true);
           idempotency.reset();
           const planPayment = data.sale?.payments?.find((p) => p.type !== "registration" && p.status === "paid");
@@ -106,6 +112,17 @@ export default function NewMemberPage() {
             description: data.sale ? `${data.sale.planName}${planPayment ? `, ${formatINR(total)} collected` : ", payment due"}` : `Member code ${data.member.memberCode}`,
             action: planPayment ? { label: "Print", onClick: () => openReceipt(planPayment._id) } : undefined,
           });
+          // The member exists now; a failed photo upload must not undo that, so it only warns.
+          if (photo) {
+            setSavingPhoto(true);
+            try {
+              await uploadMemberPhoto(data.member._id, photo);
+            } catch (err) {
+              toast.warning("The photo didn't save", { description: `${err.message} Add it again from the profile.` });
+            } finally {
+              setSavingPhoto(false);
+            }
+          }
           // Navigate after the guard sees `done`.
           setTimeout(() => navigate(`/admin/members/${data.member._id}`, { replace: true }), 0);
         },
@@ -124,34 +141,44 @@ export default function NewMemberPage() {
         <div className="flex flex-col gap-4">
           <Card padding="lg">
             <CardHeader title="Contact" />
+            <div className="mb-5">
+              <PhotoPicker name={details.name} file={photo} onChange={setPhoto} disabled={create.isPending || savingPhoto} />
+            </div>
             <ContactFields value={details} onChange={setDetails} errors={detailErrors} />
             <DuplicateNotice matches={matches} forced={force} onForce={matches?.some((m) => m.phone && m.phone.replace(/\D/g, "").endsWith(details.phone.replace(/\D/g, "").slice(-10))) ? setForce : null} />
           </Card>
 
+          {canSell && (
+            <Card padding="lg">
+              <CardHeader title="Plan and payment" />
+              <Switch label="Start a plan now" description="Turn off to register the member and add a plan later." checked={withPlan} onChange={setWithPlan} />
+              {withPlan && (
+                <div className="mt-5">
+                  {plans.isPending ? (
+                    <SkeletonList rows={2} />
+                  ) : plans.data?.length ? (
+                    <SaleFields
+                      plans={plans.data}
+                      sale={sale}
+                      onChange={setSale}
+                      errors={{ ...fieldErrorsFor(create.error, "membership"), planId: clientErrors.planId }}
+                      isFirstPlan
+                      registrationFee={settings.data?.registrationFee || 0}
+                      canOverridePrice={canOverridePrice}
+                    />
+                  ) : (
+                    <InlineAlert tone="warning">
+                      No active plans yet. <Link to="/admin/plans" className="font-semibold underline">Create a plan</Link> first, or register without one.
+                    </InlineAlert>
+                  )}
+                </div>
+              )}
+            </Card>
+          )}
+
           <Card padding="lg">
-            <CardHeader title="Plan and payment" />
-            <Switch label="Start a plan now" description="Turn off to register the member and add a plan later." checked={withPlan} onChange={setWithPlan} />
-            {withPlan && (
-              <div className="mt-5">
-                {plans.isPending ? (
-                  <SkeletonList rows={2} />
-                ) : plans.data?.length ? (
-                  <SaleFields
-                    plans={plans.data}
-                    sale={sale}
-                    onChange={setSale}
-                    errors={{ ...fieldErrorsFor(create.error, "membership"), planId: clientErrors.planId }}
-                    isFirstPlan
-                    registrationFee={settings.data?.registrationFee || 0}
-                    canOverridePrice={canOverridePrice}
-                  />
-                ) : (
-                  <InlineAlert tone="warning">
-                    No active plans yet. <Link to="/admin/plans" className="font-semibold underline">Create a plan</Link> first, or register without one.
-                  </InlineAlert>
-                )}
-              </div>
-            )}
+            <CardHeader title="Joining" description="When they joined and how they found the gym." />
+            <JoiningFields value={details} onChange={setDetails} errors={detailErrors} />
           </Card>
 
           <Card padding="lg">
@@ -174,7 +201,7 @@ export default function NewMemberPage() {
                   : plan
                     ? `${plan.name}, ${sale.collect === "now" ? "paying now" : "pay later"}`
                     : "Choose a plan above"}</p>
-            <Button type="submit" variant="primary" size="lg" icon={UserPlus} loading={create.isPending} disabled={!online} className="max-sm:w-full">
+            <Button type="submit" variant="primary" size="lg" icon={UserPlus} loading={create.isPending || savingPhoto} disabled={!online} className="max-sm:w-full">
               {submitLabel}
             </Button>
           </div>

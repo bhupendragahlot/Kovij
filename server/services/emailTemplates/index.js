@@ -132,6 +132,24 @@ const TEMPLATES = {
   bulk: campaignBodyEmail,
 };
 
+/**
+ * Modules add their own templates without editing this file:
+ *   registerTemplates({ expiry7d: (vars) => ({ subject, html }) })
+ * Call it at module load (top level of the module's template file). Keys must be unique.
+ * Build templates with `wrapEmail` and escape every interpolated value with `escapeHtml`.
+ */
+export function registerTemplates(map) {
+  for (const [key, fn] of Object.entries(map)) {
+    if (TEMPLATES[key] && TEMPLATES[key] !== fn) throw new Error(`Email template "${key}" is already registered`);
+    TEMPLATES[key] = fn;
+  }
+}
+
+export const hasTemplate = (key) => Boolean(TEMPLATES[key]);
+
+/** Shared page wrapper for module templates. */
+export const wrapEmail = wrapHtml;
+
 export function renderTemplate(key, vars) {
   const fn = TEMPLATES[key] || campaignBodyEmail;
   return fn(vars || {});
