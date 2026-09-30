@@ -134,9 +134,7 @@ function MembersTab({ filters, setFilters, myTrainer }) {
         <Avatar name={m.name} src={m.profilePhoto} />
         <span className="min-w-0 flex-1">
           <span className="block truncate font-semibold text-ink">{m.name}</span>
-          <span className="block truncate text-[13px] text-ink-3">
-            {m.workout ? m.workout.name : "No workout plan"} · {lastSession(m)}
-          </span>
+          <span className="block truncate text-[13px] text-ink-2">{m.workout ? m.workout.name : "No workout plan"}</span>
           <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
             <StatusBadge kind="member" status={m.state} size="sm" />
             {!m.workout && (
@@ -144,6 +142,7 @@ function MembersTab({ filters, setFilters, myTrainer }) {
                 No plan
               </Badge>
             )}
+            <span className="text-xs text-ink-3">{lastSession(m)}</span>
           </span>
         </span>
       </Link>
@@ -431,7 +430,7 @@ export default function WorkoutsPage() {
         onChange={switchTab}
         className="mb-4"
         tabs={[
-          { value: "members", label: role === "trainer" && me.data ? "My members" : "Members" },
+          { value: "members", label: "Members" },
           { value: "plans", label: "Plans" },
         ]}
       />

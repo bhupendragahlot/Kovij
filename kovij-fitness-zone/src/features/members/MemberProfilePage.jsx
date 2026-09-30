@@ -81,12 +81,12 @@ function planSubline(member, c) {
   if (member.state === "expired") return `Ended ${formatDate(c.endDate)}`;
   if (member.state === "upcoming") return `Starts ${formatDate(c.startDate)}`;
   if (member.state === "pending") return "Starts when payment is collected";
-  if (member.state === "paused") return `Frozen until ${formatDate(c.freeze?.endDate)}, then ends ${formatDate(c.endDate)}`;
+  if (member.state === "paused") return `Frozen, back on ${formatDate(c.freeze?.endDate)}. Ends ${formatDate(c.endDate)}`;
   const left = daysUntil(c.endDate);
   return `Ends ${formatDate(c.endDate)}, ${left === 0 ? "today" : `${dayCount(left)} left`}`;
 }
 
-function PlanTile({ member, memberships }) {
+function PlanTile({ member, memberships, onUnfreeze }) {
   const c = member.current;
   const next = memberships.find((m) => m.status === "upcoming");
   if (!c) {
@@ -116,6 +116,11 @@ function PlanTile({ member, memberships }) {
           <PauseCircle className="size-3.5" aria-hidden />
           Freeze booked from {formatDate(c.freeze.startDate)} for {dayCount(c.freeze.days)}
         </p>
+      )}
+      {c.freeze && onUnfreeze && (
+        <Button size="sm" variant="quiet" icon={PlayCircle} className="mt-3" onClick={onUnfreeze}>
+          {member.state === "paused" ? "Unfreeze now" : "Remove freeze"}
+        </Button>
       )}
       {next && member.state !== "upcoming" && (
         <p className="mt-3 text-[13px] font-semibold text-info">
@@ -328,7 +333,7 @@ export default function MemberProfilePage() {
       </Card>
 
       <div className={`mb-6 grid grid-cols-1 gap-4 ${canSeePayments ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
-        <PlanTile member={member} memberships={memberships} />
+        <PlanTile member={member} memberships={memberships} onUnfreeze={canFreeze && current?.freeze ? () => unfreeze.run(member, current) : null} />
         {canSeePayments && (
           <Card>
             <p className="text-sm font-semibold text-ink-2">Dues</p>

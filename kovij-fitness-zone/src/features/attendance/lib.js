@@ -84,8 +84,13 @@ export function downloadText(text, filename, type = "text/csv;charset=utf-8") {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
-/** Who did it and how, for lists: "Kiosk", "Desk, Raj". */
+/**
+ * Who did it and how: "Desk, Sunita", "QR at desk, Sunita", "Kiosk, signed in as Raj".
+ * At the kiosk the member scans for themselves; the name is the staff account the tablet uses.
+ */
 export function recordedByLine(method, user) {
-  const who = user?.name || user?.username;
-  return [METHOD_LABEL[method] || method, who].filter(Boolean).join(", ");
+  const who = typeof user === "string" ? user : user?.name || user?.username;
+  const how = METHOD_LABEL[method] || method;
+  if (!who) return how;
+  return method === "kiosk" ? `${how}, signed in as ${who}` : `${how}, ${who}`;
 }

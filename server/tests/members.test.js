@@ -191,7 +191,7 @@ test('member notices say what changed in plain words, and emails escape them', (
   const event = { _id: 'e1', effectiveFrom: ist('2026-04-10T00:00:00'), effectiveTo: ist('2026-04-17T00:00:00'), days: 3 };
   const frozen = membershipNotice('frozen', { membership, event });
   assert.equal(frozen.title, 'Your plan is on hold');
-  assert.match(frozen.body, /10 Apr 2026 until 17 Apr 2026/);
+  assert.match(frozen.body, /from 10 Apr 2026 to 16 Apr 2026\. You can train again from 17 Apr 2026/);
   assert.match(frozen.body, /ends on 7 Jul 2026/);
   assert.match(membershipNotice('frozen', { membership: { ...membership, status: 'active' }, event }).title, /will be on hold from 10 Apr 2026/);
   assert.equal(membershipNotice('extended', { membership, event }).title, '3 days added to your plan');

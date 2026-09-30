@@ -1,13 +1,12 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, Banknote, CalendarDays, CreditCard, Globe, IndianRupee, Scale, Smartphone, TrendingDown, TrendingUp, Undo2, Wallet } from "lucide-react";
 import { useFinanceOverview } from "./api";
-import { DailyRevenue } from "./charts";
-import { BreakdownList, MonthPicker } from "./components";
+import { DailyRevenue, MonthlyTrend } from "./charts";
+import { BreakdownList, MonthPicker, StatTile } from "./components";
 import { currentMonth, isValidMonth, monthLabel } from "./month";
 import { MODE_LABEL, TYPE_LABEL } from "../payments/labels";
 import { useUrlState } from "../../shared/hooks/useUrlState";
-import { Button, ButtonLink, Card, CardHeader, ErrorState, KpiTile, PageHeader, Skeleton, Tile } from "../../shared/ui";
-import { MonthlyRevenue } from "../../shared/ui/charts/charts";
+import { Button, ButtonLink, Card, CardHeader, ErrorState, KpiTile, PageHeader, Skeleton } from "../../shared/ui";
 import { cn } from "../../shared/lib/cn";
 import { formatINR, formatNumber, pluralize } from "../../shared/lib/format";
 
@@ -40,24 +39,24 @@ function MoneyInOut({ selected, month }) {
     <Card aria-labelledby="in-out">
       <CardHeader id="in-out" title="Money in and out" description={monthLabel(month)} action={<ButtonLink to="/admin/expenses" size="sm" variant="ghost">Expenses<ArrowRight className="size-4" aria-hidden /></ButtonLink>} />
       <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <Tile>
+        <StatTile>
           <dt className="text-[13px] text-ink-3">Collected</dt>
           <dd className="tabular text-xl font-bold">{formatINR(selected.collected)}</dd>
           <dd className="text-[13px] text-ink-3">{pluralize(selected.payments, "payment")}</dd>
-        </Tile>
-        <Tile>
+        </StatTile>
+        <StatTile>
           <dt className="text-[13px] text-ink-3">Spent</dt>
           <dd className="tabular text-xl font-bold">{formatINR(selected.expenses)}</dd>
           <dd className="text-[13px] text-ink-3">Rent, salaries, bills</dd>
-        </Tile>
-        <Tile className={profit ? "bg-good-soft" : "bg-bad-soft"}>
+        </StatTile>
+        <StatTile tone={profit ? "good" : "bad"}>
           <dt className={cn("flex items-center gap-1.5 text-[13px] font-semibold", profit ? "text-good" : "text-bad")}>
             <NetIcon className="size-4" aria-hidden />
             {profit ? "Left over" : "Loss"}
           </dt>
           <dd className="tabular text-xl font-bold">{formatINR(Math.abs(selected.net))}</dd>
           <dd className="text-[13px] text-ink-3">Collected minus spent</dd>
-        </Tile>
+        </StatTile>
       </dl>
       {selected.refunds.count > 0 && (
         <p className="mt-3 flex items-center gap-1.5 text-[13px] text-ink-3">
@@ -81,14 +80,14 @@ function Outstanding({ outstanding }) {
       />
       <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {outstanding.ageing.map((b, i) => (
-          <Tile key={b.key} className={cn(i === 2 && b.amount > 0 && "bg-warn-soft")}>
+          <StatTile key={b.key} tone={i === 2 && b.amount > 0 ? "warn" : "neutral"}>
             <dt className="flex items-center gap-1.5 text-[13px] text-ink-3">
               <CalendarDays className="size-3.5" aria-hidden />
               {b.label} old
             </dt>
             <dd className="tabular text-xl font-bold">{formatINR(b.amount)}</dd>
             <dd className="text-[13px] text-ink-3">{pluralize(b.count, "bill")}</dd>
-          </Tile>
+          </StatTile>
         ))}
       </dl>
     </Card>
@@ -189,7 +188,7 @@ export default function RevenuePage() {
           <Outstanding outstanding={d.outstanding} />
 
           <Card>
-            <MonthlyRevenue data={d.monthly} />
+            <MonthlyTrend data={d.monthly} />
           </Card>
         </div>
       )}

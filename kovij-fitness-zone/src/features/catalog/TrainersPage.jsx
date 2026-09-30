@@ -15,18 +15,21 @@ function PerformanceRow({ perf }) {
     { label: "Active", value: perf.active },
     { label: "Lapsed", value: perf.lapsed, warn: perf.lapsed > 0 },
     { label: "On a plan", value: `${perf.onPlan}/${perf.members}` },
-    { label: "Visits each", value: perf.avgVisits30 },
+    { label: "Avg visits", value: perf.avgVisits30 },
     { label: "Sessions", value: perf.sessions30 },
   ];
   return (
-    <dl className="mt-4 grid grid-cols-3 gap-2 rounded-tile bg-surface-2 p-3 sm:grid-cols-5" aria-label="Last 30 days">
+    <div className="mt-4 rounded-tile bg-surface-2 p-3">
+      <p className="mb-1.5 text-[12px] font-semibold text-ink-3">Last 30 days</p>
+      <dl className="grid grid-cols-3 gap-2 sm:grid-cols-5" aria-label="Coaching in the last 30 days">
       {items.map((i) => (
         <div key={i.label} className="min-w-0">
           <dt className="truncate text-[12px] text-ink-3">{i.label}</dt>
           <dd className={cn("tabular text-[15px] font-bold", i.warn && "text-warn")}>{i.value}</dd>
         </div>
       ))}
-    </dl>
+      </dl>
+    </div>
   );
 }
 

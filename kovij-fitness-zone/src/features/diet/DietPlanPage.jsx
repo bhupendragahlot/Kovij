@@ -134,17 +134,17 @@ function ItemRow({ item, path, errors, onChange, onRemove }) {
       <Cell label="Quantity" error={errors[`${path}.quantity`]} className="col-span-2 sm:col-span-1">
         <Input value={item.quantity} onChange={(e) => set({ quantity: e.target.value })} placeholder="e.g. 2 pieces" maxLength={60} />
       </Cell>
-      <Cell label="Calories" error={errors[`${path}.calories`]}>
-        <Input {...numberProps} value={item.calories} onChange={(e) => set({ calories: e.target.value })} placeholder={auto} suffix="kcal" />
+      <Cell label="Calories (kcal)" error={errors[`${path}.calories`]}>
+        <Input {...numberProps} value={item.calories} onChange={(e) => set({ calories: e.target.value })} placeholder={auto} />
       </Cell>
-      <Cell label="Protein" error={errors[`${path}.proteinG`]}>
-        <Input {...numberProps} value={item.proteinG} onChange={(e) => set({ proteinG: e.target.value })} placeholder="0" suffix="g" />
+      <Cell label="Protein (g)" error={errors[`${path}.proteinG`]}>
+        <Input {...numberProps} value={item.proteinG} onChange={(e) => set({ proteinG: e.target.value })} placeholder="0" />
       </Cell>
-      <Cell label="Carbs" error={errors[`${path}.carbsG`]}>
-        <Input {...numberProps} value={item.carbsG} onChange={(e) => set({ carbsG: e.target.value })} placeholder="0" suffix="g" />
+      <Cell label="Carbs (g)" error={errors[`${path}.carbsG`]}>
+        <Input {...numberProps} value={item.carbsG} onChange={(e) => set({ carbsG: e.target.value })} placeholder="0" />
       </Cell>
-      <Cell label="Fat" error={errors[`${path}.fatG`]}>
-        <Input {...numberProps} value={item.fatG} onChange={(e) => set({ fatG: e.target.value })} placeholder="0" suffix="g" />
+      <Cell label="Fat (g)" error={errors[`${path}.fatG`]}>
+        <Input {...numberProps} value={item.fatG} onChange={(e) => set({ fatG: e.target.value })} placeholder="0" />
       </Cell>
       <IconButton
         icon={X}
@@ -186,10 +186,10 @@ function MealEditor({ meal, index, count, errors, onChange, onRemove, onMove }) 
         <div className={cn("mb-1.5 hidden gap-2 text-xs font-semibold text-ink-3 sm:grid", ITEM_GRID)} aria-hidden>
           <span>Food</span>
           <span>Quantity</span>
-          <span>Calories</span>
-          <span>Protein</span>
-          <span>Carbs</span>
-          <span>Fat</span>
+          <span>Calories (kcal)</span>
+          <span>Protein (g)</span>
+          <span>Carbs (g)</span>
+          <span>Fat (g)</span>
           <span />
         </div>
         {meal.items.length ? (

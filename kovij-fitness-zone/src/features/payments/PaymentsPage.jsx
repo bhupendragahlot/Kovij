@@ -117,9 +117,13 @@ function RowActions({ p, onCollect, onVerify, onRefund, canCollect, canRefund, b
   }
   return (
     <div className="flex items-center justify-end gap-1">
-      <Button size={size} variant="ghost" icon={Printer} onClick={print}>
-        Receipt
-      </Button>
+      {block ? (
+        <IconButton icon={Printer} label={`Print receipt ${p.invoiceNo}`} onClick={print} />
+      ) : (
+        <Button size={size} variant="ghost" icon={Printer} onClick={print}>
+          Receipt
+        </Button>
+      )}
       {items.length > 0 && (
         <Menu
           label={`More for receipt ${p.invoiceNo}`}
@@ -215,34 +219,33 @@ export default function PaymentsPage() {
       cell: (p) => <span className="whitespace-nowrap">{formatDate(dues ? p.createdAt : filters.status === "refunded" ? p.refund?.at : p.paidAt || p.createdAt)}</span>,
     },
     { id: "status", header: "Status", cell: (p) => <PaymentStatusBadge payment={p} /> },
-    { id: "invoice", header: "Receipt no.", hideBelow: "xl", cell: (p) => <span className="tabular text-ink-3">{p.invoiceNo}</span> },
+    { id: "invoice", header: "Receipt no.", hideBelow: "xl", cell: (p) => <span className="tabular whitespace-nowrap text-ink-3">{p.invoiceNo}</span> },
     { id: "actions", header: <span className="sr-only">Actions</span>, align: "right", cell: (p) => <RowActions p={p} {...actionProps} /> },
   ];
 
+  // Phones: details and status on the left, amount and the one-tap action on the right.
   const mobileRow = (p) => (
-    <div className="flex flex-col gap-3 px-4 py-3">
-      <div className="flex items-start gap-3">
-        <Avatar name={p.memberId?.name} src={p.memberId?.profilePhoto} />
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold">{p.memberId?.name || "Deleted member"}</p>
+    <div className="flex items-start gap-3 px-4 py-3">
+      <Avatar name={p.memberId?.name} src={p.memberId?.profilePhoto} />
+      <div className="min-w-0 flex-1">
+        <p className="truncate font-semibold">{p.memberId?.name || "Deleted member"}</p>
+        <p className="text-[13px] text-ink-3">
+          {TYPE_LABEL[p.type]}
+          {p.membershipId?.planName ? `: ${p.membershipId.planName}` : ""}, {formatDate(dues ? p.createdAt : p.paidAt || p.createdAt)}
+        </p>
+        {p.verification?.state === "submitted" && <p className="text-[13px] text-ink-2">UPI reference {p.verification.utr}</p>}
+        {p.status === "pending" && p.originalAmount != null && (
           <p className="text-[13px] text-ink-3">
-            {TYPE_LABEL[p.type]}
-            {p.membershipId?.planName ? `: ${p.membershipId.planName}` : ""}, {formatDate(dues ? p.createdAt : p.paidAt || p.createdAt)}
+            {formatINR(p.originalAmount - p.amount)} of {formatINR(p.originalAmount)} paid
           </p>
-          {p.verification?.state === "submitted" && <p className="text-[13px] text-ink-2">UPI reference {p.verification.utr}</p>}
-          {p.status === "pending" && p.originalAmount != null && (
-            <p className="text-[13px] text-ink-3">
-              {formatINR(p.originalAmount - p.amount)} of {formatINR(p.originalAmount)} paid
-            </p>
-          )}
-          {p.dueId?.invoiceNo && <p className="text-[13px] text-ink-3">Part of bill {p.dueId.invoiceNo}</p>}
-        </div>
-        <div className="flex flex-col items-end gap-1.5">
-          <span className="tabular font-bold">{formatINR(p.amount)}</span>
+        )}
+        {p.dueId?.invoiceNo && <p className="text-[13px] text-ink-3">Part of bill {p.dueId.invoiceNo}</p>}
+        <div className="mt-1.5">
           <PaymentStatusBadge payment={p} />
         </div>
       </div>
-      <div className="flex justify-end empty:hidden">
+      <div className="flex shrink-0 flex-col items-end gap-2">
+        <span className="tabular font-bold">{formatINR(p.amount)}</span>
         <RowActions p={p} {...actionProps} block />
       </div>
     </div>

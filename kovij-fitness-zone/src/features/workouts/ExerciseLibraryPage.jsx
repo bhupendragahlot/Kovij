@@ -29,9 +29,10 @@ const DEFAULTS = { q: "", muscle: "all", equipment: "all", status: "active", pag
 const LIMIT = 50;
 
 function ExerciseBadges({ e }) {
+  if (e.category === "strength" && e.builtIn && !e.archived) return null;
   return (
     <span className="mt-1 flex flex-wrap gap-1.5">
-      <Badge size="sm">{CATEGORY_LABEL[e.category]}</Badge>
+      {e.category !== "strength" && <Badge size="sm">{CATEGORY_LABEL[e.category]}</Badge>}
       {!e.builtIn && (
         <Badge size="sm" tone="brand">
           Added by gym

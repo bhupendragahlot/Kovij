@@ -5,6 +5,7 @@ import {
   extendMembership,
   freezeMembership,
   settleFreezes,
+  settleFreezesSoon,
   unfreezeMembership,
 } from '../services/membershipService.js';
 import { notifyMembershipChange } from '../services/membershipNotices.js';
@@ -90,7 +91,7 @@ function stripMoney(req, result) {
 
 /** GET /api/admin/memberships/ending?within=7|15|30 */
 export const ending = asyncHandler(async (req, res) => {
-  await settleFreezes().catch((e) => logger.warn(`settleFreezes failed: ${e.message}`));
+  await settleFreezesSoon();
   res.json({ success: true, ...stripMoney(req, await listEnding(req.validated.query)) });
 });
 

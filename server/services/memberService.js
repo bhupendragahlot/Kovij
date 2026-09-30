@@ -9,7 +9,7 @@ import { AppError } from '../middleware/errorHandler.js';
 import { canonicalPhone, escapeRegex, normalizePhone } from '../utils/strings.js';
 import { dayjs, gymDayKey, parseGymDay, toGymTime } from '../utils/time.js';
 import { toObjectId } from '../utils/db.js';
-import { settleFreezes } from './membershipService.js';
+import { settleFreezes, settleFreezesSoon } from './membershipService.js';
 import { logger } from '../utils/logger.js';
 
 export const MEMBER_STATES = ['active', 'expiring', 'paused', 'upcoming', 'pending', 'expired', 'none'];
@@ -176,16 +176,12 @@ const LIST_FIELDS = {
   assignedTrainerId: 1, state: 1, dues: 1, current: 1,
 };
 
-/** Apply freezes that are due before reading standings (cheap when nothing is due). */
-async function settleDueFreezes() {
-  await settleFreezes().catch((e) => logger.warn(`settleFreezes failed: ${e.message}`));
-}
 
 /**
  * Paginated member list with standing, dues and per-state counts for filter chips.
  */
 export async function listMembersWithStanding({ q, state, joinedFrom, joinedTo, trainerId, page = 1, limit = 25, sort = 'recent', expiringWindowDays = 7 }) {
-  await settleDueFreezes();
+  await settleFreezesSoon();
   const now = new Date();
   const expiringUntil = dayjs(now).add(expiringWindowDays, 'day').toDate();
   const stateMatch = state === 'dues' ? { dues: { $gt: 0 } } : state && state !== 'all' ? { state } : {};
@@ -262,7 +258,7 @@ const csvDay = (value) => (value ? toGymTime(value).format('YYYY-MM-DD') : '');
  * data, and dues only when `includeMoney` (roles that may see payments).
  */
 export async function exportMembersCsv({ q, state, joinedFrom, joinedTo, trainerId, sort = 'name', expiringWindowDays = 7, includeMoney = false }) {
-  await settleDueFreezes();
+  await settleFreezesSoon();
   const now = new Date();
   const expiringUntil = dayjs(now).add(expiringWindowDays, 'day').toDate();
   const stateMatch = state === 'dues' ? { dues: { $gt: 0 } } : state && state !== 'all' ? { state } : {};

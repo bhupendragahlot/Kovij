@@ -21,7 +21,6 @@ import {
   Input,
   Menu,
   PageHeader,
-  SegmentedControl,
   Select,
   Skeleton,
   SkeletonList,
@@ -254,13 +253,13 @@ export default function WorkoutPlanPage() {
                 </Select>
               </Field>
               <Field label="Level" error={errors.level} className="sm:col-span-2">
-                <SegmentedControl
-                  label="Level"
-                  block
-                  value={details.level}
-                  onChange={(level) => set({ level })}
-                  options={Object.entries(LEVEL_LABEL).map(([value, label]) => ({ value, label }))}
-                />
+                <Select value={details.level} onChange={(e) => set({ level: e.target.value })}>
+                  {Object.entries(LEVEL_LABEL).map(([v, l]) => (
+                    <option key={v} value={v}>
+                      {l}
+                    </option>
+                  ))}
+                </Select>
               </Field>
               <Field label="Notes for members" optional error={errors.notes} className="sm:col-span-2" hint="Warm-up, how to progress, what to do on rest days.">
                 <Textarea value={details.notes} onChange={(e) => set({ notes: e.target.value })} rows={3} maxLength={2000} />

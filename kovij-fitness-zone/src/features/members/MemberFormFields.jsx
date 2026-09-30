@@ -53,7 +53,7 @@ export function AddressFields({ value, onChange, errors = {} }) {
         <Input type="tel" inputMode="tel" value={value.emergencyPhone} onChange={set("emergencyPhone")} maxLength={20} />
       </Field>
       <Field label="Notes for staff" optional error={errors.notes} className="sm:col-span-2">
-        <Textarea value={value.notes} onChange={set("notes")} maxLength={2000} placeholder="e.g. Prefers morning slots, referred by Ravi" />
+        <Textarea value={value.notes} onChange={set("notes")} maxLength={2000} placeholder="e.g. Prefers morning slots" />
       </Field>
     </div>
   );

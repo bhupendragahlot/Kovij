@@ -165,6 +165,7 @@ const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 /** Month grid, weeks starting Monday (the gym's closed Sunday sits at the end of each row). */
 function MonthGrid({ days, renderDay, label }) {
+  if (!days?.length) return null;
   const lead = (weekdayOf(days[0].date) + 6) % 7;
   return (
     <div role="group" aria-label={label}>
@@ -205,7 +206,7 @@ export function MonthHeatmap({ days, onSelectDay }) {
   const today = gymDayKey();
   const max = Math.max(0, ...days.map((d) => d.visits));
   return (
-    <div>
+    <div className="max-w-2xl">
       <MonthGrid
         days={days}
         label="Visits per day"

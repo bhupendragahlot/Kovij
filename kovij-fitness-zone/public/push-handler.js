@@ -7,8 +7,7 @@
  * Payload: { title, body, url, tag, notificationId, icon, badge, timestamp }. Only same-origin
  * paths are opened, whatever the payload says.
  */
-/* eslint-env serviceworker */
-/* global self, clients */
+/* global clients */
 
 (function () {
   var DEFAULT_TITLE = "Kovij Fitness Zone";

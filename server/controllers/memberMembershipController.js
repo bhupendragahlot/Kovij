@@ -211,7 +211,8 @@ export const getCard = asyncHandler(async (req, res) => {
       planName: m?.planName || null,
       validFrom: m?.startDate || null,
       validUntil: m?.endDate || null,
-      onHoldUntil: m?.status === 'paused' ? m.freeze?.endDate || null : null,
+      /** While frozen: the day the plan resumes (the last day on hold is the day before). */
+      resumesOn: m?.status === 'paused' ? m.freeze?.endDate || null : null,
       gym: {
         name: settings.gymName,
         logoUrl: settings.logoUrl || null,

@@ -125,7 +125,7 @@ function DeskLog({ events }) {
                       )}
                     </p>
                     <p className="mt-0.5 text-[13px] text-ink-3">
-                      {[METHOD_LABEL[e.method] || e.method, e.byName && `by ${e.byName}`].filter(Boolean).join(" ")}
+                      {recordedByLine(e.method, e.byName)}
                       {e.reason ? `. ${e.type === "refused" ? "Reason" : "Note"}: ${e.reason}` : ""}
                       {e.type === "undo_check_in" && e.details?.checkedInAt ? `. Had checked in at ${formatTime(e.details.checkedInAt)}` : ""}
                     </p>

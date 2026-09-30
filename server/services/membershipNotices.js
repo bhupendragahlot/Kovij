@@ -9,6 +9,8 @@ import { escapeHtml } from '../utils/strings.js';
 import { toGymTime } from '../utils/time.js';
 
 const day = (value) => (value ? toGymTime(value).format('D MMM YYYY') : '');
+/** A freeze ends at the start of the day the plan resumes, so the last day on hold is the day before. */
+const lastDayBefore = (value) => day(new Date(new Date(value).getTime() - 1));
 
 export function membershipUpdateEmail({ name, heading, message, gymName = 'Kovij Fitness Zone' }) {
   const subject = `${heading} | ${gymName}`;
@@ -34,7 +36,7 @@ export function membershipNotice(kind, { membership, event, endedHow }) {
       const startsLater = membership.status !== 'paused';
       return {
         title: startsLater ? `Your plan will be on hold from ${day(event.effectiveFrom)}` : 'Your plan is on hold',
-        body: `${plan} is on hold from ${day(event.effectiveFrom)} until ${day(event.effectiveTo)}. You can train again from ${day(event.effectiveTo)}, and your plan now ends on ${ends}.`,
+        body: `${plan} is on hold from ${day(event.effectiveFrom)} to ${lastDayBefore(event.effectiveTo)}. You can train again from ${day(event.effectiveTo)}, and your plan now ends on ${ends}.`,
       };
     }
     case 'unfrozen':

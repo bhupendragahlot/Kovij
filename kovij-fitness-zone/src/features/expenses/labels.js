@@ -11,4 +11,4 @@ export const EXPENSE_CATEGORY = {
 };
 export const EXPENSE_CATEGORIES = Object.keys(EXPENSE_CATEGORY);
 
-export const EXPENSE_MODE = { cash: "Cash", upi: "UPI", card: "Card", bank: "Bank or cheque" };
+export const EXPENSE_MODE = { cash: "Cash", upi: "UPI", card: "Card", bank: "Bank" };

@@ -4,6 +4,13 @@ import { Button, IconButton } from "../../shared/ui";
 import { cn } from "../../shared/lib/cn";
 import { formatINR } from "../../shared/lib/format";
 
+const TILE_TONES = { neutral: "bg-surface-2", good: "bg-good-soft", bad: "bg-bad-soft", warn: "bg-warn-soft" };
+
+/** Inset figure tile with a tone (one background class, so tones never fight Tile's default). */
+export function StatTile({ tone = "neutral", className, children }) {
+  return <div className={cn("rounded-tile p-4", TILE_TONES[tone], className)}>{children}</div>;
+}
+
 /** Previous / next month with the month named in words; never goes past this month. */
 export function MonthPicker({ value, onChange, className }) {
   const now = currentMonth();

@@ -457,6 +457,17 @@ export async function settleFreezes({ memberId, now = new Date(), onResumed = no
   return { paused: paused.modifiedCount, resumed };
 }
 
+let lastGlobalSettle = 0;
+/**
+ * The global settle for list screens (members list, renewals), run at most every 30 seconds per
+ * process so busy search boxes don't repeat it. Reads of one member settle that member directly.
+ */
+export async function settleFreezesSoon() {
+  if (Date.now() - lastGlobalSettle < 30_000) return;
+  lastGlobalSettle = Date.now();
+  await settleFreezes().catch((e) => logger.warn(`settleFreezes failed: ${e.message}`));
+}
+
 // Imported lazily to keep this module free of notification/email wiring at load time.
 async function notifyResumed(result) {
   const { notifyMembershipChange } = await import('./membershipNotices.js');

@@ -47,7 +47,7 @@ function planLine(m) {
   const c = m.current;
   if (!c) return "No plan yet";
   if (m.state === "active" || m.state === "expiring") return `${c.planName}, ends ${formatShortDate(c.endDate)}`;
-  if (m.state === "paused") return `${c.planName}, frozen until ${formatShortDate(c.freeze?.endDate)}`;
+  if (m.state === "paused") return `${c.planName}, frozen, back on ${formatShortDate(c.freeze?.endDate)}`;
   if (m.state === "expired") return `${c.planName}, ended ${formatShortDate(c.endDate)}`;
   if (m.state === "upcoming") return `${c.planName}, starts ${formatShortDate(c.startDate)}`;
   return c.planName;

@@ -185,7 +185,7 @@ check('frozen filter lists the member', frozenList.body.members?.length === 1 &&
 const checkIn = await call('POST', '/admin/attendance', { token: T, body: { memberId: AID } });
 check('a frozen member cannot check in', checkIn.status >= 400 && checkIn.status < 500 && checkIn.body?.success === false, checkIn.body);
 const card = await call('GET', '/member/membership/card', { token: A.token });
-check('membership card shows the hold', card.status === 200 && card.body.card.onHoldUntil && card.body.card.state === 'paused', card.body);
+check('membership card shows the hold', card.status === 200 && card.body.card.resumesOn && card.body.card.state === 'paused', card.body);
 const mine = await call('GET', '/member/membership', { token: A.token });
 check('member app shows the running freeze', mine.body.state === 'paused' && mine.body.membership.freeze?.running === true, mine.body);
 
