@@ -1,56 +1,194 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+/* Marketing-site faces. Lexend was used across the site but never loaded; it is now. */
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;600;700;800;900&family=Poppins:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
 
+/* `dark:` follows the .dark class set by the theme setting, not the OS preference. */
+@custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  --primary: #ef4444;
-  --primary-dark: #dc2626;
+/* ─────────────────────────────────────────────────────────────
+   Kovij desk design tokens
+   Raw values live on :root / .dark; Tailwind utilities point at them,
+   so every component switches theme without per-component branches.
+   ───────────────────────────────────────────────────────────── */
+@theme {
+  --font-ui: "Manrope Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --text-display: 3.5rem;
+  --text-display--line-height: 1;
+  --text-display--letter-spacing: -0.04em;
+  --text-title: 1.625rem;
+  --text-title--line-height: 2rem;
+  --text-title--letter-spacing: -0.02em;
+
+  --radius-hero: 1.75rem;
+  --radius-card: 1.25rem;
+  --radius-tile: 0.875rem;
+  --radius-control: 0.75rem;
+
+  --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* Light mode variables */
-:root {
-  --background: #ffffff;
-  --foreground: #1f2937;
-  --card: #ffffff;
-  --card-foreground: #1f2937;
-  --popover: #ffffff;
-  --popover-foreground: #1f2937;
-  --primary: #ef4444;
-  --primary-foreground: #ffffff;
-  --secondary: #f3f4f6;
-  --secondary-foreground: #1f2937;
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
-  --accent: #f3f4f6;
-  --accent-foreground: #1f2937;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: #e5e7eb;
-  --input: #e5e7eb;
-  --ring: #ef4444;
+@theme inline {
+  --color-canvas: var(--kv-canvas);
+  --color-surface: var(--kv-surface);
+  --color-surface-2: var(--kv-surface-2);
+  --color-surface-3: var(--kv-surface-3);
+  --color-line: var(--kv-line);
+  --color-line-strong: var(--kv-line-strong);
+  --color-control: var(--kv-control);
+  --color-ink: var(--kv-ink);
+  --color-ink-2: var(--kv-ink-2);
+  --color-ink-3: var(--kv-ink-3);
+
+  --color-rail: var(--kv-rail);
+  --color-rail-2: var(--kv-rail-2);
+  --color-rail-ink: var(--kv-rail-ink);
+  --color-rail-ink-2: var(--kv-rail-ink-2);
+
+  --color-hero: var(--kv-hero);
+  --color-hero-ink: var(--kv-hero-ink);
+  --color-hero-ink-2: var(--kv-hero-ink-2);
+  --color-hero-line: var(--kv-hero-line);
+
+  --color-brand: var(--kv-brand);
+  --color-brand-hover: var(--kv-brand-hover);
+  --color-brand-soft: var(--kv-brand-soft);
+  --color-brand-ink: var(--kv-brand-ink);
+  --color-on-brand: var(--kv-on-brand);
+
+  --color-good: var(--kv-good);
+  --color-good-soft: var(--kv-good-soft);
+  --color-warn: var(--kv-warn);
+  --color-warn-soft: var(--kv-warn-soft);
+  --color-bad: var(--kv-bad);
+  --color-bad-soft: var(--kv-bad-soft);
+  --color-on-bad: var(--kv-on-bad);
+  --color-info: var(--kv-info);
+  --color-info-soft: var(--kv-info-soft);
+
+  --color-focus: var(--kv-focus);
+  --color-chart-1: var(--kv-chart-1);
+  --color-chart-muted: var(--kv-chart-muted);
+  --color-chart-grid: var(--kv-chart-grid);
+
+  --shadow-pop: var(--kv-shadow-pop);
+  --shadow-float: var(--kv-shadow-float);
 }
 
-/* Dark mode variables */
+:root {
+  color-scheme: light;
+  /* Chalk canvas, white plates, iron rail (reference: light dashboard) */
+  --kv-canvas: #eceef1;
+  --kv-surface: #ffffff;
+  --kv-surface-2: #f4f5f7;
+  --kv-surface-3: #e8eaee;
+  --kv-line: #e2e5e9;
+  --kv-line-strong: #c9ced5;
+  /* Form-control outline: 3:1 against the surface (WCAG 1.4.11) */
+  --kv-control: #8e949d;
+  --kv-ink: #15171a;
+  --kv-ink-2: #474c54;
+  --kv-ink-3: #626771;
+
+  --kv-rail: #131417;
+  --kv-rail-2: #202227;
+  --kv-rail-ink: #f4f5f6;
+  --kv-rail-ink-2: #9ca1a9;
+
+  --kv-hero: #131417;
+  --kv-hero-ink: #ffffff;
+  --kv-hero-ink-2: #a9aeb6;
+  --kv-hero-line: rgb(255 255 255 / 0.1);
+
+  /* Ember: Kovij orange. Fills carry dark ink; orange text uses the darker brand-ink step. */
+  --kv-brand: #ff7a1a;
+  --kv-brand-hover: #f26a08;
+  --kv-brand-soft: #ffeddf;
+  --kv-brand-ink: #b34700;
+  --kv-on-brand: #1f1003;
+
+  --kv-good: #0e7a3c;
+  --kv-good-soft: #e2f5e8;
+  --kv-warn: #8a5a00;
+  --kv-warn-soft: #fff1d1;
+  --kv-bad: #c0262d;
+  --kv-bad-soft: #fde6e6;
+  --kv-on-bad: #ffffff;
+  --kv-info: #1d5fc2;
+  --kv-info-soft: #e3edfc;
+
+  --kv-focus: #b34700;
+  --kv-chart-1: #d9600a;
+  --kv-chart-muted: #8f959e;
+  --kv-chart-grid: #e6e8eb;
+
+  --kv-shadow-pop: 0 18px 40px -12px rgb(19 20 23 / 0.22), 0 2px 6px rgb(19 20 23 / 0.08);
+  --kv-shadow-float: 0 10px 30px -10px rgb(19 20 23 / 0.35);
+}
+
 .dark {
-  --background: #0f172a;
-  --foreground: #f8fafc;
-  --card: #1e293b;
-  --card-foreground: #f8fafc;
-  --popover: #1e293b;
-  --popover-foreground: #f8fafc;
-  --primary: #ef4444;
-  --primary-foreground: #ffffff;
-  --secondary: #334155;
-  --secondary-foreground: #f8fafc;
-  --muted: #334155;
-  --muted-foreground: #94a3b8;
-  --accent: #334155;
-  --accent-foreground: #f8fafc;
-  --destructive: #ef4444;
-  --destructive-foreground: #ffffff;
-  --border: #334155;
-  --input: #334155;
-  --ring: #ef4444;
+  color-scheme: dark;
+  /* Charcoal plates with hairlines and ember accents (reference: dark dashboard) */
+  --kv-canvas: #0b0c0e;
+  --kv-surface: #15171a;
+  --kv-surface-2: #1c1f23;
+  --kv-surface-3: #262a2f;
+  --kv-line: #24272c;
+  --kv-line-strong: #353940;
+  --kv-control: #6b717a;
+  --kv-ink: #f2f3f5;
+  --kv-ink-2: #b4b9c1;
+  --kv-ink-3: #8b919a;
+
+  --kv-rail: #101114;
+  --kv-rail-2: #1c1f23;
+  --kv-rail-ink: #f2f3f5;
+  --kv-rail-ink-2: #8b919a;
+
+  --kv-hero: #221a12;
+  --kv-hero-ink: #fff4ea;
+  --kv-hero-ink-2: #c7b7a6;
+  --kv-hero-line: rgb(255 138 43 / 0.22);
+
+  --kv-brand: #ff8a2b;
+  --kv-brand-hover: #ff9a45;
+  --kv-brand-soft: rgb(255 138 43 / 0.14);
+  --kv-brand-ink: #ff9a45;
+  --kv-on-brand: #1f1003;
+
+  --kv-good: #4ade80;
+  --kv-good-soft: rgb(74 222 128 / 0.14);
+  --kv-warn: #facc15;
+  --kv-warn-soft: rgb(250 204 21 / 0.14);
+  --kv-bad: #f87171;
+  --kv-bad-soft: rgb(248 113 113 / 0.14);
+  --kv-on-bad: #2b0a0a;
+  --kv-info: #60a5fa;
+  --kv-info-soft: rgb(96 165 250 / 0.14);
+
+  --kv-focus: #ff9a45;
+  --kv-chart-1: #ff8a2b;
+  --kv-chart-muted: #6b717a;
+  --kv-chart-grid: #26292e;
+
+  --kv-shadow-pop: 0 18px 40px -12px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.06);
+  --kv-shadow-float: 0 10px 30px -10px rgb(0 0 0 / 0.8);
+}
+
+@layer base {
+  /* One focus treatment everywhere: visible, 2px, offset from the element. */
+  :where(.kv-app) :focus-visible {
+    outline: 2px solid var(--kv-focus);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+  .kv-app {
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+  }
+  .kv-app .tabular {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 html {

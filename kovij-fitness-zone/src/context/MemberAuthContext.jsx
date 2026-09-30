@@ -1,8 +1,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { signInWithPopup, signOut } from "firebase/auth";
 import axios from "axios";
-import { auth, googleProvider } from "../firebase/firebase";
 import { memberApi } from "../lib/memberApi";
+
+/** Firebase (~300 KB) is only needed at the moment of Google sign-in/out, so load it on demand. */
+const loadFirebase = () => Promise.all([import("firebase/auth"), import("../firebase/firebase")]);
 
 const MemberAuthContext = createContext(null);
 
@@ -37,6 +38,7 @@ export function MemberAuthProvider({ children }) {
 
   const loginWithGoogle = async () => {
     setError(null);
+    const [{ signInWithPopup }, { auth, googleProvider }] = await loadFirebase();
     const cred = await signInWithPopup(auth, googleProvider);
     const idToken = await cred.user.getIdToken();
     const { data } = await axios.post(`${base}/api/member/auth/google`, { idToken });
@@ -48,6 +50,7 @@ export function MemberAuthProvider({ children }) {
 
   const logout = async () => {
     try {
+      const [{ signOut }, { auth }] = await loadFirebase();
       await signOut(auth);
     } catch {
       /* ignore */

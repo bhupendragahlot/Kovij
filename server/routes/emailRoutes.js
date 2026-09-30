@@ -1,12 +1,12 @@
-// src/routes/emailRoutes.js
-import express from "express";
-import { sendEmail } from "../controllers/emailController.js";
-import { cacheMiddleware } from "../middleware/cacheMiddleware.js";
+import express from 'express';
+import { sendEmail } from '../controllers/emailController.js';
+import { validate } from '../middleware/validate.js';
+import { contactLimiter } from '../middleware/rateLimiter.js';
+import { contactSchema } from '../validators/catalog.schema.js';
 
 const router = express.Router();
 
-// Apply cacheMiddleware if you want to cache responses for this route.
-// For POST requests caching might be less common, but you can adjust as needed.
-router.post("/send-email", cacheMiddleware, sendEmail);
+// Website contact form. Never cache a POST: every submission must reach the handler.
+router.post('/send-email', contactLimiter, validate(contactSchema), sendEmail);
 
 export default router;

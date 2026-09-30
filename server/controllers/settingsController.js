@@ -1,37 +1,24 @@
-import Settings from '../models/Settings.js';
+import Settings, { getSettingsDoc } from '../models/Settings.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
-// Get the single settings document
-export const getSettings = async (req, res) => {
-  try {
-    const settings = await Settings.findOne();
-    if (!settings) return res.status(404).json({ message: 'Settings not found' });
-    res.json(settings);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
+const PUBLIC_FIELDS = [
+  'gymName', 'registrationFee', 'heroBackgroundImage', 'heroHeadline', 'heroDescription', 'address', 'phone', 'email',
+  'facebook', 'instagram', 'whatsapp', 'mapEmbedUrl',
+];
 
-// Create or update the single settings document
-export const upsertSettings = async (req, res) => {
-  try {
-    const settings = await Settings.findOneAndUpdate(
-      {}, // No filter, so it updates the first (and only) document
-      req.body,
-      { new: true, upsert: true }
-    );
-    res.json(settings);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-};
+/** GET /api/settings — public website content (billing settings stay private). */
+export const getPublicSettings = asyncHandler(async (req, res) => {
+  const settings = await getSettingsDoc();
+  res.json(Object.fromEntries(PUBLIC_FIELDS.map((k) => [k, settings[k]])));
+});
 
-// Delete the single settings document
-export const deleteSettings = async (req, res) => {
-  try {
-    const settings = await Settings.findOneAndDelete({});
-    if (!settings) return res.status(404).json({ message: 'Settings not found' });
-    res.json({ message: 'Settings deleted' });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
+/** GET /api/admin/settings */
+export const getSettings = asyncHandler(async (req, res) => {
+  res.json({ success: true, settings: await getSettingsDoc() });
+});
+
+/** PATCH /api/admin/settings */
+export const updateSettings = asyncHandler(async (req, res) => {
+  const settings = await Settings.findOneAndUpdate({}, { $set: req.validated.body }, { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }).lean();
+  res.json({ success: true, settings });
+});

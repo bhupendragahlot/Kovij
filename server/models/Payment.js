@@ -1,5 +1,9 @@
 import mongoose from 'mongoose';
 
+export const PAYMENT_TYPES = ['registration', 'membership', 'renewal', 'personal_training', 'other'];
+export const PAYMENT_MODES = ['cash', 'upi', 'card'];
+export const PAYMENT_STATUSES = ['paid', 'pending', 'failed'];
+
 const paymentSchema = new mongoose.Schema(
   {
     memberId: {
@@ -8,36 +12,26 @@ const paymentSchema = new mongoose.Schema(
       required: true,
       index: true,
     },
-    membershipId: { type: mongoose.Schema.Types.ObjectId, ref: 'Membership' },
-    type: {
-      type: String,
-      enum: ['registration', 'membership', 'renewal'],
-      required: true,
-    },
+    membershipId: { type: mongoose.Schema.Types.ObjectId, ref: 'Membership', index: true },
+    type: { type: String, enum: PAYMENT_TYPES, required: true },
     amount: { type: Number, required: true, min: 0 },
-    mode: {
-      type: String,
-      enum: ['cash', 'upi', 'card'],
-      required: true,
-    },
-    status: {
-      type: String,
-      enum: ['paid', 'pending', 'failed'],
-      default: 'pending',
-    },
+    /** Mode is unknown until a pending due is collected. */
+    mode: { type: String, enum: PAYMENT_MODES },
+    status: { type: String, enum: PAYMENT_STATUSES, default: 'pending', index: true },
     txnRef: { type: String, default: '' },
-    invoiceNo: { type: String, unique: true, sparse: true },
-    paidAt: { type: Date },
+    note: { type: String, default: '' },
+    invoiceNo: { type: String },
+    paidAt: { type: Date, index: true },
+    recordedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    /** Client-supplied Idempotency-Key of the request that created this row (DB-level duplicate guard). */
+    idempotencyKey: { type: String },
     meta: { type: mongoose.Schema.Types.Mixed },
   },
   { timestamps: true }
 );
 
-paymentSchema.pre('save', function (next) {
-  if (!this.invoiceNo) {
-    this.invoiceNo = `INV-${Date.now()}-${Math.random().toString(36).slice(2, 10).toUpperCase()}`;
-  }
-  next();
-});
+paymentSchema.index({ invoiceNo: 1 }, { unique: true, partialFilterExpression: { invoiceNo: { $type: 'string' } } });
+paymentSchema.index({ idempotencyKey: 1 }, { unique: true, partialFilterExpression: { idempotencyKey: { $type: 'string' } } });
+paymentSchema.index({ status: 1, createdAt: -1 });
 
 export default mongoose.model('Payment', paymentSchema);

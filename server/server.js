@@ -11,7 +11,6 @@ import fs from "fs";
 import { fileURLToPath } from "url";
 
 import emailRoutes from "./routes/emailRoutes.js";
-import { cookieMiddleware } from "./middleware/cookieMiddleware.js";
 import authRoutes from "./routes/authRoutes.js";
 import trainerRoutes from "./routes/trainerRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
@@ -23,12 +22,23 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import campaignRoutes from "./routes/campaignRoutes.js";
 import adminMemberRoutes from "./routes/adminMemberRoutes.js";
 import adminPaymentRoutes from "./routes/adminPaymentRoutes.js";
-import { errorHandler } from "./middleware/errorHandler.js";
+import adminOpsRoutes from "./routes/adminOpsRoutes.js";
+import Member from "./models/Member.js";
+import { errorHandler, AppError } from "./middleware/errorHandler.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
+import { PUBLIC_AVATAR_DIR, LEGACY_MEMBER_DIR } from "./services/storageService.js";
+import { runStartupMigrations } from "./migrations/index.js";
+import { contentSecurityPolicy } from "./config/csp.js";
+import { asyncHandler } from "./utils/asyncHandler.js";
 import { logger } from "./utils/logger.js";
 import { startAllCrons } from "./cron/cronRunner.js";
 
 dotenv.config();
+
+if (!process.env.JWT_SECRET) {
+  logger.error("JWT_SECRET is not set; refusing to start.");
+  process.exit(1);
+}
 
 try {
   const { getAdmin } = await import("./config/firebaseAdmin.js");
@@ -54,13 +64,20 @@ app.use(express.json({ limit: "1mb" }));
 app.use(mongoSanitize());
 app.use(morgan("combined", { stream: { write: (msg) => logger.info(msg.trim()) } }));
 app.use(cookieParser());
-app.use(cookieMiddleware);
 
-const uploadDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
-app.use("/uploads", express.static(uploadDir));
+// Uploads: profile photos are public; ID proofs are only reachable through the staff API.
+fs.mkdirSync(PUBLIC_AVATAR_DIR, { recursive: true });
+app.use("/uploads/avatars", express.static(PUBLIC_AVATAR_DIR, { maxAge: "7d" }));
+// Legacy folder mixes photos and ID proofs: serve a file only if it is someone's profile photo.
+app.get(
+  "/uploads/members/:file",
+  asyncHandler(async (req, res) => {
+    const file = path.basename(req.params.file);
+    const isAvatar = await Member.exists({ profilePhoto: `/uploads/members/${file}` });
+    if (!isAvatar) throw new AppError("Not found", 404, "NOT_FOUND");
+    res.sendFile(path.join(LEGACY_MEMBER_DIR, file));
+  })
+);
 
 const apiRouter = express.Router();
 apiRouter.use(apiLimiter);
@@ -78,23 +95,35 @@ apiRouter.use("/payments", paymentRoutes);
 apiRouter.use("/campaigns", campaignRoutes);
 apiRouter.use("/admin/members", adminMemberRoutes);
 apiRouter.use("/admin/payments", adminPaymentRoutes);
+apiRouter.use("/admin", adminOpsRoutes);
+apiRouter.use((req, res, next) => next(new AppError("Endpoint not found", 404, "NOT_FOUND")));
 
 
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => {
+  .then(async () => {
     logger.info("MongoDB connected");
+    await runStartupMigrations();
     startAllCrons();
   })
   .catch((error) => logger.error("MongoDB connection error:", error));
 
 const rootDir = path.resolve(__dirname, "..");
-app.use(express.static(path.join(rootDir, "kovij-fitness-zone", "dist")));
+const distDir = path.join(rootDir, "kovij-fitness-zone", "dist");
+// Hashed assets can be cached forever; the service worker and HTML must always revalidate.
+app.use(
+  express.static(distDir, {
+    setHeaders(res, filePath) {
+      if (/[\\/]assets[\\/]/.test(filePath)) res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+      else res.setHeader("Cache-Control", "no-cache");
+    },
+  })
+);
 
 app.get("*", (req, res, next) => {
   if (req.path.startsWith("/api")) return next();
-  const indexFile = path.join(rootDir, "kovij-fitness-zone", "dist", "index.html");
-  res.sendFile(indexFile, (err) => {
+  res.setHeader("Cache-Control", "no-cache");
+  res.sendFile(path.join(distDir, "index.html"), (err) => {
     if (err) next(err);
   });
 });

@@ -1,12 +1,9 @@
 import express from 'express';
-import { getSettings, upsertSettings, deleteSettings } from '../controllers/settingsController.js';
-import { protect } from '../middleware/authMiddleware.js';
-import { cacheMiddleware } from '../middleware/cacheMiddleware.js'; 
+import { getPublicSettings } from '../controllers/settingsController.js';
+
+/** Public website content. Staff edit settings at /api/admin/settings. */
 const router = express.Router();
 
-router.get('/', getSettings);
-router.post('/',protect, upsertSettings);   // Create or update
-router.put('/', protect,upsertSettings);    // Update
-router.delete('/',protect, deleteSettings); // Delete
+router.get('/', getPublicSettings);
 
 export default router;

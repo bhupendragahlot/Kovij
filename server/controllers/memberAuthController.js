@@ -1,6 +1,8 @@
 import Member from '../models/Member.js';
 import { verifyFirebaseIdToken } from '../config/firebaseAdmin.js';
 import { signMemberToken } from '../services/tokenService.js';
+import { nextMemberCode } from '../services/memberService.js';
+import { getSettingsDoc } from '../models/Settings.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { AppError } from '../middleware/errorHandler.js';
 
@@ -32,11 +34,14 @@ export const googleLogin = asyncHandler(async (req, res) => {
   }
 
   if (!member) {
+    const settings = await getSettingsDoc();
     member = await Member.create({
       firebaseUid,
-      email: email || `${firebaseUid}@placeholder.local`,
+      email: email || undefined,
       name,
       profilePhoto,
+      memberCode: await nextMemberCode(settings.invoicePrefix),
+      source: 'google',
       role: 'user',
     });
   } else {

@@ -1,61 +1,33 @@
-import dotenv from "dotenv"
-import nodemailer from "nodemailer";
-dotenv.config()
+import Lead from '../models/Lead.js';
+import { getSettingsDoc } from '../models/Settings.js';
+import { queueEmail } from '../services/emailService.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { endOfGymDay } from '../utils/time.js';
 
+/**
+ * POST /api/send-email — public website contact form.
+ * Every enquiry becomes a lead the desk can follow up; the owner gets a notification and the
+ * visitor a short acknowledgement. All visitor input is escaped by the email templates.
+ */
+export const sendEmail = asyncHandler(async (req, res) => {
+  const { name, email, phone, message } = req.validated.body;
+  const settings = await getSettingsDoc();
 
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
+  await Lead.create({
+    name,
+    email,
+    phone,
+    source: 'website',
+    status: 'new',
+    message,
+    nextFollowUpAt: endOfGymDay(),
+  });
+
+  const ownerInbox = settings.email || process.env.EMAIL_USER;
+  await Promise.all([
+    queueEmail({ to: ownerInbox, templateKey: 'contactNotification', vars: { name, email, phone, message } }),
+    queueEmail({ to: email, templateKey: 'contactAutoReply', vars: { name, gymName: settings.gymName } }),
+  ]);
+
+  res.status(200).json({ success: true, message: 'Thanks. We will get back to you soon.' });
 });
-
-export const sendEmail = async (req, res) => {
-  const { name, email, phone, message } = req.body;
-
-  try {
-    // Email to gym owner
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER, // Update to your gym's email if needed
-      subject: `New Contact Form Submission from ${name}`,
-      html: `
-        <h2>New Contact Form Submission</h2>
-        <p><strong>Name:</strong> ${name}</p>
-        <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Phone:</strong> ${phone || "Not provided"}</p>
-        <p><strong>Message:</strong></p>
-        <p>${message}</p>
-      `,
-    };
-
-    // Auto-reply to customer
-    const autoReplyOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Thank you for contacting Kovij Fitness Zone",
-      html: `
-        <h2>Thank you for contacting Kovij Fitness Zone!</h2>
-        <p>Dear ${name},</p>
-        <p>We have received your message and will get back to you as soon as possible.</p>
-        <p>Here's a summary of your inquiry:</p>
-        <p>${message}</p>
-        <br>
-        <p>Best regards,</p>
-        <p>The Kovij Fitness Zone Team</p>
-      `,
-    };
-
-    // Send both emails
-    await transporter.sendMail(mailOptions);
-    await transporter.sendMail(autoReplyOptions);
-
-    res.status(200).json({ success: true, message: "Email sent successfully!" });
-  } catch (error) {
-    console.error("Error sending email:", error);
-    res
-      .status(500)
-      .json({ success: false, message: "Failed to send email", error: error.message });
-  }
-};

@@ -1,29 +1,25 @@
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
 import { AppError } from './errorHandler.js';
-
-const STAFF_ROLES = ['admin', 'staff', 'manager'];
+import { readBearerToken } from '../utils/bearer.js';
+import { loadStaffFromToken } from './adminAuth.js';
 
 /**
- * Allows staff JWT OR member JWT viewing only their own memberId.
- * Sets req.auth = { kind:'staff'|'member', ... }
+ * Allows a staff session, or a member session viewing only their own memberId.
+ * Sets req.auth = { kind: 'staff'|'member', ... }
  */
 export async function staffOrOwnMember(req, res, next) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader?.startsWith('Bearer')) {
-    return next(new AppError('Not authorized', 401, 'NO_TOKEN'));
-  }
-  const token = authHeader.split(' ')[1];
+  const token = readBearerToken(req);
+  if (!token) return next(new AppError('Sign in to continue', 401, 'NO_TOKEN'));
+
   let decoded;
   try {
     decoded = jwt.verify(token, process.env.JWT_SECRET);
   } catch {
-    return next(new AppError('Invalid token', 401, 'TOKEN_FAILED'));
+    return next(new AppError('Your session has expired. Sign in again.', 401, 'SESSION_EXPIRED'));
   }
 
-  const paramMemberId = req.params.userId || req.params.memberId;
-
   if (decoded.type === 'member') {
+    const paramMemberId = req.params.userId || req.params.memberId;
     if (String(decoded.memberId) !== String(paramMemberId)) {
       return next(new AppError('Forbidden', 403, 'FORBIDDEN'));
     }
@@ -31,14 +27,11 @@ export async function staffOrOwnMember(req, res, next) {
     return next();
   }
 
-  let role = decoded.role;
-  if (!role && decoded.id) {
-    const user = await User.findById(decoded.id).select('role');
-    role = user?.role;
+  try {
+    const staff = await loadStaffFromToken(token);
+    req.auth = { kind: 'staff', staffId: staff.id, role: staff.role };
+    next();
+  } catch (e) {
+    next(e);
   }
-  if (!STAFF_ROLES.includes(role)) {
-    return next(new AppError('Forbidden', 403, 'FORBIDDEN'));
-  }
-  req.auth = { kind: 'staff', staffId: decoded.id, role };
-  next();
 }

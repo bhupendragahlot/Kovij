@@ -1,52 +1,28 @@
-//models/Plan.js
 import mongoose from 'mongoose';
 
-const planSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    trim: true
-  },
-  price: {
-    type: String,
-    required: true
-  },
-  duration: {
-    type: String,
-    required: true,
-    enum: ['day', 'week', 'month', 'year']
-  },
-  /** Optional override; if set, used instead of mapping from `duration` */
-  durationInDays: {
-    type: Number,
-    min: 1,
-  },
-  features: [{
-    type: String,
-    required: true
-  }],
-  popular: {
-    type: Boolean,
-    default: false
-  },
-  color: {
-    type: String,
-    default: 'from-gray-600 to-gray-700'
-  },
-  status: {
-    type: String,
-    required: true,
-    enum: ['Active', 'Inactive'],
-    default: 'Active'
-  },
-   showOnFrontend: { // also called showOnFrontend:
-    type: Boolean,
-    default: true
-  },
-}, {
-  timestamps: true
-});
+export const PLAN_DURATIONS = ['day', 'week', 'month', 'quarter', 'half_year', 'year'];
 
-const Plan = mongoose.model('Plan', planSchema);
+const planSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    /** Rupees. Older documents stored this as a string; the startup migration converts them. */
+    price: { type: Number, required: true, min: 0 },
+    duration: { type: String, required: true, enum: PLAN_DURATIONS },
+    /** Optional override; if set, used instead of mapping from `duration` */
+    durationInDays: { type: Number, min: 1 },
+    description: { type: String, default: '', trim: true },
+    features: [{ type: String, trim: true }],
+    popular: { type: Boolean, default: false },
+    color: { type: String, default: 'from-gray-600 to-gray-700' },
+    status: {
+      type: String,
+      required: true,
+      enum: ['Active', 'Inactive'],
+      default: 'Active',
+    },
+    showOnFrontend: { type: Boolean, default: true },
+  },
+  { timestamps: true }
+);
 
-export default Plan;
+export default mongoose.model('Plan', planSchema);

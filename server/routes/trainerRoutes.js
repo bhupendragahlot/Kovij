@@ -1,20 +1,12 @@
-// src/routes/trainerRoutes.js
 import express from 'express';
-import {
-  getTrainers,
-  getTrainerById,
-  createTrainer,
-  updateTrainer,
-  deleteTrainer,
-} from '../controllers/trainerController.js';
-import { protect } from '../middleware/authMiddleware.js';
-import { cacheMiddleware } from '../middleware/cacheMiddleware.js'; 
+import { trainers } from '../controllers/trainerController.js';
+import { validate } from '../middleware/validate.js';
+import { idParam } from '../validators/common.js';
+
+/** Public trainer profiles for the website. Staff manage trainers at /api/admin/trainers. */
 const router = express.Router();
 
-router.get('/', getTrainers);
-router.get('/:id',  getTrainerById);
-router.post('/', protect, createTrainer);
-router.put('/:id',protect,  updateTrainer);
-router.delete('/:id',protect, deleteTrainer);
+router.get('/', trainers.listPublic);
+router.get('/:id', validate(idParam, 'params'), trainers.getPublic);
 
 export default router;

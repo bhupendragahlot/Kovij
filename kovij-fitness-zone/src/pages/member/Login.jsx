@@ -2,7 +2,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import GoogleSignInButton from "../../components/member/GoogleSignInButton";
 import { useMemberAuth } from "../../context/MemberAuthContext";
-import { memberApi } from "../../lib/memberApi";
 
 export default function MemberLogin() {
   const { member, error, setError } = useMemberAuth();

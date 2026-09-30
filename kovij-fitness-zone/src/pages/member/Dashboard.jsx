@@ -84,7 +84,14 @@ export default function MemberDashboard() {
           </BentoCard>
 
           <BentoCard className="md:col-span-6" tone="mint" title="Membership" subtitle={planName ? planName : "No active plan"}>
-            {activeMembership ? (
+            {activeMembership?.status === "pending" ? (
+              <div className="text-sm text-gray-700">
+                <p className="font-semibold text-gray-900">Awaiting payment</p>
+                <p className="mt-1">
+                  Pay ₹{data?.membership?.dues?.amount ?? 0} at the front desk. Your plan starts the day you pay.
+                </p>
+              </div>
+            ) : activeMembership ? (
               <div className="grid gap-2 text-sm">
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-gray-500">Status</span>

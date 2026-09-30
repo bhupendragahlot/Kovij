@@ -9,14 +9,6 @@ function Shop() {
   const { theme } = useTheme()
   const heroCopyRef = useRef(null)
 
-  const categories = [
-    { id: "all", name: "All Products" },
-    { id: "protein", name: "Protein" },
-    { id: "preworkout", name: "Pre-Workout" },
-    { id: "vitamins", name: "Vitamins & Minerals" },
-    { id: "accessories", name: "Accessories" },
-  ]
-
   const products = [
     {
       id: 1,

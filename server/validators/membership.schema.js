@@ -32,21 +32,17 @@ const fitnessGoalSchema = z.object({
   customText: z.string().optional(),
 });
 
-const paymentPartSchema = z.object({
-  registrationFee: z.coerce.number().min(0),
-  membershipFee: z.coerce.number().min(0),
-  mode: z.enum(['cash', 'upi', 'card']),
-  status: z.enum(['paid', 'pending']),
-});
-
+/**
+ * Online self-join. Fees and payment status are deliberately NOT accepted from the member:
+ * the server prices the plan and the desk confirms payment.
+ */
 export const joinMembershipSchema = z.object({
   personalDetails: personalDetailsSchema,
   healthDetails: healthDetailsSchema,
   fitnessGoal: fitnessGoalSchema,
   selectedPlanId: z.string().min(1),
-  payment: paymentPartSchema,
-  profilePhotoUrl: z.string().optional(),
-  idProofUrl: z.string().optional(),
+  profilePhotoUrl: z.string().max(300).optional(),
+  idProofUrl: z.string().max(300).optional(),
   idProofType: z.enum(['aadhar', 'pan', 'passport', 'driving_license', 'other']).optional(),
 });
 

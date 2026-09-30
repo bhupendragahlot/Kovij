@@ -35,6 +35,8 @@ function sleep(ms) {
  * @param {number} [opts.maxAttempts]
  */
 export async function queueEmail({ to, templateKey, vars, campaignId, maxAttempts = 3 }) {
+  // Desk-registered members may not have an email address.
+  if (!to) return null;
   const { subject, html } = renderTemplate(templateKey, vars);
   const log = await EmailLog.create({
     to,

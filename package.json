@@ -7,9 +7,16 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --test \"server/tests/*.test.js\"",
+    "test:e2e": "node server/tests/e2e/run.mjs",
     "start": "node server/server.js",
+    "create-admin": "node server/scripts/create-admin.js",
     "build": "npm install && npm install --prefix kovij-fitness-zone && npm run build --prefix kovij-fitness-zone"
+  },
+  "config": {
+    "mongodbMemoryServer": {
+      "disablePostinstall": "1"
+    }
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -34,5 +41,8 @@
     "p-queue": "^8.0.1",
     "winston": "^3.17.0",
     "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^10.4.3"
   }
 }

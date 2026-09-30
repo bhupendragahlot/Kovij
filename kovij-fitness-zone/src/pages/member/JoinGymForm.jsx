@@ -60,12 +60,9 @@ export default function JoinGymForm() {
     goalKind: "general_fitness",
     customText: "",
     selectedPlanId: "",
-    registrationFee: 0,
-    membershipFee: 0,
-    mode: "upi",
-    paymentStatus: "pending",
     idProofType: "aadhar",
   });
+  const [registrationFee, setRegistrationFee] = useState(0);
 
   const bmi = useMemo(() => {
     const h = form.heightCm / 100;
@@ -77,6 +74,8 @@ export default function JoinGymForm() {
     () => plans.find((p) => p._id === form.selectedPlanId) || null,
     [plans, form.selectedPlanId]
   );
+  // Estimate only: the server prices the plan (and waives the registration fee for returning members).
+  const amountDue = (Number(selectedPlan?.price) || 0) + registrationFee;
 
   const progressPct = useMemo(() => {
     const max = steps.length - 1;
@@ -98,7 +97,7 @@ export default function JoinGymForm() {
     (async () => {
       try {
         const { data } = await memberApi.get("/membership/me");
-        if (data?.membership?.status === "active") {
+        if (["active", "pending", "upcoming"].includes(data?.membership?.status)) {
           navigate("/member/dashboard", { replace: true });
         }
       } catch {
@@ -110,11 +109,17 @@ export default function JoinGymForm() {
   useEffect(() => {
     (async () => {
       try {
-        const { data } = await axios.get(`${base}/api/plans`);
+        const [{ data }, settingsRes] = await Promise.all([
+          axios.get(`${base}/api/plans`),
+          axios.get(`${base}/api/settings`).catch(() => ({ data: {} })),
+        ]);
         const list = data.plans || data || [];
         const normalized = Array.isArray(list) ? list : [];
         setPlans(normalized);
-        if (normalized[0]?._id) setForm((f) => ({ ...f, selectedPlanId: normalized[0]._id }));
+        setRegistrationFee(Number(settingsRes.data?.registrationFee) || 0);
+        // Preselect the first plan the member can actually buy (never an inactive or hidden one).
+        const firstSellable = normalized.find((p) => p.showOnFrontend !== false && p.status !== "Inactive");
+        if (firstSellable) setForm((f) => ({ ...f, selectedPlanId: firstSellable._id }));
       } catch {
         setPlans([]);
       } finally {
@@ -153,8 +158,6 @@ export default function JoinGymForm() {
     }
     if (step === 3) {
       if (!isNonEmpty(form.selectedPlanId)) e.selectedPlanId = "Please select a plan";
-      if (Number(form.registrationFee) < 0) e.registrationFee = "Must be 0 or greater";
-      if (Number(form.membershipFee) < 0) e.membershipFee = "Must be 0 or greater";
     }
     return e;
   }, [
@@ -172,8 +175,6 @@ export default function JoinGymForm() {
     form.goalKind,
     form.customText,
     form.selectedPlanId,
-    form.registrationFee,
-    form.membershipFee,
   ]);
 
   const canGoNext = useMemo(() => {
@@ -227,12 +228,6 @@ export default function JoinGymForm() {
         },
         fitnessGoal: { goalKind: form.goalKind, customText: form.customText },
         selectedPlanId: form.selectedPlanId,
-        payment: {
-          registrationFee: Number(form.registrationFee),
-          membershipFee: Number(form.membershipFee),
-          mode: form.mode,
-          status: form.paymentStatus,
-        },
         profilePhotoUrl: profilePhotoUrl || undefined,
         idProofUrl: idProofUrl || undefined,
         idProofType: form.idProofType,
@@ -499,38 +494,25 @@ export default function JoinGymForm() {
                 {stepErrors.selectedPlanId && <div className="mt-2 text-[11px] text-red-300">{stepErrors.selectedPlanId}</div>}
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                <label className="text-xs text-neutral-400">
-                  Registration fee
-                  <input type="number" className="mt-1 w-full rounded border border-neutral-700 bg-black px-3 py-2 text-white" {...input("registrationFee")} />
-                </label>
-                <label className="text-xs text-neutral-400">
-                  Membership fee
-                  <input type="number" className="mt-1 w-full rounded border border-neutral-700 bg-black px-3 py-2 text-white" {...input("membershipFee")} />
-                </label>
-                <label className="text-xs text-neutral-400">
-                  Payment mode
-                  <select className="mt-1 w-full rounded border border-neutral-700 bg-black px-3 py-2 text-white" {...input("mode")}>
-                    <option value="cash">Cash</option>
-                    <option value="upi">UPI</option>
-                    <option value="card">Card</option>
-                  </select>
-                </label>
-                <label className="text-xs text-neutral-400">
-                  Payment status
-                  <select className="mt-1 w-full rounded border border-neutral-700 bg-black px-3 py-2 text-white" {...input("paymentStatus")}>
-                    <option value="paid">Paid</option>
-                    <option value="pending">Pending</option>
-                  </select>
-                </label>
-              </div>
-
+              {/* Prices come from the gym, not from this form: the desk collects payment and starts the plan. */}
               <div className="rounded-xl border border-neutral-800 bg-black/30 p-4 text-sm text-neutral-200">
-                <div className="flex items-center justify-between">
-                  <span className="text-neutral-400">Estimated total</span>
-                  <span className="font-extrabold text-white">₹{Number(form.registrationFee || 0) + Number(form.membershipFee || 0)}</span>
+                {selectedPlan && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-neutral-400">{selectedPlan.name}</span>
+                    <span className="font-semibold text-white">₹{Number(selectedPlan.price) || 0}</span>
+                  </div>
+                )}
+                {registrationFee > 0 && (
+                  <div className="mt-1 flex items-center justify-between">
+                    <span className="text-neutral-400">One-time registration fee</span>
+                    <span className="font-semibold text-white">₹{registrationFee}</span>
+                  </div>
+                )}
+                <div className="mt-2 flex items-center justify-between border-t border-neutral-800 pt-2">
+                  <span className="text-neutral-400">To pay at the front desk</span>
+                  <span className="font-extrabold text-white">₹{amountDue}</span>
                 </div>
-                <div className="mt-1 text-xs text-neutral-500">You can keep payment status as Pending if paying later.</div>
+                <div className="mt-1 text-xs text-neutral-500">Pay by cash, UPI or card at the gym. Your membership starts the day you pay.</div>
               </div>
             </div>
           )}
@@ -607,16 +589,13 @@ export default function JoinGymForm() {
                     <span className="text-neutral-400">Plan:</span> {selectedPlan ? fmtPlanLabel(selectedPlan) : form.selectedPlanId}
                   </div>
                   <div>
-                    <span className="text-neutral-400">Total fees:</span> ₹{Number(form.registrationFee || 0) + Number(form.membershipFee || 0)}
-                  </div>
-                  <div>
-                    <span className="text-neutral-400">Mode/Status:</span> {form.mode} / {form.paymentStatus}
+                    <span className="text-neutral-400">To pay at the front desk:</span> ₹{amountDue}
                   </div>
                 </div>
               </div>
               <div className="rounded-xl border border-neutral-800 bg-neutral-950/40 p-4 text-sm text-neutral-200">
                 <div className="font-semibold text-white">Ready to submit?</div>
-                <div className="mt-1 text-xs text-neutral-500">We’ll save your membership and send a confirmation email.</div>
+                <div className="mt-1 text-xs text-neutral-500">We’ll save your registration and email you the amount to pay at the front desk.</div>
               </div>
             </div>
           )}

@@ -1,16 +1,14 @@
 import jwt from 'jsonwebtoken';
 import { AppError } from './errorHandler.js';
+import { readBearerToken } from '../utils/bearer.js';
 
 /**
  * Requires Bearer JWT with payload.type === 'member' and memberId.
  */
 export function memberAuth(req, res, next) {
-  let token;
-  if (req.headers.authorization?.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
-  }
+  const token = readBearerToken(req);
   if (!token) {
-    return next(new AppError('Not authorized, no token', 401, 'NO_TOKEN'));
+    return next(new AppError('Sign in to continue', 401, 'NO_TOKEN'));
   }
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -24,6 +22,6 @@ export function memberAuth(req, res, next) {
     };
     next();
   } catch {
-    return next(new AppError('Not authorized, token failed', 401, 'TOKEN_FAILED'));
+    return next(new AppError('Your session has expired. Sign in again.', 401, 'SESSION_EXPIRED'));
   }
 }

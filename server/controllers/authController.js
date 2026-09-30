@@ -1,71 +1,36 @@
-// controllers/authController.js
-import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
+import User from '../models/User.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
+import { AppError } from '../middleware/errorHandler.js';
 
-// Register new user
-export const register = async (req, res) => {
-  try {
-    const { username, email, password, role } = req.body;
+const STAFF_SESSION_TTL = process.env.STAFF_JWT_EXPIRES || '12h';
 
-    // Check if user already exists
-    let user = await User.findOne({ email });
-    if (user) return res.status(400).json({ message: 'User already exists' });
+export function signStaffToken(user) {
+  return jwt.sign(
+    { id: String(user._id), role: user.role, type: 'staff' },
+    process.env.JWT_SECRET,
+    { expiresIn: STAFF_SESSION_TTL }
+  );
+}
 
-    user = new User({ username, email, password, role });
-    await user.save();
+/** POST /api/auth/login */
+export const login = asyncHandler(async (req, res) => {
+  const { email, password } = req.validated.body;
+  const user = await User.findOne({ email });
+  // Same message for unknown email and wrong password, so accounts can't be enumerated.
+  const valid = user && (await user.comparePassword(password));
+  if (!valid) throw new AppError('Email or password is incorrect', 401, 'INVALID_CREDENTIALS');
+  if (user.isActive === false) throw new AppError('Your staff account is not active. Ask the owner to reactivate it.', 403, 'ACCOUNT_INACTIVE');
 
-    // Create JWT token
-    const token = jwt.sign(
-      {
-        id: user._id.toString(),
-        email: user.email,
-        username: user.username,
-        role: user.role,
-        type: 'staff',
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
+  user.lastLoginAt = new Date();
+  await user.save();
 
-    res.status(201).json({
-      token,
-      user: { id: user._id, username: user.username, email: user.email, role: user.role },
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  const token = signStaffToken(user);
+  const { exp } = jwt.decode(token) || {};
+  res.json({ success: true, token, expiresAt: exp ? new Date(exp * 1000) : null, user: user.toPublic() });
+});
 
-// Login existing user
-export const login = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
-
-    // Compare password using the schema's comparePassword method
-    const isMatch = await user.comparePassword(password);
-    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
-
-    const token = jwt.sign(
-      {
-        id: user._id.toString(),
-        email: user.email,
-        username: user.username,
-        role: user.role,
-        type: 'staff',
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
-
-    res.json({
-      token,
-      user: { id: user._id, username: user.username, email: user.email, role: user.role },
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+/** GET /api/auth/me — validates the stored session on app start. */
+export const me = asyncHandler(async (req, res) => {
+  res.json({ success: true, user: req.staffUser });
+});

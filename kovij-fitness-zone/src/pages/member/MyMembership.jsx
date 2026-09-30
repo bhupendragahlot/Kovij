@@ -40,6 +40,12 @@ export default function MyMembership() {
                 </div>
               </div>
             </BentoCard>
+          ) : m.status === "pending" ? (
+            <BentoCard className="md:col-span-8" tone="peach" title={m.planName || m.planId?.name || "Plan"} subtitle="Awaiting payment">
+              <div className="text-sm text-gray-700">
+                Pay <span className="font-bold text-gray-900">₹{data.dues?.amount ?? 0}</span> at the front desk by cash, UPI or card. Your plan starts the day you pay.
+              </div>
+            </BentoCard>
           ) : (
             <BentoCard className="md:col-span-8" tone="mint" title={m.planId?.name || "Plan"} subtitle="Validity & status">
               <div className="grid gap-3 text-sm">
