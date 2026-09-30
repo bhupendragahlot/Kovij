@@ -14,6 +14,32 @@ const noteSchema = new mongoose.Schema(
   { _id: true }
 );
 
+/** Automatic sorting of the enquiry text (services/leadTriage.js). Labels only; staff decide. */
+const triageSchema = new mongoose.Schema(
+  {
+    status: { type: String, enum: ['done', 'failed'] },
+    version: Number,
+    model: String,
+    at: Date,
+    error: { type: String, default: '' },
+    topic: String,
+    topicConfidence: Number,
+    readiness: Number,
+    readinessLevel: { type: String, enum: ['browsing', 'interested', 'ready'] },
+    timePref: { type: String, enum: ['morning', 'evening', null] },
+    wantsCallback: Boolean,
+    spamProbability: Number,
+    spam: { type: Boolean, default: false },
+    /** 'staff' once someone marks spam / not spam by hand; automatic re-runs then leave it alone. */
+    spamSetBy: { type: String, enum: ['auto', 'staff'] },
+    /** Fields the triage filled in (e.g. interestPlanId), so the UI can show they were suggested. */
+    filled: [String],
+    /** Raw answers (probabilities, confidence) kept for tuning thresholds. */
+    answers: mongoose.Schema.Types.Mixed,
+  },
+  { _id: false }
+);
+
 const leadSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
@@ -29,6 +55,9 @@ const leadSchema = new mongoose.Schema(
     assignedTo: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     convertedMemberId: { type: mongoose.Schema.Types.ObjectId, ref: 'Member' },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    /** 0 low (business, spam) … 3 high (ready to start, member issue). Breaks ties within a follow-up day. */
+    priority: { type: Number, default: 2, min: 0, max: 3 },
+    triage: { type: triageSchema, default: undefined },
   },
   { timestamps: true }
 );

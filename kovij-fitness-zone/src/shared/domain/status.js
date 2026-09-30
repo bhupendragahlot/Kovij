@@ -13,6 +13,13 @@ import {
   Flame,
   XCircle,
   PauseCircle,
+  UserPlus,
+  Dumbbell,
+  Footprints,
+  IndianRupee,
+  Building2,
+  BadgeCheck,
+  Briefcase,
 } from "lucide-react";
 
 /**
@@ -60,6 +67,18 @@ export const PAYMENT_TYPE_LABEL = {
 };
 
 export const PAYMENT_MODE_LABEL = { cash: "Cash", upi: "UPI", card: "Card" };
+
+/** What a website enquiry is about, as sorted automatically (server/services/leadTriage.js). */
+export const ENQUIRY_TOPIC = {
+  join: { icon: UserPlus, label: "Wants to join" },
+  personal_training: { icon: Dumbbell, label: "Personal training" },
+  trial_visit: { icon: Footprints, label: "Trial or visit" },
+  fees: { icon: IndianRupee, label: "Asking fees" },
+  timings: { icon: Clock, label: "Asking timings" },
+  facilities: { icon: Building2, label: "Asking facilities" },
+  existing_member: { icon: BadgeCheck, label: "Member issue" },
+  business: { icon: Briefcase, label: "Job or business" },
+};
 
 export const LEAD_SOURCE_LABEL = {
   walk_in: "Walk-in",

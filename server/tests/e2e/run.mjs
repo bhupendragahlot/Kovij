@@ -11,6 +11,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { startTypeSafeStub } from './typesafeStub.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const serverDir = join(here, '..', '..');
@@ -18,6 +19,7 @@ const PORT = process.env.E2E_PORT || '4199';
 const SECRET = 'e2e-secret';
 
 const rs = await MongoMemoryReplSet.create({ replSet: { count: 1, storageEngine: 'wiredTiger' } });
+const typesafe = await startTypeSafeStub();
 const cwd = mkdtempSync(join(tmpdir(), 'kovij-e2e-'));
 const env = {
   ...process.env,
@@ -29,6 +31,9 @@ const env = {
   // Empty values win over any .env, so the email queue can never reach a real inbox.
   EMAIL_USER: '',
   EMAIL_PASS: '',
+  // Enquiry sorting talks to a local stand-in, never the real TypeSafe API.
+  TYPESAFE_API_KEY: 'e2e-typesafe-key',
+  TYPESAFE_API_URL: `${typesafe.url}/v1/systemone`,
 };
 
 const run = (args, opts = {}) =>
@@ -58,12 +63,15 @@ try {
     server.on('exit', (code) => reject(new Error(`server exited early (${code}):\n${log}`)));
   });
 
-  await run([join(here, 'flows.mjs')], { env: { E2E_API: `http://localhost:${PORT}/api`, E2E_JWT_SECRET: SECRET } });
+  await run([join(here, 'flows.mjs')], {
+    env: { E2E_API: `http://localhost:${PORT}/api`, E2E_JWT_SECRET: SECRET, E2E_TYPESAFE_STUB: typesafe.url },
+  });
   exitCode = 0;
 } catch (e) {
   console.error(e.message);
 } finally {
   server?.kill();
+  await typesafe.close();
   await rs.stop();
   rmSync(cwd, { recursive: true, force: true });
 }

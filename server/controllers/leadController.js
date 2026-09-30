@@ -3,6 +3,8 @@ import Member from '../models/Member.js';
 import { getSettingsDoc } from '../models/Settings.js';
 import { registerDeskMember } from '../services/salesService.js';
 import { findPossibleDuplicates } from '../services/memberService.js';
+import { triageLead } from '../services/leadTriage.js';
+import { isTypeSafeConfigured } from '../services/typesafe/client.js';
 import { withTransaction } from '../utils/db.js';
 import { escapeRegex, normalizePhone } from '../utils/strings.js';
 import { endOfGymDay, startOfGymDay } from '../utils/time.js';
@@ -11,10 +13,12 @@ import { AppError } from '../middleware/errorHandler.js';
 
 const OPEN = ['new', 'contacted', 'trial'];
 
-/** GET /api/admin/leads */
+const NOT_SPAM = { 'triage.spam': { $ne: true } };
+
+/** GET /api/admin/leads — likely spam is hidden unless `spam=only`. */
 export const listLeads = asyncHandler(async (req, res) => {
-  const { status, due, q, page, limit } = req.validated.query;
-  const filter = {};
+  const { status, due, q, spam, page, limit } = req.validated.query;
+  const filter = spam === 'only' ? { 'triage.spam': true } : { ...NOT_SPAM };
   if (status === 'open') filter.status = { $in: OPEN };
   else if (status !== 'all') filter.status = status;
   if (due === 'today') filter.nextFollowUpAt = { $lte: endOfGymDay() };
@@ -25,21 +29,26 @@ export const listLeads = asyncHandler(async (req, res) => {
     filter.$or = [{ name: rx }, { email: rx }, ...(digits.length >= 3 ? [{ phone: new RegExp(escapeRegex(digits)) }] : [])];
   }
 
-  const sort = OPEN.includes(filter.status) || status === 'open' ? { nextFollowUpAt: 1, createdAt: -1 } : { updatedAt: -1 };
-  const [leads, total, counts] = await Promise.all([
+  // Within the same follow-up time, higher priority (ready to start, member issue) comes first.
+  const isOpenList = status === 'open' || OPEN.includes(status);
+  const sort = isOpenList ? { nextFollowUpAt: 1, priority: -1, createdAt: -1 } : { updatedAt: -1 };
+  const [leads, total, counts, spamCount] = await Promise.all([
     Lead.find(filter)
       .sort(sort)
       .skip((page - 1) * limit)
       .limit(limit)
+      .select('-triage.answers')
       .populate('interestPlanId', 'name price')
       .populate('assignedTo', 'name username')
       .lean(),
     Lead.countDocuments(filter),
-    Lead.aggregate([{ $group: { _id: '$status', n: { $sum: 1 } } }]),
+    Lead.aggregate([{ $match: NOT_SPAM }, { $group: { _id: '$status', n: { $sum: 1 } } }]),
+    Lead.countDocuments({ 'triage.spam': true, status: { $in: OPEN } }),
   ]);
   const byStatus = Object.fromEntries(counts.map((c) => [c._id, c.n]));
   byStatus.open = OPEN.reduce((sum, s) => sum + (byStatus[s] || 0), 0);
-  res.json({ success: true, leads, total, page, limit, counts: byStatus });
+  byStatus.spam = spamCount;
+  res.json({ success: true, leads, total, page, limit, counts: byStatus, triageEnabled: isTypeSafeConfigured() });
 });
 
 /** POST /api/admin/leads */
@@ -61,12 +70,36 @@ export const createLead = asyncHandler(async (req, res) => {
   });
 });
 
-/** PATCH /api/admin/leads/:id */
+/** PATCH /api/admin/leads/:id — `spam: true|false` is a staff decision that automatic sorting then respects. */
 export const updateLead = asyncHandler(async (req, res) => {
-  const lead = await Lead.findByIdAndUpdate(req.params.id, { $set: req.validated.body }, { new: true, runValidators: true })
+  const { spam, ...fields } = req.validated.body;
+  const set = { ...fields };
+  if (spam !== undefined) {
+    set['triage.spam'] = spam;
+    set['triage.spamSetBy'] = 'staff';
+    if (spam) set.priority = 0;
+  }
+  // Choosing a plan by hand means it is no longer a suggestion.
+  const pull = 'interestPlanId' in fields ? { $pull: { 'triage.filled': 'interestPlanId' } } : {};
+  const lead = await Lead.findByIdAndUpdate(req.params.id, { $set: set, ...pull }, { new: true, runValidators: true })
+    .select('-triage.answers')
     .populate('interestPlanId', 'name price')
     .lean();
   if (!lead) throw new AppError('Lead not found', 404, 'NOT_FOUND');
+  res.json({ success: true, lead });
+});
+
+/** POST /api/admin/leads/:id/triage — sort (or re-sort) one enquiry now. */
+export const retriageLead = asyncHandler(async (req, res) => {
+  if (!isTypeSafeConfigured()) {
+    throw new AppError('Automatic sorting is off. Add TYPESAFE_API_KEY to the server settings to turn it on.', 409, 'TRIAGE_OFF');
+  }
+  const exists = await Lead.exists({ _id: req.params.id });
+  if (!exists) throw new AppError('Lead not found', 404, 'NOT_FOUND');
+  const outcome = await triageLead(req.params.id, { force: true });
+  if (outcome === 'skipped') throw new AppError('This lead has no message to sort', 422, 'NO_MESSAGE');
+  if (outcome === 'failed') throw new AppError("Couldn't sort this enquiry right now. Try again in a minute.", 503, 'TRIAGE_FAILED');
+  const lead = await Lead.findById(req.params.id).select('-triage.answers').populate('interestPlanId', 'name price').lean();
   res.json({ success: true, lead });
 });
 

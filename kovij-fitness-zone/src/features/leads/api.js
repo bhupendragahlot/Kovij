@@ -28,6 +28,9 @@ export const useUpdateLead = () => useLeadMutation(({ id, patch }) => api.patch(
 
 export const useAddLeadNote = () => useLeadMutation(({ id, text }) => api.post(`/admin/leads/${id}/notes`, { text }));
 
+/** Sort (or re-sort) one enquiry now. */
+export const useRetriageLead = () => useLeadMutation((id) => api.post(`/admin/leads/${id}/triage`));
+
 export const useConvertLead = () =>
   useLeadMutation((id) => api.post(`/admin/leads/${id}/convert`), {
     onSuccess: (data, vars, queryClient) => queryClient.invalidateQueries({ queryKey: qk.members.all }),

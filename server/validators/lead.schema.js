@@ -7,6 +7,8 @@ const source = z.enum(['walk_in', 'phone', 'website', 'instagram', 'referral', '
 export const listLeadsQuery = z.object({
   status: z.union([status, z.literal('open'), z.literal('all')]).default('open'),
   due: z.enum(['today', 'overdue']).optional(),
+  /** Likely-spam leads are hidden by default; `only` lists just them for review. */
+  spam: z.enum(['hide', 'only']).default('hide'),
   q: optionalText(100),
   ...pagination,
 });
@@ -30,6 +32,7 @@ export const updateLeadSchema = z.object({
   interestPlanId: objectId.nullable().optional(),
   nextFollowUpAt: z.coerce.date().nullable().optional(),
   lostReason: optionalText(300),
+  spam: z.boolean().optional(),
 });
 
 export const leadNoteSchema = z.object({ text: z.string().trim().min(1, 'Write a note').max(2000) });

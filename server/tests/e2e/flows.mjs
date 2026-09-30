@@ -214,6 +214,49 @@ check("website enquiry becomes a lead", webLeads.body.leads.some((l) => l.source
 const badContact = await call("POST", "/send-email", { body: { name: "", email: "not-an-email", message: "" } });
 check("contact form validates input (422)", badContact.status === 422);
 
+// ── Automatic enquiry sorting (TypeSafe, via the local stand-in)
+// The contact form allows 5 per hour per device; this section uses the last 3.
+const waitForTriage = async (email) => {
+  for (let i = 0; i < 60; i++) {
+    const found = (await call("GET", `/admin/leads?status=all&spam=hide&q=${encodeURIComponent(email)}`, { token: T })).body.leads[0]
+      || (await call("GET", `/admin/leads?status=all&spam=only&q=${encodeURIComponent(email)}`, { token: T })).body.leads[0];
+    if (found?.triage?.status) return found;
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  return null;
+};
+await call("POST", "/send-email", { body: { name: "Keen Joiner", email: "keen@example.com", phone: "9866677788", message: "Hi, I want to join the monthly plan, evening batch. Please call me." } });
+await call("POST", "/send-email", { body: { name: "SEO Agency", email: "seo@example.com", message: "We can rank your website #1 on Google. Reply for a free audit." } });
+await call("POST", "/send-email", { body: { name: "Outage Test", email: "outage@example.com", message: "TYPESAFE_DOWN what are your timings?" } });
+
+const keen = await waitForTriage("keen@example.com");
+check("enquiry is sorted in the background", keen?.triage?.status === "done", JSON.stringify(keen?.triage));
+check("sorting labels topic, readiness, time and call-back", keen?.triage?.topic === "join" && keen.triage.readinessLevel === "ready" && keen.triage.timePref === "evening" && keen.triage.wantsCallback === true, JSON.stringify(keen?.triage));
+check("ready-to-join enquiry gets top priority", keen?.priority === 3, keen?.priority);
+check("plan interest suggested and marked as suggested", keen?.interestPlanId?.name === "Monthly" && keen.triage.filled?.includes("interestPlanId"), JSON.stringify({ plan: keen?.interestPlanId, filled: keen?.triage?.filled }));
+check("raw model answers are not sent to the browser", keen && keen.triage.answers === undefined);
+
+const seo = await waitForTriage("seo@example.com");
+check("likely spam is flagged", seo?.triage?.spam === true && seo.priority === 0, JSON.stringify(seo?.triage));
+const openList = await call("GET", "/admin/leads?status=open", { token: T });
+check("likely spam is hidden from the open list and counted", !openList.body.leads.some((l) => l.email === "seo@example.com") && openList.body.counts.spam >= 1 && openList.body.triageEnabled === true, JSON.stringify(openList.body.counts));
+const spamOnly = await call("GET", "/admin/leads?status=open&spam=only", { token: T });
+check("likely spam can be reviewed", spamOnly.body.leads.some((l) => l.email === "seo@example.com"));
+const notSpam = await call("PATCH", `/admin/leads/${seo._id}`, { token: T, body: { spam: false } });
+check("staff can mark not spam", notSpam.status === 200 && notSpam.body.lead.triage.spam === false && notSpam.body.lead.triage.spamSetBy === "staff", JSON.stringify(notSpam.body.lead?.triage));
+const resort = await call("POST", `/admin/leads/${seo._id}/triage`, { token: T });
+check("re-sorting respects the staff decision", resort.status === 200 && resort.body.lead.triage.spam === false && (await call("GET", "/admin/leads?status=open", { token: T })).body.leads.some((l) => l.email === "seo@example.com"), JSON.stringify(resort.body.lead?.triage));
+
+const outage = await waitForTriage("outage@example.com");
+check("a TypeSafe outage leaves the lead saved and visible, marked failed", outage?.triage?.status === "failed" && outage.status === "new" && outage.triage.spam !== true, JSON.stringify(outage?.triage));
+const retryFail = await call("POST", `/admin/leads/${outage._id}/triage`, { token: T });
+check("manual re-sort during an outage explains itself (503)", retryFail.status === 503 && retryFail.body.code === "TRIAGE_FAILED", JSON.stringify(retryFail.body));
+const staffLead = (await call("POST", "/admin/leads", { token: T, body: { name: "Walk-in", phone: "9877788899", source: "walk_in" } })).body.lead;
+check("leads without a message can't be sorted (422)", (await call("POST", `/admin/leads/${staffLead._id}/triage`, { token: T })).status === 422);
+
+const stub = await fetch(`${process.env.E2E_TYPESAFE_STUB}/_inspect`).then((r) => r.json());
+check("no email or phone number is ever sent to TypeSafe", stub.requests > 0 && stub.leaks === 0 && stub.rejected === 0, JSON.stringify(stub));
+
 // ── Campaigns + public trainers
 const camp = await call("POST", "/campaigns", { token: T, body: { title: "Diwali", type: "offer", subject: "{{firstName}}, 20% off", bodyHtml: "<p>Hi {{firstName}}</p>", audienceFilter: "activeMembers" } });
 check("create campaign", camp.status === 201);

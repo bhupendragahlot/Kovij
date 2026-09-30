@@ -81,8 +81,9 @@ export async function buildDashboard({ canSeeRevenue, expiringWindowDays = 7 }) 
       .populate('memberId', 'name phone memberCode profilePhoto')
       .lean(),
     lapsedMembers(dayjs(now).subtract(14, 'day').toDate(), 5),
-    Lead.countDocuments({ status: 'new' }),
-    Lead.countDocuments({ status: { $in: ['new', 'contacted', 'trial'] }, nextFollowUpAt: { $lte: endOfGymDay(now) } }),
+    // Likely spam is hidden from the leads list, so it doesn't count as work here either.
+    Lead.countDocuments({ status: 'new', 'triage.spam': { $ne: true } }),
+    Lead.countDocuments({ status: { $in: ['new', 'contacted', 'trial'] }, nextFollowUpAt: { $lte: endOfGymDay(now) }, 'triage.spam': { $ne: true } }),
   ]);
 
   const recentPayments = await Payment.find({ status: 'paid' })

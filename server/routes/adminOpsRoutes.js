@@ -9,7 +9,7 @@ import { createStaffSchema, updateStaffSchema } from '../validators/staff.schema
 import { settingsSchema, trainerSchema, trainerPatchSchema } from '../validators/catalog.schema.js';
 import { getDashboard } from '../controllers/dashboardController.js';
 import { listAttendance, checkIn, undoCheckIn } from '../controllers/attendanceController.js';
-import { listLeads, createLead, updateLead, addLeadNote, convertLead } from '../controllers/leadController.js';
+import { listLeads, createLead, updateLead, addLeadNote, convertLead, retriageLead } from '../controllers/leadController.js';
 import { listStaff, createStaff, updateStaff } from '../controllers/staffController.js';
 import { getSettings, updateSettings } from '../controllers/settingsController.js';
 import { trainers } from '../controllers/trainerController.js';
@@ -31,6 +31,7 @@ router.post('/leads', validate(createLeadSchema), createLead);
 router.patch('/leads/:id', byId, validate(updateLeadSchema), updateLead);
 router.post('/leads/:id/notes', byId, validate(leadNoteSchema), addLeadNote);
 router.post('/leads/:id/convert', byId, convertLead);
+router.post('/leads/:id/triage', byId, retriageLead);
 
 router.get('/trainers', trainers.list);
 router.post('/trainers', requireManager, validate(trainerSchema), trainers.create);

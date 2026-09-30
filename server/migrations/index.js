@@ -72,6 +72,13 @@ const STEPS = [
       if (n) logger.info(`migration: assigned member codes to ${n} members`);
     },
   },
+  {
+    // Leads created before automatic sorting get the neutral priority, so list ordering is consistent.
+    id: '2026-10-lead-priority',
+    async run() {
+      await Lead.updateMany({ priority: { $exists: false } }, { $set: { priority: 2 } });
+    },
+  },
 ];
 
 export async function runStartupMigrations() {

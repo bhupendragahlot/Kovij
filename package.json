@@ -11,6 +11,8 @@
     "test:e2e": "node server/tests/e2e/run.mjs",
     "start": "node server/server.js",
     "create-admin": "node server/scripts/create-admin.js",
+    "triage:eval": "node server/scripts/triage-eval.js",
+    "triage:leads": "node server/scripts/triage-leads.js",
     "build": "npm install && npm install --prefix kovij-fitness-zone && npm run build --prefix kovij-fitness-zone"
   },
   "config": {

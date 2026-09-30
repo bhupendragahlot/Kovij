@@ -1,6 +1,7 @@
 import Lead from '../models/Lead.js';
 import { getSettingsDoc } from '../models/Settings.js';
 import { queueEmail } from '../services/emailService.js';
+import { queueLeadTriage } from '../services/leadTriage.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { endOfGymDay } from '../utils/time.js';
 
@@ -13,7 +14,7 @@ export const sendEmail = asyncHandler(async (req, res) => {
   const { name, email, phone, message } = req.validated.body;
   const settings = await getSettingsDoc();
 
-  await Lead.create({
+  const lead = await Lead.create({
     name,
     email,
     phone,
@@ -22,6 +23,8 @@ export const sendEmail = asyncHandler(async (req, res) => {
     message,
     nextFollowUpAt: endOfGymDay(),
   });
+  // Sorted in the background (topic, spam, readiness); the visitor never waits for it.
+  queueLeadTriage(lead._id);
 
   const ownerInbox = settings.email || process.env.EMAIL_USER;
   await Promise.all([
