@@ -5,10 +5,11 @@ import { ArrowLeft, Eye, EyeOff, Loader2, Mail, MailCheck, Smartphone, UserRound
 import { useMemberAuth } from "../../context/MemberAuthContext";
 import { authErrorMessage } from "./authErrors";
 import * as fb from "./firebaseAuth";
+import { API_ORIGIN } from "../../shared/lib/apiBase";
 
 const RESEND_SECONDS = 30;
 const MIN_PASSWORD = 8;
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+const API_BASE = API_ORIGIN;
 
 /**
  * Member sign-in and sign-up: mobile number + SMS code, email + password, or Google.

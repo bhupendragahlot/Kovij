@@ -4,9 +4,10 @@ import axios from "axios";
 import { memberApi } from "../../lib/memberApi";
 import { useMemberAuth } from "../../context/MemberAuthContext";
 import MemberAuthPanel from "../../features/member-auth/MemberAuthPanel";
+import { API_ORIGIN } from "../../shared/lib/apiBase";
 
 const steps = ["Personal", "Health", "Goals", "Plan & pay", "Uploads", "Review"];
-const base = import.meta.env.VITE_API_BASE_URL || "";
+const base = API_ORIGIN;
 
 function clsx(...parts) {
   return parts.filter(Boolean).join(" ");

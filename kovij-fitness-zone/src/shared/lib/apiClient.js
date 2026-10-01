@@ -1,6 +1,7 @@
 import axios from "axios";
+import { API_ORIGIN } from "./apiBase";
 
-const API_BASE = `${import.meta.env.VITE_API_BASE_URL || ""}/api`;
+const API_BASE = `${API_ORIGIN}/api`;
 
 /** Normalised error every feature can branch on (`code`) and show (`message`). */
 export class ApiError extends Error {

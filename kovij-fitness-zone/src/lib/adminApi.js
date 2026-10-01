@@ -1,6 +1,7 @@
 import axios from "axios";
+import { API_ORIGIN } from "../shared/lib/apiBase";
 
-const base = import.meta.env.VITE_API_BASE_URL || "";
+const base = API_ORIGIN;
 
 export const adminApi = axios.create({
   baseURL: `${base}/api`,

@@ -3,10 +3,11 @@ import axios from "axios";
 import { memberApi } from "../lib/memberApi";
 import { signInWithGoogle, signOutFirebase } from "../features/member-auth/firebaseAuth";
 import { MEMBER_SESSION_EXPIRED } from "../features/member-app/http";
+import { API_ORIGIN } from "../shared/lib/apiBase";
 
 const MemberAuthContext = createContext(null);
 
-const base = import.meta.env.VITE_API_BASE_URL || "";
+const base = API_ORIGIN;
 const SAVED_MEMBER_KEY = "kv.member";
 
 function saveMember(member) {
