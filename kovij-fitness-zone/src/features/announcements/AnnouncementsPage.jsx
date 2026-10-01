@@ -51,7 +51,25 @@ function whenLine(a) {
   return `Draft, edited ${formatRelativeTime(a.updatedAt)}`;
 }
 
-function DeliveryLine({ a }) {
+/** Failures link to the sent log (with reasons) for roles that can open it. */
+function FailedNote({ onShowLog, children }) {
+  const content = (
+    <>
+      <CircleAlert className="size-3.5" aria-hidden />
+      {children}
+      {onShowLog && ", see why"}
+    </>
+  );
+  return onShowLog ? (
+    <button type="button" onClick={onShowLog} className="inline-flex min-h-6 items-center gap-1 font-semibold text-bad hover:underline">
+      {content}
+    </button>
+  ) : (
+    <span className="inline-flex items-center gap-1 font-semibold text-bad">{content}</span>
+  );
+}
+
+function DeliveryLine({ a, onShowLog }) {
   const d = a.delivery || {};
   if (d.state === "pending" || d.state === "running") {
     return (
@@ -70,20 +88,19 @@ function DeliveryLine({ a }) {
       <span>
         Sent to <span className="font-semibold text-ink-2">{pluralize(s.notified, "member")}</span>, {formatNumber(s.read)} read
       </span>
-      {a.sendEmail && <span>{pluralize(s.emailSent, "email")}</span>}
-      {s.pushSent > 0 && <span>{pluralize(s.pushSent, "phone notification")}</span>}
+      {s.emailSent > 0 && <span>{pluralize(s.emailSent, "email")} sent</span>}
+      {s.pushSent > 0 && <span>{pluralize(s.pushSent, "phone notification")} sent</span>}
       {(s.emailFailed > 0 || s.pushFailed > 0) && (
-        <span className="inline-flex items-center gap-1 font-semibold text-bad">
-          <CircleAlert className="size-3.5" aria-hidden />
+        <FailedNote onShowLog={onShowLog}>
           {[s.emailFailed && pluralize(s.emailFailed, "email"), s.pushFailed && pluralize(s.pushFailed, "phone notification")].filter(Boolean).join(" and ")} failed
-        </span>
+        </FailedNote>
       )}
       {d.state === "stopped" && <span className="font-semibold text-warn">Stopped when it was taken down</span>}
     </p>
   );
 }
 
-function AnnouncementCard({ a, onEdit }) {
+function AnnouncementCard({ a, onEdit, onShowLog }) {
   const queryClient = useQueryClient();
   const publish = usePublishAnnouncement();
   const unpublish = useUnpublishAnnouncement();
@@ -188,7 +205,7 @@ function AnnouncementCard({ a, onEdit }) {
         <span aria-hidden>·</span>
         <span>{whenLine(a)}</span>
       </p>
-      <DeliveryLine a={a} />
+      <DeliveryLine a={a} onShowLog={onShowLog} />
       <div className="mt-auto flex items-center gap-2 pt-1">
         {primary}
         <div className="flex-1" />
@@ -209,7 +226,7 @@ function AnnouncementCard({ a, onEdit }) {
   );
 }
 
-function AnnouncementsList({ status, page, setUrl, onCreate, onEdit }) {
+function AnnouncementsList({ status, page, setUrl, onCreate, onEdit, onShowLog }) {
   const query = useAnnouncements({ status, page, limit: LIMIT });
   const counts = query.data?.counts || {};
   const items = query.data?.items || [];
@@ -261,7 +278,7 @@ function AnnouncementsList({ status, page, setUrl, onCreate, onEdit }) {
           <ul className={`grid grid-cols-1 gap-4 lg:grid-cols-2 transition-opacity ${query.isFetching && query.isPlaceholderData ? "opacity-60" : ""}`}>
             {items.map((a) => (
               <li key={a._id} className="flex">
-                <AnnouncementCard a={a} onEdit={onEdit} />
+                <AnnouncementCard a={a} onEdit={onEdit} onShowLog={onShowLog} />
               </li>
             ))}
           </ul>
@@ -321,7 +338,14 @@ export default function AnnouncementsPage() {
       <Tabs label="Announcements sections" value={current} onChange={(t) => setUrl({ tab: t, status: "all", page: 1 })} tabs={tabs} className="mb-5" />
       <div role="tabpanel" id={`panel-${current}`} aria-labelledby={`tab-${current}`}>
         {current === "announcements" && (
-          <AnnouncementsList status={status} page={page} setUrl={setUrl} onCreate={() => setCreating(true)} onEdit={setEditing} />
+          <AnnouncementsList
+            status={status}
+            page={page}
+            setUrl={setUrl}
+            onCreate={() => setCreating(true)}
+            onEdit={setEditing}
+            onShowLog={canRemind ? () => setUrl({ tab: "log", status: "all", page: 1 }) : undefined}
+          />
         )}
         {current === "reminders" && (
           <Suspense fallback={panelFallback}>

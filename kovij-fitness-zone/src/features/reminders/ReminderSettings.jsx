@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, Cake, CalendarClock, Clock, HeartHandshake, IndianRupee } from "lucide-react";
 import { useUpdateReminderSettings } from "./api";
 import { DayChips } from "./DayChips";
-import { hourLabel, normalizeReminders, SEND_HOURS } from "./reminderSettings";
+import { hourLabel, normalizeReminders, SEND_HOURS } from "./reminderDefaults";
 import { usePermission } from "../auth/permissions";
 import { useOnlineStatus } from "../../shared/hooks/useOnlineStatus";
 import { Button, ButtonLink, Card, Field, FormError, InlineAlert, Select, Switch, useToast } from "../../shared/ui";

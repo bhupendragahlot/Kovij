@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { usePermission } from "../auth/permissions";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -7,6 +8,7 @@ import {
   CircleAlert,
   Inbox,
   IndianRupee,
+  LifeBuoy,
   PhoneCall,
   RefreshCw,
   ScanLine,
@@ -90,24 +92,28 @@ function ActionRow({ to, icon: Icon, tone, title, detail, count }) {
 
 /** Work queue: each row is a count that links straight to the list that clears it. */
 export function NeedsAttention({ data, className }) {
+  const canRenew = usePermission("renewals.view");
+  const within = [7, 15, 30].includes(data.expiring.windowDays) ? data.expiring.windowDays : 7;
   return (
     <Card className={className} aria-labelledby="needs-attention">
       <CardHeader id="needs-attention" title="Needs attention" description="Tap a row to work through it." />
       <ul className="-mx-2 flex flex-col gap-0.5">
+        {data.dues && (
+          <ActionRow
+            to="/admin/payments?status=pending"
+            icon={IndianRupee}
+            tone="bg-warn-soft text-warn"
+            title="Dues to collect"
+            detail={`${formatINR(data.dues.amount)} outstanding`}
+            count={data.dues.count}
+          />
+        )}
         <ActionRow
-          to="/admin/payments?status=pending"
-          icon={IndianRupee}
-          tone="bg-warn-soft text-warn"
-          title="Dues to collect"
-          detail={`${formatINR(data.dues.amount)} outstanding`}
-          count={data.dues.count}
-        />
-        <ActionRow
-          to="/admin/members?state=expiring"
+          to={canRenew ? `/admin/renewals?view=ending&within=${within}` : "/admin/members?state=expiring"}
           icon={CalendarClock}
           tone="bg-brand-soft text-brand-ink"
           title={`Plans ending in ${data.expiring.windowDays} days`}
-          detail="Renew before they lapse"
+          detail="Not renewed yet"
           count={data.expiring.count}
         />
         <ActionRow
@@ -134,6 +140,9 @@ export function NeedsAttention({ data, className }) {
           detail="From the website and walk-ins"
           count={data.leads.new}
         />
+        {data.support && (
+          <ActionRow to="/admin/support" icon={LifeBuoy} tone="bg-brand-soft text-brand-ink" title="Member questions" detail="Sent from the app, waiting for you" count={data.support.unread} />
+        )}
       </ul>
     </Card>
   );

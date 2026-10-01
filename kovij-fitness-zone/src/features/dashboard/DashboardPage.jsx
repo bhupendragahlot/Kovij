@@ -53,7 +53,7 @@ export default function DashboardPage() {
               icon={Users}
               to="/admin/members?state=active"
               value={formatNumber(d.members.active)}
-              sub={`${formatNumber(d.members.newThisMonth)} joined this month`}
+              sub={d.members.frozen ? `${formatNumber(d.members.frozen)} more on a frozen plan` : `${formatNumber(d.members.newThisMonth)} joined this month`}
             />
             <KpiTile
               label="New this month"
@@ -71,13 +71,15 @@ export default function DashboardPage() {
                 delta={{ current: d.revenue.monthToDate, previous: d.revenue.prevMonthToDate, label: "last month so far" }}
               />
             )}
-            <KpiTile
-              label="Dues outstanding"
-              icon={Wallet}
-              to="/admin/payments?status=pending"
-              value={formatINR(d.dues.amount)}
-              sub={`${formatNumber(d.dues.count)} unpaid ${d.dues.count === 1 ? "bill" : "bills"}`}
-            />
+            {d.dues && (
+              <KpiTile
+                label="Dues outstanding"
+                icon={Wallet}
+                to="/admin/payments?status=pending"
+                value={formatINR(d.dues.amount)}
+                sub={`${formatNumber(d.dues.count)} unpaid ${d.dues.count === 1 ? "bill" : "bills"}`}
+              />
+            )}
           </div>
 
           {canSeeRevenue && d.revenue && (

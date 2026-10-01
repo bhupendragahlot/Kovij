@@ -23,6 +23,7 @@ import { useOnlineStatus } from "../../shared/hooks/useOnlineStatus";
 import { newIdempotencyKey } from "../../shared/lib/apiClient";
 import { storage } from "../../shared/lib/storage";
 import { cn } from "../../shared/lib/cn";
+import { BUTTON_VARIANTS } from "../../shared/ui/styles";
 import { formatTime } from "../../shared/lib/format";
 import { Avatar, Button, ButtonLink, Card, Dialog, Field, InlineAlert, Input, SegmentedControl, Switch } from "../../shared/ui";
 
@@ -223,6 +224,20 @@ const RESULT_TONE = {
   bad: { layer: "bg-bad-soft", icon: "text-bad" },
 };
 
+/** Large touch target for members at the door (the shared Button tops out at 48px). */
+function KioskButton({ icon: Icon, variant = "inverse", className, children, ...props }) {
+  return (
+    <button
+      type="button"
+      className={cn("inline-flex h-14 items-center justify-center gap-2 rounded-control px-7 text-lg transition-colors duration-150", BUTTON_VARIANTS[variant], className)}
+      {...props}
+    >
+      {Icon && <Icon className="size-5" aria-hidden />}
+      {children}
+    </button>
+  );
+}
+
 /** Full-screen outcome. Tapping anywhere (or the button) moves on; it also moves on by itself. */
 function ResultScreen({ view, onDismiss }) {
   const tone = RESULT_TONE[view.tone];
@@ -239,9 +254,9 @@ function ResultScreen({ view, onDismiss }) {
             {view.note}
           </p>
         )}
-        <Button variant="secondary" size="lg" className="mt-4 h-14 px-8 text-lg" onClick={onDismiss}>
+        <KioskButton variant="secondary" className="mt-4 min-w-40" onClick={onDismiss}>
           Continue
-        </Button>
+        </KioskButton>
       </div>
     </div>
   );
@@ -319,7 +334,7 @@ function ExitDialog({ open, config, onCancel, onUnlocked, onSignOut }) {
             value={pin}
             onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
             autoFocus
-            className="tabular text-center text-xl tracking-[0.4em]"
+            className="tabular text-center tracking-[0.4em]"
           />
         </Field>
         {forgot ? (
@@ -494,21 +509,25 @@ function KioskRunner({ config, onExit }) {
 
   // Browser back, or any link, needs the PIN. Session expiry may still go to the sign-in page.
   const blocker = useBlocker(
-    useCallback(
-      ({ nextLocation }) => !allowLeave.current && !nextLocation.state?.kioskGuard && !nextLocation.pathname.startsWith("/admin/login"),
-      []
-    )
+    useCallback(({ nextLocation, historyAction }) => {
+      if (allowLeave.current || nextLocation.pathname.startsWith("/admin/login")) return false;
+      // Only the kiosk's own guard entry (below) may be pushed without the PIN.
+      return !(historyAction === "PUSH" && nextLocation.state?.kioskGuard);
+    }, [])
   );
   useEffect(() => {
     if (blocker.state === "blocked") setExitOpen(true);
   }, [blocker.state]);
 
   // A kiosk opened in a fresh tab has nothing behind it, so "back" would leave the app where no
-  // PIN can be asked. One extra history entry keeps the first "back" inside the app.
+  // PIN can be asked. One extra history entry keeps "back" inside the app, where it is blocked.
   const location = useLocation();
   const guarded = Boolean(location.state?.kioskGuard);
+  const guardPushed = useRef(false);
   useEffect(() => {
-    if (!guarded) navigate(location.pathname, { state: { kioskGuard: true } });
+    if (guarded || guardPushed.current) return;
+    guardPushed.current = true;
+    navigate(location.pathname, { state: { kioskGuard: true } });
   }, [guarded, navigate, location.pathname]);
 
   const process = useCallback(
@@ -591,11 +610,10 @@ function KioskRunner({ config, onExit }) {
     storage.remove(LOCK_KEY);
     leaveFullscreen();
     setExitOpen(false);
-    if (blocker.state === "blocked") blocker.proceed();
-    else {
-      onExit();
-      navigate("/admin/check-in");
-    }
+    // Always land on the check-in page, whether staff tapped "Staff exit" or pressed back.
+    if (blocker.state === "blocked") blocker.reset();
+    onExit();
+    navigate("/admin/check-in");
   };
 
   const cancelExit = () => {
@@ -665,13 +683,11 @@ function KioskRunner({ config, onExit }) {
             {out ? "Hold your code up to the camera to check out." : "Open the Kovij app, or hold up your member card, facing the camera."}
           </p>
           {out ? (
-            <Button variant="inverse" size="lg" onClick={() => setMode("auto")} className="h-14 px-6 text-lg">
-              Cancel check-out
-            </Button>
+            <KioskButton onClick={() => setMode("auto")}>Cancel check-out</KioskButton>
           ) : (
-            <Button variant="inverse" size="lg" icon={LogOut} onClick={() => setMode("out")} className="h-14 px-6 text-lg">
+            <KioskButton icon={LogOut} onClick={() => setMode("out")}>
               Leaving? Check out
-            </Button>
+            </KioskButton>
           )}
         </div>
       </main>

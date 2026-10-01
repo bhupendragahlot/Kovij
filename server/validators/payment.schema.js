@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { dayKey, money, objectId, optionalText, pagination, paymentMode } from './common.js';
+import { parseGymDay } from '../utils/time.js';
 
 const paymentType = z.enum(['registration', 'membership', 'renewal', 'personal_training', 'other']);
 /** Any recorded mode, including `online` (gateway), for filters. Desk forms use `paymentMode`. */
@@ -7,17 +8,19 @@ const anyMode = z.enum(['cash', 'upi', 'card', 'online']);
 /** Query strings send "" for "any": treat it as not given. */
 const blank = (schema) => z.preprocess((v) => (v === '' ? undefined : v), schema);
 const positiveMoney = money.refine((n) => n > 0, 'Amount must be more than 0');
+/** A real calendar day: 2026-02-31 is refused instead of silently becoming 3 March. */
+export const calendarDay = dayKey.refine((d) => parseGymDay(d).format('YYYY-MM-DD') === d, 'Enter a real date');
 
 const paymentFilters = {
   status: blank(z.enum(['all', 'paid', 'pending', 'awaiting', 'refunded', 'failed']).default('all')),
   mode: blank(anyMode.optional()),
   type: blank(paymentType.optional()),
-  from: blank(dayKey.optional()),
-  to: blank(dayKey.optional()),
+  from: blank(calendarDay.optional()),
+  to: blank(calendarDay.optional()),
   q: optionalText(100),
   memberId: blank(objectId.optional()),
 };
-const fromBeforeTo = (v) => !v.from || !v.to || v.from <= v.to;
+const fromBeforeTo = (v) => !v.from || !v.to || !parseGymDay(v.from).isAfter(parseGymDay(v.to), 'day');
 const fromBeforeToMessage = { message: 'The start date must be on or before the end date', path: ['from'] };
 
 export const listPaymentsQuery = z.object({ ...paymentFilters, ...pagination }).refine(fromBeforeTo, fromBeforeToMessage);

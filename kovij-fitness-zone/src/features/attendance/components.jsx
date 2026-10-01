@@ -146,7 +146,7 @@ export function VisitsTrendChart({ data }) {
       title="Visits per month"
       table={{ caption: "Visits per month", columns: ["Month", "Visits"], rows: rows.map((r) => [formatMonthLong(r.month), r.visits]) }}
     >
-      <div className="h-44">
+      <div className="h-44 lg:h-80">
         <ResponsiveContainer width="100%" height="100%" initialDimension={INITIAL}>
           <BarChart data={rows} margin={{ top: 8, right: 4, bottom: 0, left: -12 }} barCategoryGap="30%">
             <CartesianGrid vertical={false} stroke="var(--kv-chart-grid)" />

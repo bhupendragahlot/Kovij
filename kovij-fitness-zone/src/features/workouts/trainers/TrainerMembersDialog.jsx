@@ -52,6 +52,7 @@ export function TrainerMembersDialog({ open, trainer, onClose }) {
     setAdding([]);
     setNotice(null);
     assign.reset();
+    unassign.reset();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 

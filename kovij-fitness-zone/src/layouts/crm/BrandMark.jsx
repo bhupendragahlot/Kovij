@@ -14,10 +14,11 @@ export function KMark({ className }) {
   );
 }
 
-export function BrandMark({ tone = "rail", compact = false, className }) {
+/** The gym's own logo (Settings) replaces the K mark once one is uploaded. */
+export function BrandMark({ tone = "rail", compact = false, logoUrl, className }) {
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <KMark className="size-9 shrink-0" />
+      {logoUrl ? <img src={logoUrl} alt="" className="size-9 shrink-0 rounded-[9px] bg-white object-contain p-0.5" /> : <KMark className="size-9 shrink-0" />}
       {!compact && (
         <span className="leading-tight">
           <span className={cn("block text-[17px] font-extrabold tracking-[-0.02em]", tone === "rail" ? "text-rail-ink" : "text-ink")}>Kovij</span>

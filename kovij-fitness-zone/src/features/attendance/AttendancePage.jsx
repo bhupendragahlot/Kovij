@@ -266,10 +266,11 @@ function DayView({ date, onDate, filters, setFilters }) {
       </Card>
 
       <Card padding="none" className="overflow-hidden">
-        <div className="flex flex-col gap-3 p-4 sm:p-5">
-          <CardHeader className="mb-0" title="Visits" description={data ? `${pluralize(data.total, "visit")} on this day` : undefined} />
+        <div className="p-4 sm:p-5">
+          <CardHeader title="Visits" description={data ? `${pluralize(data.total, "visit")} on this day` : undefined} />
           <SearchInput value={search} onChange={setSearch} label="Filter by member" placeholder="Member name, code or phone" className="lg:max-w-sm" />
           <FilterChips
+            className="mt-3"
             label="Visit status"
             value={filters.status}
             onChange={(status) => setFilters({ status })}
@@ -440,8 +441,8 @@ function MonthView({ month, onMonth, onOpenDay, filters, setFilters }) {
       </Card>
 
       <Card padding="none" className="overflow-hidden">
-        <div className="flex flex-col gap-3 p-4 sm:p-5">
-          <CardHeader className="mb-0" title="Visits per member" description={members.data ? `${pluralize(members.data.total, "member")} came this month` : undefined} />
+        <div className="p-4 sm:p-5">
+          <CardHeader title="Visits per member" description={members.data ? `${pluralize(members.data.total, "member")} came this month` : undefined} />
           <SearchInput value={search} onChange={setSearch} label="Search members" placeholder="Member name or code" className="lg:max-w-sm" />
         </div>
         <DataTable

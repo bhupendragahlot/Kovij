@@ -6,6 +6,7 @@ import { selectRole } from "../../features/auth/sessionSlice";
 import { selectSidebarCollapsed, sidebarToggled } from "../../app/uiSlice";
 import { visibleNav } from "./navigation";
 import { BrandMark } from "./BrandMark";
+import { useSettings } from "../../features/settings/api";
 
 /**
  * Iron rail. Tablet: icons only (76px). Desktop: labels (248px), collapsible to icons.
@@ -17,6 +18,7 @@ export function Sidebar() {
   const collapsedPref = useSelector(selectSidebarCollapsed);
   const groups = visibleNav(role);
 
+  const logoUrl = useSettings().data?.logoUrl;
   return (
     <aside
       aria-label="Main"
@@ -26,10 +28,10 @@ export function Sidebar() {
       <div className="flex h-16 shrink-0 items-center px-5 xl:px-5">
         {/* Visibility lives on wrappers so it never competes with BrandMark's own display class. */}
         <span className="xl:hidden xl:group-data-[collapsed]/rail:block">
-          <BrandMark compact />
+          <BrandMark compact logoUrl={logoUrl} />
         </span>
         <span className="hidden xl:block xl:group-data-[collapsed]/rail:hidden">
-          <BrandMark />
+          <BrandMark logoUrl={logoUrl} />
         </span>
       </div>
 

@@ -1,12 +1,13 @@
 import { z } from 'zod';
-import { dayKey, money, optionalText, pagination } from './common.js';
+import { money, optionalText, pagination } from './common.js';
+import { calendarDay } from './payment.schema.js';
 import { EXPENSE_CATEGORIES, EXPENSE_MODES } from '../models/Expense.js';
-import { gymDayKey } from '../utils/time.js';
+import { parseGymDay, toGymTime } from '../utils/time.js';
 
 const blank = (schema) => z.preprocess((v) => (v === '' ? undefined : v), schema);
 const month = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'Use YYYY-MM');
 /** Expenses are recorded when paid, so a date in the future is almost always a typo. */
-const pastDay = dayKey.refine((d) => d <= gymDayKey(), 'The date can’t be in the future');
+const pastDay = calendarDay.refine((d) => !parseGymDay(d).isAfter(toGymTime(), 'day'), 'The date can’t be in the future');
 
 export const listExpensesQuery = z.object({
   month: blank(month.optional()),

@@ -37,13 +37,13 @@ export function appLink(path = '/member/dashboard') {
 const inr = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 });
 const money = (n) => inr.format(Number(n) || 0);
 const day = (value) => (value ? toGymTime(value).format('D MMM YYYY') : '');
-const first = (name) => String(name || '').trim().split(/\s+/)[0] || 'there';
+export const first = (name) => String(name || '').trim().split(/\s+/)[0] || 'there';
 /** Subjects are headers: one line, bounded. */
-const oneLine = (s, max = 150) => String(s || '').replace(/[\r\n]+/g, ' ').trim().slice(0, max);
+export const oneLine = (s, max = 150) => String(s || '').replace(/[\r\n]+/g, ' ').trim().slice(0, max);
 const safeImage = (url) => (/^https:\/\/[^\s"'<>]+$/i.test(String(url || '')) ? String(url) : '');
 
 /** Escaped plain text → paragraphs, keeping the writer's line breaks. */
-function textToHtml(text) {
+export function textToHtml(text) {
   return String(text || '')
     .trim()
     .split(/\n{2,}/)
@@ -52,7 +52,7 @@ function textToHtml(text) {
     .join('');
 }
 
-const para = (text) => `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:${C.ink2}">${escapeHtml(text)}</p>`;
+export const para = (text) => `<p style="margin:0 0 14px;font-size:15px;line-height:1.6;color:${C.ink2}">${escapeHtml(text)}</p>`;
 
 function detailsTable(rows) {
   const clean = rows.filter((r) => r && r.value !== '' && r.value != null);
@@ -97,7 +97,7 @@ function contactBlock(gymName, contact = {}) {
  * @param {{ gymName?: string, preheader?: string, eyebrow?: string, heading: string, bodyHtml: string,
  *           imageUrl?: string, cta?: { label: string, url: string }, contact?: object, footerNote?: string }} o
  */
-function layout(o) {
+export function layout(o) {
   const gymName = o.gymName || DEFAULT_GYM;
   const image = safeImage(o.imageUrl);
   const html = `

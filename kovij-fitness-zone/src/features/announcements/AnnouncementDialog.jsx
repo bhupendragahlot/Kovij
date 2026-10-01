@@ -203,7 +203,7 @@ export function AnnouncementDialog({ open, onClose, announcement }) {
         </Field>
 
         {!isLive && (
-          <Field label="When" error={errors.publishAt}>
+          <Field label="When" error={errors.publishAt} hint={schedule ? "Gym time (India). It goes out within 5 minutes of this time." : undefined}>
             <div className="flex flex-col gap-3">
               <SegmentedControl
                 label="When"

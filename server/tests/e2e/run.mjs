@@ -45,6 +45,8 @@ const env = {
   VAPID_PRIVATE_KEY: '',
   RAZORPAY_KEY_ID: '',
   RAZORPAY_KEY_SECRET: '',
+  // Test-mode mobile sign-in (fixed code, no SMS); refused by the server in production.
+  DEFAULT_OTP: '112233',
 };
 
 const only = (process.env.E2E_ONLY || '').split(',').map((s) => s.trim()).filter(Boolean);

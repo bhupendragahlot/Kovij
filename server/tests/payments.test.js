@@ -24,7 +24,7 @@ import { ageingBucket, comparisonPeriods, monthRange } from '../services/finance
 import { csvCell, toCsv } from '../services/csvExport.js';
 import { buildExpenseFilter, toClient } from '../services/expenseService.js';
 import { memberStatus, toMemberPayment } from '../controllers/memberPaymentController.js';
-import { upiReferenceSchema, verifyPaymentSchema, collectPaymentSchema } from '../validators/payment.schema.js';
+import { upiReferenceSchema, verifyPaymentSchema, collectPaymentSchema, listPaymentsQuery } from '../validators/payment.schema.js';
 import { createExpenseSchema } from '../validators/expense.schema.js';
 
 // ── Partial payments
@@ -241,6 +241,14 @@ test('expense validation: category, positive amount, no future dates', () => {
   assert.equal(createExpenseSchema.safeParse({ category: 'party', amount: 1, date: '2026-09-01' }).success, false);
   assert.equal(createExpenseSchema.safeParse({ category: 'rent', amount: 0, date: '2026-09-01' }).success, false);
   assert.equal(createExpenseSchema.safeParse({ category: 'rent', amount: 1, date: '2999-01-01' }).success, false);
+  // Impossible days are refused, not rolled over (dayjs would turn 31 Feb into 3 Mar).
+  assert.equal(createExpenseSchema.safeParse({ category: 'rent', amount: 1, date: '2026-02-31' }).success, false);
+});
+
+test('payment list dates must be real and in order', () => {
+  assert.equal(listPaymentsQuery.safeParse({ from: '2026-02-30' }).success, false);
+  assert.equal(listPaymentsQuery.safeParse({ from: '2026-09-02', to: '2026-09-01' }).success, false);
+  assert.equal(listPaymentsQuery.safeParse({ from: '2026-09-01', to: '2026-09-01', mode: '', type: '' }).success, true);
 });
 
 // ── Staff and member request shapes

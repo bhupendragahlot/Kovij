@@ -4,6 +4,7 @@ import Payment from '../models/Payment.js';
 import Attendance from '../models/Attendance.js';
 import Lead from '../models/Lead.js';
 import PlanHistory from '../models/PlanHistory.js';
+import SupportTicket from '../models/SupportTicket.js';
 import { GYM_TZ, dayjs, endOfGymDay, gymDayKey, startOfGymMonth, toGymTime } from '../utils/time.js';
 
 const sumPaid = async (from, to) => {
@@ -28,9 +29,15 @@ async function checkInsByHour(dayKeys, divisor) {
   return hourBuckets(rows, divisor);
 }
 
-/** Members whose latest plan ended recently and who have nothing active or queued: win-back list. */
+/** Joined in [from, to): the desk-entered joining date, else when the record was created. */
+export const joinedBetween = (from, to) => ({
+  $or: [{ joinedAt: { $gte: from, $lt: to } }, { joinedAt: { $exists: false }, createdAt: { $gte: from, $lt: to } }],
+});
+
+/** Members whose latest plan ended recently and who have nothing current or queued: win-back list. */
 async function lapsedMembers(since, limit) {
-  const stillCovered = await Membership.distinct('memberId', { status: { $in: ['active', 'upcoming', 'pending'] } });
+  // A frozen plan still covers the member: they're on hold, not gone.
+  const stillCovered = await Membership.distinct('memberId', { status: { $in: ['active', 'paused', 'upcoming', 'pending'] } });
   const match = { status: 'expired', endDate: { $gte: since, $lte: new Date() }, memberId: { $nin: stillCovered } };
   const [rows, ids] = await Promise.all([
     Membership.find(match).sort({ endDate: -1 }).limit(limit).populate('memberId', 'name phone memberCode profilePhoto').lean(),
@@ -41,9 +48,10 @@ async function lapsedMembers(since, limit) {
 
 /**
  * The desk's "what needs doing today" plus the owner's pulse numbers.
- * Money figures are included only when `canSeeRevenue`.
+ * Revenue only with `canSeeRevenue` (revenue.view); dues and payments only with `canSeeDues`
+ * (payments.view), so trainers never receive money figures.
  */
-export async function buildDashboard({ canSeeRevenue, expiringWindowDays = 7 }) {
+export async function buildDashboard({ canSeeRevenue, canSeeDues = canSeeRevenue, canSeeSupport = false, expiringWindowDays = 7 }) {
   const now = new Date();
   const today = gymDayKey(now);
   const gymNow = toGymTime(now);
@@ -53,11 +61,16 @@ export async function buildDashboard({ canSeeRevenue, expiringWindowDays = 7 }) 
   const expiringUntil = dayjs(now).add(expiringWindowDays, 'day').toDate();
   const sameWeekdays = [1, 2, 3, 4].map((w) => gymNow.subtract(w, 'week').format('YYYY-MM-DD'));
 
+  // Members with a renewal already queued (or awaiting payment) aren't "ending" in any useful sense.
+  const renewedIds = await Membership.distinct('memberId', { status: { $in: ['upcoming', 'pending'] } });
+  const expiringMatch = { status: 'active', endDate: { $gte: now, $lte: expiringUntil }, memberId: { $nin: renewedIds } };
+
   const [
     checkInsToday,
     byHourToday,
     byHourTypical,
     activeMemberIds,
+    frozenMemberIds,
     newThisMonth,
     newPrevMonth,
     dues,
@@ -71,33 +84,28 @@ export async function buildDashboard({ canSeeRevenue, expiringWindowDays = 7 }) 
     checkInsByHour([today], 1),
     checkInsByHour(sameWeekdays, sameWeekdays.length),
     Membership.distinct('memberId', { status: 'active' }),
-    Member.countDocuments({ createdAt: { $gte: monthStart } }),
-    Member.countDocuments({ createdAt: { $gte: prevMonthStart, $lt: prevMonthSamePoint } }),
-    Payment.aggregate([{ $match: { status: 'pending' } }, { $group: { _id: null, amount: { $sum: '$amount' }, count: { $sum: 1 } } }]),
-    Membership.countDocuments({ status: 'active', endDate: { $gte: now, $lte: expiringUntil } }),
-    Membership.find({ status: 'active', endDate: { $gte: now, $lte: expiringUntil } })
-      .sort({ endDate: 1 })
-      .limit(8)
-      .populate('memberId', 'name phone memberCode profilePhoto')
-      .lean(),
+    Membership.distinct('memberId', { status: 'paused' }),
+    Member.countDocuments(joinedBetween(monthStart, now)),
+    Member.countDocuments(joinedBetween(prevMonthStart, prevMonthSamePoint)),
+    canSeeDues ? Payment.aggregate([{ $match: { status: 'pending' } }, { $group: { _id: null, amount: { $sum: '$amount' }, count: { $sum: 1 } } }]) : [],
+    Membership.countDocuments(expiringMatch),
+    Membership.find(expiringMatch).sort({ endDate: 1 }).limit(8).populate('memberId', 'name phone memberCode profilePhoto').lean(),
     lapsedMembers(dayjs(now).subtract(14, 'day').toDate(), 5),
     // Likely spam is hidden from the leads list, so it doesn't count as work here either.
     Lead.countDocuments({ status: 'new', 'triage.spam': { $ne: true } }),
     Lead.countDocuments({ status: { $in: ['new', 'contacted', 'trial'] }, nextFollowUpAt: { $lte: endOfGymDay(now) }, 'triage.spam': { $ne: true } }),
   ]);
 
-  const recentPayments = await Payment.find({ status: 'paid' })
-    .sort({ paidAt: -1 })
-    .limit(6)
-    .populate('memberId', 'name memberCode')
-    .lean();
-  const recentJoins = await Member.find().sort({ createdAt: -1 }).limit(4).select('name memberCode createdAt source').lean();
-  const recentPlanChanges = await PlanHistory.find({ changeType: { $in: ['renew', 'upgrade', 'downgrade'] } })
-    .sort({ createdAt: -1 })
-    .limit(4)
-    .populate('memberId', 'name memberCode')
-    .populate('toPlanId', 'name')
-    .lean();
+  const [recentPayments, recentJoins, recentPlanChanges] = await Promise.all([
+    canSeeDues ? Payment.find({ status: 'paid' }).sort({ paidAt: -1 }).limit(6).populate('memberId', 'name memberCode').lean() : [],
+    Member.find().sort({ createdAt: -1 }).limit(4).select('name memberCode createdAt source').lean(),
+    PlanHistory.find({ changeType: { $in: ['renew', 'upgrade', 'downgrade'] } })
+      .sort({ createdAt: -1 })
+      .limit(4)
+      .populate('memberId', 'name memberCode')
+      .populate('toPlanId', 'name')
+      .lean(),
+  ]);
 
   const activity = [
     ...recentPayments
@@ -133,10 +141,11 @@ export async function buildDashboard({ canSeeRevenue, expiringWindowDays = 7 }) 
     },
     members: {
       active: activeMemberIds.length,
+      frozen: frozenMemberIds.length,
       newThisMonth,
       newPrevMonthToDate: newPrevMonth,
     },
-    dues: { amount: dues[0]?.amount || 0, count: dues[0]?.count || 0 },
+    ...(canSeeDues && { dues: { amount: dues[0]?.amount || 0, count: dues[0]?.count || 0 } }),
     expiring: {
       windowDays: expiringWindowDays,
       count: expiringCount,
@@ -167,6 +176,11 @@ export async function buildDashboard({ canSeeRevenue, expiringWindowDays = 7 }) 
     leads: { new: leadsNew, followUpsDue },
     activity,
   };
+
+  if (canSeeSupport) {
+    // Member messages nobody at the desk has opened yet.
+    dashboard.support = { unread: await SupportTicket.countDocuments({ status: { $in: ['open', 'waiting_member'] }, unreadForStaff: true }) };
+  }
 
   if (canSeeRevenue) {
     const months = Array.from({ length: 6 }, (_, i) => gymNow.subtract(5 - i, 'month').startOf('month'));

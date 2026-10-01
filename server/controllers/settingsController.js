@@ -1,5 +1,6 @@
 import Settings, { getSettingsDoc } from '../models/Settings.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
+import { removeAvatar } from '../services/storageService.js';
 
 const PUBLIC_FIELDS = [
   'gymName', 'logoUrl', 'registrationFee', 'heroBackgroundImage', 'heroHeadline', 'heroDescription', 'address', 'phone', 'email',
@@ -36,5 +37,21 @@ export const getSettings = asyncHandler(async (req, res) => {
 /** PATCH /api/admin/settings */
 export const updateSettings = asyncHandler(async (req, res) => {
   const settings = await Settings.findOneAndUpdate({}, { $set: toSettingsUpdate(req.validated.body) }, { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }).lean();
+  res.json({ success: true, settings });
+});
+
+/** POST /api/admin/settings/logo — multipart field `photo` (checked as a real image by avatarUpload). */
+export const uploadLogo = asyncHandler(async (req, res) => {
+  const before = await getSettingsDoc();
+  const settings = await Settings.findOneAndUpdate({}, { $set: { logoUrl: req.avatarUrl } }, { new: true, upsert: true, setDefaultsOnInsert: true }).lean();
+  if (before.logoUrl && before.logoUrl !== req.avatarUrl) await removeAvatar(before.logoUrl);
+  res.json({ success: true, settings });
+});
+
+/** DELETE /api/admin/settings/logo */
+export const removeLogo = asyncHandler(async (req, res) => {
+  const before = await getSettingsDoc();
+  const settings = await Settings.findOneAndUpdate({}, { $set: { logoUrl: '' } }, { new: true, upsert: true, setDefaultsOnInsert: true }).lean();
+  await removeAvatar(before.logoUrl);
   res.json({ success: true, settings });
 });

@@ -31,6 +31,7 @@ export const MEMBER_STATE = {
   expiring: { tone: "warn", icon: Hourglass, label: "Ends soon" },
   upcoming: { tone: "info", icon: CalendarClock, label: "Starts later" },
   pending: { tone: "warn", icon: Wallet, label: "Awaiting payment" },
+  paused: { tone: "info", icon: PauseCircle, label: "Frozen" },
   expired: { tone: "bad", icon: CircleAlert, label: "Lapsed" },
   none: { tone: "neutral", icon: CircleDashed, label: "No plan" },
 };
@@ -41,7 +42,7 @@ export const MEMBERSHIP_STATUS = {
   pending: { tone: "warn", icon: Wallet, label: "Awaiting payment" },
   expired: { tone: "neutral", icon: Clock, label: "Ended" },
   cancelled: { tone: "neutral", icon: Ban, label: "Cancelled" },
-  paused: { tone: "info", icon: PauseCircle, label: "Paused" },
+  paused: { tone: "info", icon: PauseCircle, label: "Frozen" },
 };
 
 export const PAYMENT_STATUS = {

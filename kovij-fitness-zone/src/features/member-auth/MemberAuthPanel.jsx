@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import { ArrowLeft, Eye, EyeOff, Loader2, Mail, MailCheck, Smartphone, UserRound } from "lucide-react";
 import { useMemberAuth } from "../../context/MemberAuthContext";
 import { authErrorMessage } from "./authErrors";
@@ -7,6 +8,7 @@ import * as fb from "./firebaseAuth";
 
 const RESEND_SECONDS = 30;
 const MIN_PASSWORD = 8;
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
 
 /**
  * Member sign-in and sign-up: mobile number + SMS code, email + password, or Google.
@@ -15,8 +17,11 @@ const MIN_PASSWORD = 8;
  * Views: phone → otp · email → signup · forgot · verify (email link) · name (new account) · choose (shared phone)
  */
 export default function MemberAuthPanel({ title, subtitle }) {
-  const { exchangeSession } = useMemberAuth();
+  const { exchangeSession, otpSignIn } = useMemberAuth();
   const [view, setView] = useState("phone");
+  // "test" when the server accepts a fixed code instead of SMS (DEFAULT_OTP); else Firebase SMS.
+  const [phoneMode, setPhoneMode] = useState("firebase");
+  const [codeLength, setCodeLength] = useState(6);
   const [busy, setBusy] = useState(null);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
@@ -34,6 +39,21 @@ export default function MemberAuthPanel({ title, subtitle }) {
   const pendingUser = useRef(null);
   const chosenMember = useRef(undefined);
   const recaptchaHost = useRef(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    axios
+      .get(`${API_BASE}/api/member/auth/config`)
+      .then(({ data }) => {
+        if (cancelled || data?.phoneSignIn !== "test") return;
+        setPhoneMode("test");
+        if (data.codeLength) setCodeLength(data.codeLength);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (cooldown <= 0) return undefined;
@@ -61,15 +81,19 @@ export default function MemberAuthPanel({ title, subtitle }) {
     }
   }
 
-  /** Swap the Firebase sign-in for a gym session, answering any follow-up the server asks. */
-  async function finish(user, extra = {}) {
-    pendingUser.current = user;
+  /**
+   * Swap a sign-in for a gym session, answering any follow-up the server asks.
+   * `pending` is a Firebase user, or `{ otp: { phone, code } }` for test-mode mobile sign-in.
+   */
+  async function finish(pending, extra = {}) {
+    pendingUser.current = pending;
     try {
-      await exchangeSession(user, extra);
+      if (pending.otp) await otpSignIn({ ...pending.otp, ...extra });
+      else await exchangeSession(pending, extra);
     } catch (err) {
       const data = err?.response?.data;
       if (data?.code === "NEEDS_NAME") {
-        setName(user.displayName || "");
+        setName(pending.displayName || "");
         return setView("name");
       }
       if (data?.code === "CHOOSE_MEMBER") {
@@ -78,16 +102,17 @@ export default function MemberAuthPanel({ title, subtitle }) {
       }
       if (data?.code === "EMAIL_NOT_VERIFIED") return setView("verify");
       pendingUser.current = null;
-      await fb.signOutFirebase();
+      if (!pending.otp) await fb.signOutFirebase();
       throw err;
     }
   }
 
   async function startOver() {
+    const wasFirebase = pendingUser.current && !pendingUser.current.otp;
     pendingUser.current = null;
     chosenMember.current = undefined;
     confirmation.current = null;
-    await fb.signOutFirebase();
+    if (wasFirebase) await fb.signOutFirebase();
     go("phone");
   }
 
@@ -98,7 +123,13 @@ export default function MemberAuthPanel({ title, subtitle }) {
     const e164 = fb.toE164(phone);
     if (!e164) return setError("Enter a 10-digit mobile number, or start with + and your country code.");
     return run("send", async () => {
-      confirmation.current = await fb.sendPhoneCode(e164, recaptchaHost.current);
+      if (phoneMode === "test") {
+        // Nothing is sent: the server accepts its fixed test code for any number.
+        const { data } = await axios.post(`${API_BASE}/api/member/auth/otp/request`, { phone: e164 });
+        confirmation.current = { testPhone: data.phone };
+      } else {
+        confirmation.current = await fb.sendPhoneCode(e164, recaptchaHost.current);
+      }
       setSentTo(e164);
       setCode("");
       setCooldown(RESEND_SECONDS);
@@ -107,8 +138,9 @@ export default function MemberAuthPanel({ title, subtitle }) {
   };
 
   const verifyCode = (value = code) => {
-    if (value.length !== 6) return setError("Enter the 6-digit code from the SMS.");
+    if (value.length !== codeLength) return setError(phoneMode === "test" ? "Enter the test code." : "Enter the 6-digit code from the SMS.");
     if (!confirmation.current) return go("phone");
+    if (confirmation.current.testPhone) return run("verify", async () => finish({ otp: { phone: confirmation.current.testPhone, code: value } }));
     return run("verify", async () => finish(await confirmation.current.confirm(value)));
   };
 
@@ -211,7 +243,7 @@ export default function MemberAuthPanel({ title, subtitle }) {
 
         {view === "phone" && (
           <form onSubmit={sendCode} className="space-y-4" noValidate>
-            <Field label="Mobile number" hint="We’ll text you a 6-digit code.">
+            <Field label="Mobile number" hint={phoneMode === "test" ? "Test mode: no SMS is sent. You’ll enter the test code next." : "We’ll text you a 6-digit code."}>
               {(id) => (
                 <div className="flex h-11 items-center rounded-lg border border-neutral-700 bg-neutral-900 focus-within:border-red-500 focus-within:ring-2 focus-within:ring-red-500/30">
                   {!phone.trim().startsWith("+") && <span className="pl-3 pr-1 text-sm text-neutral-400">+91</span>}
@@ -242,34 +274,36 @@ export default function MemberAuthPanel({ title, subtitle }) {
             noValidate
           >
             <BackLink onClick={() => go("phone")}>Change number</BackLink>
-            <Field label="Enter the 6-digit code" hint={`Sent by SMS to ${sentTo}`}>
+            <Field label={phoneMode === "test" ? "Enter the test code" : "Enter the 6-digit code"} hint={phoneMode === "test" ? `Test mode for ${sentTo}: no SMS was sent.` : `Sent by SMS to ${sentTo}`}>
               {(id) => (
                 <input
                   id={id}
                   inputMode="numeric"
                   autoComplete="one-time-code"
-                  maxLength={6}
+                  maxLength={codeLength}
                   autoFocus
                   value={code}
                   onChange={(e) => {
-                    const v = e.target.value.replace(/\D/g, "").slice(0, 6);
+                    const v = e.target.value.replace(/\D/g, "").slice(0, codeLength);
                     setCode(v);
-                    if (v.length === 6 && !busy) verifyCode(v);
+                    if (v.length === codeLength && !busy) verifyCode(v);
                   }}
                   className={`${inputClass} text-center font-mono text-2xl tracking-[0.5em]`}
                 />
               )}
             </Field>
             <PrimaryButton busy={busy === "verify"}>Verify and continue</PrimaryButton>
-            <p className="text-center text-sm text-neutral-400">
-              {cooldown > 0 ? (
-                <>Didn’t get it? You can resend in {cooldown}s</>
-              ) : (
-                <TextButton onClick={() => sendCode()} disabled={Boolean(busy)}>
-                  Resend code
-                </TextButton>
-              )}
-            </p>
+            {phoneMode !== "test" && (
+              <p className="text-center text-sm text-neutral-400">
+                {cooldown > 0 ? (
+                  <>Didn’t get it? You can resend in {cooldown}s</>
+                ) : (
+                  <TextButton onClick={() => sendCode()} disabled={Boolean(busy)}>
+                    Resend code
+                  </TextButton>
+                )}
+              </p>
+            )}
           </form>
         )}
 

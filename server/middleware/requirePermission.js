@@ -8,8 +8,11 @@ import { PERMISSIONS, can } from '../config/permissions.js';
  */
 export function requirePermission(permission) {
   if (!PERMISSIONS[permission]) throw new Error(`Unknown permission "${permission}" (see server/config/permissions.js)`);
-  return (req, res, next) => {
+  const gate = (req, res, next) => {
     if (can(req.staffUser?.role, permission)) return next();
     next(new AppError('Your role does not allow this action', 403, 'FORBIDDEN'));
   };
+  // Lets tests/routePermissions.test.js see which permission guards a route.
+  gate.permission = permission;
+  return gate;
 }

@@ -1,5 +1,22 @@
 import { z } from 'zod';
 import { objectId } from './common.js';
+import { canonicalPhone } from '../utils/strings.js';
+
+/** Indian 10-digit numbers (with or without +91/0) or +country code; stored like the desk stores them. */
+const mobile = z
+  .string({ required_error: 'Enter your mobile number' })
+  .trim()
+  .transform((v) => canonicalPhone(v) || '')
+  .refine((v) => /^\d{10}$/.test(v) || /^\+\d{8,15}$/.test(v), 'Enter a 10-digit mobile number, or + and your country code');
+
+export const otpRequestSchema = z.object({ phone: mobile });
+
+export const otpVerifySchema = z.object({
+  phone: mobile,
+  code: z.string().trim().regex(/^\d{4,8}$/, 'Enter the code'),
+  name: z.string().trim().max(120).optional(),
+  memberId: z.union([z.literal('new'), objectId]).optional(),
+});
 
 /** Any Firebase sign-in (Google, email/password, phone OTP) exchanged for a member session. */
 export const memberSessionSchema = z.object({

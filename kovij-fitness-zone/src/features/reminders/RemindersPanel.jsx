@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BellOff, BellRing, CalendarCheck, CheckCheck, CircleCheck, Send, Settings2, TriangleAlert } from "lucide-react";
 import { useReminderOverview, useReminderPreview, useReminderStats, useRunReminders } from "./api";
-import { hourLabel } from "./reminderSettings";
+import { hourLabel } from "./reminderDefaults";
 import NotificationLog from "../notifications/NotificationLog";
 import { KindBadge } from "../notifications/components";
 import { NOTIFICATION_KIND, REMINDER_KINDS, SKIP_REASON } from "../notifications/labels";
@@ -123,10 +123,10 @@ function detailLine(item) {
 }
 
 function channelsLine(item) {
-  const list = ["in the app"];
-  if (item.channels.email) list.push("email");
-  if (item.channels.push) list.push("phone");
-  return `By ${joinWords(list)}`;
+  const list = ["In the app"];
+  if (item.channels.email) list.push("by email");
+  if (item.channels.push) list.push("on their phone");
+  return joinWords(list);
 }
 
 function PreviewRow({ item }) {
@@ -301,7 +301,7 @@ function Stats() {
               icon={NOTIFICATION_KIND[kind].icon}
               loading={stats.isPending}
               value={formatNumber(k?.total)}
-              sub={k ? `${formatNumber(k.read)} read${k.emailFailed ? `, ${formatNumber(k.emailFailed)} emails failed` : ""}` : undefined}
+              sub={k ? `${formatNumber(k.read)} read${k.emailFailed ? `, ${pluralize(k.emailFailed, "email")} failed` : ""}` : undefined}
             />
           );
         })}

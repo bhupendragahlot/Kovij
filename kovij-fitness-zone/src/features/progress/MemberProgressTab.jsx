@@ -169,7 +169,12 @@ export default function MemberProgressTab({ member, profile }) {
     ...shown.map((m) => ({ id: m.key, header: m.unit ? `${m.label} (${m.unit})` : m.label, align: "right", hideBelow: HIDE[m.key], cell: (e) => valueCell(e, m) })),
     canManage && {
       id: "actions",
-      header: <span className="sr-only">Actions</span>,
+      // Positioned wrapper keeps the visually hidden label inside the table's scroll area.
+      header: (
+        <span className="relative">
+          <span className="sr-only">Actions</span>
+        </span>
+      ),
       align: "right",
       cell: (e) => (
         <Menu

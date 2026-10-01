@@ -6,6 +6,7 @@ import { decideMemberLink, identityFromClaims } from '../services/memberIdentity
 import { getSettingsDoc } from '../models/Settings.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { isTestOtpOn, matchesTestOtp, testOtpCode } from '../services/testOtp.js';
 
 const REFUSALS = {
   EMAIL_NOT_VERIFIED: ['Verify your email first. Open the link we sent you, then sign in again.', 403],
@@ -45,30 +46,23 @@ async function createMember(identity, name) {
     });
   } catch (err) {
     // A double tap raced us to create the same sign-in: use the record that won.
-    if (err?.code === 11000 && err.keyPattern?.firebaseUid) return Member.findOne({ firebaseUid: identity.uid });
+    if (err?.code === 11000 && err.keyPattern?.firebaseUid && identity.uid) return Member.findOne({ firebaseUid: identity.uid });
     throw err;
   }
 }
 
 /**
- * POST /api/member/auth/session (and the older /google)
- * Exchanges a Firebase ID token (Google, email/password or phone OTP) for a member session.
+ * Find (or create) the member a verified identity belongs to and answer with a session.
+ * Identities without a Firebase uid (test-code phone sign-in) are matched by phone only and
+ * never linked to a sign-in, so real SMS sign-in can still link the record later.
  */
-export const createSession = asyncHandler(async (req, res) => {
-  const { idToken, name, memberId } = req.validated?.body || {};
-
-  let decoded;
-  try {
-    decoded = await verifyFirebaseIdToken(idToken, true);
-  } catch {
-    throw new AppError('Your sign-in expired. Please try again.', 401, 'FIREBASE_AUTH_FAILED');
-  }
-  const identity = identityFromClaims(decoded);
-
-  const byUid = await Member.findOne({ firebaseUid: identity.uid });
+async function signIn(res, identity, { name, memberId } = {}) {
+  const byUid = identity.uid ? await Member.findOne({ firebaseUid: identity.uid }) : null;
   const byEmail = !byUid && identity.email && identity.emailVerified ? await Member.findOne({ email: identity.email }) : null;
-  const phoneMatches =
+  let phoneMatches =
     !byUid && identity.phone ? await Member.find({ phone: identity.phone }).select('name memberCode firebaseUid').sort({ createdAt: 1 }).limit(10) : [];
+  // With the test code the phone number is the whole identity, whatever else the member signs in with.
+  if (!identity.uid) phoneMatches = phoneMatches.map((m) => Object.assign(m, { firebaseUid: undefined }));
 
   const decision = decideMemberLink({ identity, byUid, byEmail, phoneMatches, chosenMemberId: memberId, name });
 
@@ -78,7 +72,7 @@ export const createSession = asyncHandler(async (req, res) => {
       member = decision.member;
       break;
     case 'link':
-      member = await linkMember(decision.member, identity);
+      member = identity.uid ? await linkMember(decision.member, identity) : await Member.findById(decision.member._id);
       break;
     case 'create':
       member = await createMember(identity, decision.name);
@@ -119,6 +113,43 @@ export const createSession = asyncHandler(async (req, res) => {
       role: member.role,
     },
   });
+}
+
+/**
+ * POST /api/member/auth/session (and the older /google)
+ * Exchanges a Firebase ID token (Google, email/password or phone OTP) for a member session.
+ */
+export const createSession = asyncHandler(async (req, res) => {
+  const { idToken, name, memberId } = req.validated?.body || {};
+  let decoded;
+  try {
+    decoded = await verifyFirebaseIdToken(idToken, true);
+  } catch {
+    throw new AppError('Your sign-in expired. Please try again.', 401, 'FIREBASE_AUTH_FAILED');
+  }
+  await signIn(res, identityFromClaims(decoded), { name, memberId });
+});
+
+/** GET /api/member/auth/config — how the app should do mobile sign-in. */
+export const authConfig = asyncHandler(async (req, res) => {
+  const test = testOtpCode();
+  res.json({ success: true, phoneSignIn: test ? 'test' : 'firebase', ...(test && { codeLength: test.length }) });
+});
+
+const testModeOff = () => new AppError('Mobile sign-in by SMS is handled by the app. Update the app and try again.', 409, 'OTP_TEST_OFF');
+
+/** POST /api/member/auth/otp/request — test mode: nothing is sent; the app asks for the test code. */
+export const requestTestOtp = asyncHandler(async (req, res) => {
+  if (!isTestOtpOn()) throw testModeOff();
+  res.json({ success: true, testMode: true, phone: req.validated.body.phone, message: 'Test mode: no SMS is sent. Enter the test code.' });
+});
+
+/** POST /api/member/auth/otp/verify — test mode: the fixed code signs in that phone number. */
+export const verifyTestOtp = asyncHandler(async (req, res) => {
+  if (!isTestOtpOn()) throw testModeOff();
+  const { phone, code, name, memberId } = req.validated.body;
+  if (!matchesTestOtp(code)) throw new AppError('That code is wrong. Check it and try again.', 401, 'OTP_WRONG', { fields: { code: 'Wrong code' } });
+  await signIn(res, { uid: undefined, provider: 'phone', phone, email: undefined, emailVerified: false, name: '', picture: '' }, { name, memberId });
 });
 
 export const me = asyncHandler(async (req, res) => {

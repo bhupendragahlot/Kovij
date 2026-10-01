@@ -3,18 +3,7 @@ import { createBrowserRouter, Navigate, RouterProvider } from "react-router-dom"
 import MarketingLayout from "./layouts/MarketingLayout";
 import Home from "./pages/Home";
 import Shop from "./pages/Shop";
-import MemberProtectedRoute from "./components/MemberProtectedRoute";
-import MemberLayout from "./pages/member/MemberLayout";
-import MemberLogin from "./pages/member/Login";
-import JoinGymForm from "./pages/member/JoinGymForm";
-import MemberDashboard from "./pages/member/Dashboard";
-import MyMembership from "./pages/member/MyMembership";
-import Payments from "./pages/member/Payments";
-import MemberProfile from "./pages/member/Profile";
-import AccountHub from "./pages/member/AccountHub";
-import AccountAddresses from "./pages/member/AccountAddresses";
-import AccountSettings from "./pages/member/AccountSettings";
-import AccountMembershipHistory from "./pages/member/AccountMembershipHistory";
+import { memberRoutes } from "./features/member-app/routes";
 import { MemberAuthProvider } from "./context/MemberAuthContext";
 import { RequireStaff } from "./features/auth/RequireStaff";
 import { ConfirmProvider } from "./shared/ui/ConfirmProvider";
@@ -121,28 +110,8 @@ const router = createBrowserRouter([
       { path: "*", element: <NotFoundPage />, handle: { title: "Not found" } },
     ],
   },
-  {
-    path: "/member",
-    element: <MemberLayout />,
-    children: [
-      { path: "login", element: <MemberLogin /> },
-      { path: "join", element: <JoinGymForm /> },
-      {
-        element: <MemberProtectedRoute />,
-        children: [
-          { path: "dashboard", element: <MemberDashboard /> },
-          { path: "join/form", element: <JoinGymForm /> },
-          { path: "membership", element: <MyMembership /> },
-          { path: "payments", element: <Payments /> },
-          { path: "profile", element: <MemberProfile /> },
-          { path: "account", element: <AccountHub /> },
-          { path: "account/addresses", element: <AccountAddresses /> },
-          { path: "account/membership-history", element: <AccountMembershipHistory /> },
-          { path: "account/settings", element: <AccountSettings /> },
-        ],
-      },
-    ],
-  },
+  // Member app (sign-in, join, and the signed-in app): features/member-app/routes.jsx
+  ...memberRoutes,
   {
     element: <MarketingLayout />,
     children: [

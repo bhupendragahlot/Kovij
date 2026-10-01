@@ -1,7 +1,7 @@
 import { useEffect } from "react";
-import { useLocation, useMatches } from "react-router-dom";
+import { useLocation, useMatches, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Check, LogOut, Monitor, Moon, Search, Sun, UserPlus } from "lucide-react";
+import { Check, LogOut, Monitor, Moon, Search, Sun, UserCog, UserPlus } from "lucide-react";
 import { ButtonLink, Menu } from "../../shared/ui";
 import { cn } from "../../shared/lib/cn";
 import { initials } from "../../shared/lib/format";
@@ -9,6 +9,8 @@ import { commandPaletteSet } from "../../app/uiSlice";
 import { useThemeControls } from "../../app/theme";
 import { selectStaffUser } from "../../features/auth/sessionSlice";
 import { useLogout } from "../../features/auth/api";
+import { usePermission } from "../../features/auth/permissions";
+import { useSettings } from "../../features/settings/api";
 import { ROLE_LABEL } from "../../shared/domain/status";
 import { BrandMark } from "./BrandMark";
 
@@ -24,6 +26,7 @@ function useDocumentTitle() {
 function AccountMenu() {
   const user = useSelector(selectStaffUser);
   const logout = useLogout();
+  const navigate = useNavigate();
   const { preference, setTheme } = useThemeControls();
   const themeItem = (value, label, icon) => ({
     label,
@@ -46,6 +49,8 @@ function AccountMenu() {
       items={[
         { type: "heading", label: user?.name || user?.username || "Signed in", hint: ROLE_LABEL[user?.role] },
         { type: "separator" },
+        { label: "My account", icon: UserCog, onSelect: () => navigate("/admin/settings?tab=account") },
+        { type: "separator" },
         themeItem("light", "Light theme", Sun),
         themeItem("dark", "Dark theme", Moon),
         themeItem("system", "Match device", Monitor),
@@ -59,6 +64,8 @@ function AccountMenu() {
 export function Topbar() {
   const dispatch = useDispatch();
   const { pathname } = useLocation();
+  const canAddMember = usePermission("members.edit");
+  const logoUrl = useSettings().data?.logoUrl;
   useDocumentTitle();
   const openSearch = () => dispatch(commandPaletteSet(true));
   const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform || "");
@@ -67,7 +74,7 @@ export function Topbar() {
     <header className="sticky top-0 z-30 border-b border-line/70 bg-canvas/85 backdrop-blur-md supports-[backdrop-filter]:bg-canvas/75">
       <div className="flex h-16 items-center gap-3 px-4 md:px-6 xl:px-8">
         {/* Phones: brand only. Each page already shows its title large, right below. */}
-        <BrandMark tone="ink" className="flex-1 md:hidden" />
+        <BrandMark tone="ink" logoUrl={logoUrl} className="flex-1 md:hidden" />
 
         <button
           type="button"
@@ -93,7 +100,7 @@ export function Topbar() {
         >
           <Search className="size-5" aria-hidden />
         </button>
-        {pathname !== "/admin/members/new" && (
+        {canAddMember && pathname !== "/admin/members/new" && (
           <ButtonLink to="/admin/members/new" variant="primary" icon={UserPlus} className="max-md:hidden">
             New member
           </ButtonLink>

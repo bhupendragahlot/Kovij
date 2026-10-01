@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import { ArrowRight, Banknote, CalendarDays, CreditCard, Globe, IndianRupee, Scale, Smartphone, TrendingDown, TrendingUp, Undo2, Wallet } from "lucide-react";
 import { useFinanceOverview } from "./api";
 import { DailyRevenue, MonthlyTrend } from "./charts";
@@ -12,6 +11,16 @@ import { formatINR, formatNumber, pluralize } from "../../shared/lib/format";
 
 const MODE_ICON = { cash: Banknote, upi: Smartphone, card: CreditCard, online: Globe };
 const TYPE_ORDER = ["membership", "renewal", "registration", "personal_training", "other"];
+
+/**
+ * Tile sub-line and change vs the previous period. KpiTile shows a percentage only when the
+ * previous figure is above zero, so a zero previous period is said in words instead.
+ */
+function comparison(period) {
+  const count = pluralize(period.count, "payment");
+  if (!period.previous) return { sub: `${count}. Nothing ${period.compareLabel}.` };
+  return { sub: count, delta: { current: period.amount, previous: period.previous, label: period.compareLabel } };
+}
 
 function RevenueSkeleton() {
   return (
@@ -118,23 +127,20 @@ export default function RevenuePage() {
               icon={IndianRupee}
               to="/admin/payments?status=paid&range=today"
               value={formatINR(d.summary.today.amount)}
-              sub={pluralize(d.summary.today.count, "payment")}
-              delta={{ current: d.summary.today.amount, previous: d.summary.today.previous, label: d.summary.today.compareLabel }}
+              {...comparison(d.summary.today)}
             />
             <KpiTile
               label="This month"
               icon={Wallet}
               to="/admin/payments?status=paid&range=month"
               value={formatINR(d.summary.month.amount)}
-              sub={pluralize(d.summary.month.count, "payment")}
-              delta={{ current: d.summary.month.amount, previous: d.summary.month.previous, label: d.summary.month.compareLabel }}
+              {...comparison(d.summary.month)}
             />
             <KpiTile
               label={`${d.summary.year.year} so far`}
               icon={Scale}
               value={formatINR(d.summary.year.amount)}
-              sub={pluralize(d.summary.year.count, "payment")}
-              delta={{ current: d.summary.year.amount, previous: d.summary.year.previous, label: d.summary.year.compareLabel }}
+              {...comparison(d.summary.year)}
             />
           </div>
 

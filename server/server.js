@@ -68,6 +68,8 @@ app.get(
     res.sendFile(path.join(LEGACY_MEMBER_DIR, file));
   })
 );
+// A missing upload is a 404, not the app's index page.
+app.use("/uploads", (req, res) => res.status(404).end());
 
 const apiRouter = express.Router();
 apiRouter.use(apiLimiter);
