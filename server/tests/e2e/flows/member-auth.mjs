@@ -1,5 +1,6 @@
 // Member sign-in exchange. Real Firebase tokens can't be minted here, so this covers the wiring
 // and refusals; the linking rules themselves are unit-tested in tests/memberIdentity.test.js.
+import { createRequire } from 'node:module';
 import { adminToken, call, check, createMember, finish, key, uniq, uniqPhone } from '../lib.mjs';
 
 const bad = await call('POST', '/member/auth/session', { body: { idToken: 'not-a-real-firebase-token-xxxxxxxx' } });
@@ -49,5 +50,33 @@ const choose = await call('POST', '/member/auth/otp/verify', { body: { phone: sh
 check('a shared number asks who you are', choose.status === 409 && choose.body.code === 'CHOOSE_MEMBER' && choose.body.details.candidates.length === 2, choose.body);
 const picked = await call('POST', '/member/auth/otp/verify', { body: { phone: shared, code: '112233', memberId: choose.body.details.candidates[1].id } });
 check('…and signs in as the one chosen', picked.status === 200 && String(picked.body.member.id) === choose.body.details.candidates[1].id);
+
+// ── Sign in with Google (Google Identity Services ID tokens) ─────────────────
+const requireJwt = createRequire(import.meta.url)('jsonwebtoken');
+const googleToken = (claims, { audience = process.env.E2E_GOOGLE_CLIENT_ID, expiresIn = '1h' } = {}) =>
+  requireJwt.sign({ email_verified: true, ...claims }, process.env.E2E_GOOGLE_KEY, { algorithm: 'RS256', keyid: 'e2e-key', audience, issuer: 'https://accounts.google.com', expiresIn });
+
+check('the app is told the Google client id', config.body.googleClientId === process.env.E2E_GOOGLE_CLIENT_ID, config.body);
+const gEmail = `${uniq('g')}@gmail.com`;
+const gNew = await call('POST', '/member/auth/google-id', { body: { credential: googleToken({ sub: uniq('sub'), email: gEmail, name: 'Gita Google', picture: 'https://lh3.googleusercontent.com/a/x' }) } });
+check('a new Google user gets an account with their name and photo', gNew.status === 201 && gNew.body.member.name === 'Gita Google' && gNew.body.member.email === gEmail && gNew.body.member.profilePhoto.startsWith('https://'), gNew.body);
+const gAgain = await call('POST', '/member/auth/google-id', { body: { credential: googleToken({ sub: 'other-sub-not-used', email: gEmail }) } });
+check('a different Google account with the same email is refused', gAgain.status === 409 && gAgain.body.code === 'EMAIL_IN_USE', gAgain.body);
+
+const { member: deskByEmail } = await createMember(T, { name: uniq('Email Desk ') });
+const sub = uniq('sub');
+const gLink = await call('POST', '/member/auth/google-id', { body: { credential: googleToken({ sub, email: deskByEmail.email, name: 'Ignored Name' }) } });
+check('a desk member signing in with Google (same email) lands in their account', gLink.status === 200 && String(gLink.body.member.id) === String(deskByEmail._id) && gLink.body.member.name === deskByEmail.name, gLink.body);
+const gSame = await call('POST', '/member/auth/google-id', { body: { credential: googleToken({ sub, email: deskByEmail.email }) } });
+check('the next Google sign-in goes straight to the same member', gSame.status === 200 && String(gSame.body.member.id) === String(deskByEmail._id));
+check('…and the session works', (await call('GET', '/member/auth/me', { token: gSame.body.token })).status === 200);
+
+const wrongApp = await call('POST', '/member/auth/google-id', { body: { credential: googleToken({ sub: uniq('s'), email: `${uniq('x')}@gmail.com` }, { audience: 'another-app.apps.googleusercontent.com' }) } });
+check('a Google token made for another app is refused (401)', wrongApp.status === 401 && wrongApp.body.code === 'GOOGLE_TOKEN_INVALID');
+const expired = await call('POST', '/member/auth/google-id', { body: { credential: googleToken({ sub: uniq('s'), email: `${uniq('x')}@gmail.com` }, { expiresIn: -120 }) } });
+check('an expired Google token is refused', expired.status === 401);
+const unverified = await call('POST', '/member/auth/google-id', { body: { credential: googleToken({ sub: uniq('s'), email: `${uniq('x')}@gmail.com`, email_verified: false }) } });
+check('a Google account with an unverified email is refused', unverified.status === 403 && unverified.body.code === 'GOOGLE_EMAIL_NOT_VERIFIED');
+check('a made-up credential is refused', (await call('POST', '/member/auth/google-id', { body: { credential: 'x'.repeat(40) } })).status === 401);
 
 finish();

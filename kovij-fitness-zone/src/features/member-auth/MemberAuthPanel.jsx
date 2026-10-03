@@ -4,6 +4,7 @@ import axios from "axios";
 import { ArrowLeft, Eye, EyeOff, Loader2, Mail, MailCheck, Smartphone, UserRound } from "lucide-react";
 import { useMemberAuth } from "../../context/MemberAuthContext";
 import { authErrorMessage } from "./authErrors";
+import { GoogleButton } from "./GoogleButton";
 import * as fb from "./firebaseAuth";
 import { API_ORIGIN } from "../../shared/lib/apiBase";
 
@@ -18,7 +19,9 @@ const API_BASE = API_ORIGIN;
  * Views: phone → otp · email → signup · forgot · verify (email link) · name (new account) · choose (shared phone)
  */
 export default function MemberAuthPanel({ title, subtitle }) {
-  const { exchangeSession, otpSignIn } = useMemberAuth();
+  const { exchangeSession, otpSignIn, googleIdSignIn } = useMemberAuth();
+  // Our own Google OAuth client (server GOOGLE_CLIENT_ID); without it, Firebase's Google popup.
+  const [googleClientId, setGoogleClientId] = useState(null);
   const [view, setView] = useState("phone");
   // "test" when the server accepts a fixed code instead of SMS (DEFAULT_OTP); else Firebase SMS.
   const [phoneMode, setPhoneMode] = useState("firebase");
@@ -46,7 +49,9 @@ export default function MemberAuthPanel({ title, subtitle }) {
     axios
       .get(`${API_BASE}/api/member/auth/config`)
       .then(({ data }) => {
-        if (cancelled || data?.phoneSignIn !== "test") return;
+        if (cancelled) return;
+        if (data?.googleClientId) setGoogleClientId(data.googleClientId);
+        if (data?.phoneSignIn !== "test") return;
         setPhoneMode("test");
         if (data.codeLength) setCodeLength(data.codeLength);
       })
@@ -118,6 +123,8 @@ export default function MemberAuthPanel({ title, subtitle }) {
   }
 
   const google = () => run("google", async () => finish(await fb.signInWithGoogle()));
+  /** Google's own button (GOOGLE_CLIENT_ID on the server): the server verifies Google's token. */
+  const googleWithButton = (credential) => run("google", async () => googleIdSignIn(credential));
 
   const sendCode = (e) => {
     e?.preventDefault();
@@ -424,15 +431,19 @@ export default function MemberAuthPanel({ title, subtitle }) {
               or
               <span className="h-px flex-1 bg-neutral-700" />
             </div>
-            <button
-              type="button"
-              onClick={google}
-              disabled={Boolean(busy)}
-              className="flex h-11 w-full items-center justify-center gap-3 rounded-lg bg-white px-4 text-sm font-semibold text-neutral-900 shadow hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-60"
-            >
-              {busy === "google" ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <GoogleMark />}
-              Continue with Google
-            </button>
+            {googleClientId ? (
+              <GoogleButton clientId={googleClientId} busy={busy === "google"} onCredential={googleWithButton} onError={setError} />
+            ) : (
+              <button
+                type="button"
+                onClick={google}
+                disabled={Boolean(busy)}
+                className="flex h-11 w-full items-center justify-center gap-3 rounded-lg bg-white px-4 text-sm font-semibold text-neutral-900 shadow hover:bg-neutral-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 disabled:opacity-60"
+              >
+                {busy === "google" ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden /> : <GoogleMark />}
+                Continue with Google
+              </button>
+            )}
           </>
         )}
       </div>

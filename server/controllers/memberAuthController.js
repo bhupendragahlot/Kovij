@@ -2,7 +2,8 @@ import Member from '../models/Member.js';
 import { verifyFirebaseIdToken } from '../config/firebaseAdmin.js';
 import { signMemberToken } from '../services/tokenService.js';
 import { nextMemberCode } from '../services/memberService.js';
-import { decideMemberLink, identityFromClaims } from '../services/memberIdentity.js';
+import { decideGoogleLink, decideMemberLink, identityFromClaims, identityFromGoogle } from '../services/memberIdentity.js';
+import { GoogleTokenError, googleClientId, verifyGoogleIdToken } from '../services/googleIdToken.js';
 import { getSettingsDoc } from '../models/Settings.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { AppError } from '../middleware/errorHandler.js';
@@ -100,10 +101,14 @@ async function signIn(res, identity, { name, memberId } = {}) {
     }
   }
 
-  res.status(decision.action === 'create' ? 201 : 200).json({
+  sendSession(res, member, decision.action === 'create');
+}
+
+function sendSession(res, member, created) {
+  res.status(created ? 201 : 200).json({
     success: true,
     token: signMemberToken(member),
-    isNew: decision.action === 'create',
+    isNew: created,
     member: {
       id: member._id,
       email: member.email,
@@ -114,6 +119,78 @@ async function signIn(res, identity, { name, memberId } = {}) {
     },
   });
 }
+
+const GOOGLE_REFUSALS = {
+  GOOGLE_TOKEN_INVALID: ['We couldn’t confirm your Google sign-in. Please try again.', 401],
+  GOOGLE_EMAIL_NOT_VERIFIED: ['Your Google account’s email isn’t verified yet. Verify it with Google, or sign in another way.', 403],
+  EMAIL_IN_USE: ['This email already belongs to a different Google account here. Sign in with that one.', 409],
+};
+
+/**
+ * POST /api/member/auth/google-id — the "Sign in with Google" button (Google Identity Services).
+ * Verifies Google's ID token for our OAuth client (GOOGLE_CLIENT_ID) and starts a member session.
+ */
+export const googleIdSignIn = asyncHandler(async (req, res) => {
+  if (!googleClientId()) throw new AppError('Google sign-in isn’t set up yet. Use your mobile number or email.', 409, 'GOOGLE_SIGNIN_OFF');
+  let claims;
+  try {
+    claims = await verifyGoogleIdToken(req.validated.body.credential);
+  } catch (err) {
+    if (!(err instanceof GoogleTokenError)) throw err;
+    const [message, status] = GOOGLE_REFUSALS.GOOGLE_TOKEN_INVALID;
+    throw new AppError(message, status, 'GOOGLE_TOKEN_INVALID');
+  }
+
+  const identity = identityFromGoogle(claims);
+  const bySub = identity.googleSub ? await Member.findOne({ googleSub: identity.googleSub }) : null;
+  const byEmail = !bySub && identity.email && identity.emailVerified ? await Member.findOne({ email: identity.email }) : null;
+  const decision = decideGoogleLink({ identity, bySub, byEmail });
+
+  let member;
+  if (decision.action === 'use') member = decision.member;
+  else if (decision.action === 'link') {
+    // Claim it atomically, so two Google accounts can't race for the same record.
+    member = await Member.findOneAndUpdate(
+      { _id: decision.member._id, $or: [{ googleSub: { $exists: false } }, { googleSub: identity.googleSub }] },
+      { $set: { googleSub: identity.googleSub } },
+      { new: true }
+    );
+    if (!member) throw new AppError(...GOOGLE_REFUSALS.EMAIL_IN_USE, 'EMAIL_IN_USE');
+  } else if (decision.action === 'create') {
+    const settings = await getSettingsDoc();
+    try {
+      member = await Member.create({
+        googleSub: identity.googleSub,
+        email: identity.email,
+        name: decision.name,
+        profilePhoto: identity.picture,
+        memberCode: await nextMemberCode(settings.invoicePrefix),
+        source: 'google',
+        role: 'user',
+      });
+    } catch (err) {
+      // A double tap raced us: use the record that won.
+      if (err?.code === 11000 && err.keyPattern?.googleSub) member = await Member.findOne({ googleSub: identity.googleSub });
+      else throw err;
+    }
+  } else {
+    const [message, status] = GOOGLE_REFUSALS[decision.code] || ['We couldn’t sign you in.', 403];
+    throw new AppError(message, status, decision.code);
+  }
+
+  if (decision.action !== 'create') {
+    fillBlanks(member, { picture: identity.picture, email: identity.email, emailVerified: identity.emailVerified });
+    if (member.isModified()) {
+      try {
+        await member.save();
+      } catch (err) {
+        if (err?.code !== 11000) throw err;
+        member = await Member.findById(member._id);
+      }
+    }
+  }
+  sendSession(res, member, decision.action === 'create');
+});
 
 /**
  * POST /api/member/auth/session (and the older /google)
@@ -133,7 +210,13 @@ export const createSession = asyncHandler(async (req, res) => {
 /** GET /api/member/auth/config — how the app should do mobile sign-in. */
 export const authConfig = asyncHandler(async (req, res) => {
   const test = testOtpCode();
-  res.json({ success: true, phoneSignIn: test ? 'test' : 'firebase', ...(test && { codeLength: test.length }) });
+  res.json({
+    success: true,
+    phoneSignIn: test ? 'test' : 'firebase',
+    ...(test && { codeLength: test.length }),
+    // Public OAuth client id for the "Sign in with Google" button; null = use Firebase's Google popup.
+    googleClientId: googleClientId(),
+  });
 });
 
 const testModeOff = () => new AppError('Mobile sign-in by SMS is handled by the app. Update the app and try again.', 409, 'OTP_TEST_OFF');

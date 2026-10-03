@@ -16,6 +16,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { startTypeSafeStub } from './typesafeStub.mjs';
+import { E2E_GOOGLE_CLIENT_ID, startGoogleStub } from './googleStub.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const serverDir = join(here, '..', '..');
@@ -24,6 +25,7 @@ const SECRET = 'e2e-secret';
 
 const rs = await MongoMemoryReplSet.create({ replSet: { count: 1, storageEngine: 'wiredTiger' } });
 const typesafe = await startTypeSafeStub();
+const google = await startGoogleStub();
 const cwd = mkdtempSync(join(tmpdir(), 'kovij-e2e-'));
 const env = {
   ...process.env,
@@ -47,6 +49,9 @@ const env = {
   RAZORPAY_KEY_SECRET: '',
   // Test-mode mobile sign-in (fixed code, no SMS); refused by the server in production.
   DEFAULT_OTP: '112233',
+  // Sign in with Google: tokens are checked against a local stand-in for Google's keys.
+  GOOGLE_CLIENT_ID: E2E_GOOGLE_CLIENT_ID,
+  GOOGLE_CERTS_URL: google.certsUrl,
 };
 
 const only = (process.env.E2E_ONLY || '').split(',').map((s) => s.trim()).filter(Boolean);
@@ -87,7 +92,7 @@ try {
     server.on('exit', (code) => reject(new Error(`server exited early (${code}):\n${log}`)));
   });
 
-  const flowEnv = { E2E_API: `http://localhost:${PORT}/api`, E2E_JWT_SECRET: SECRET, E2E_TYPESAFE_STUB: typesafe.url };
+  const flowEnv = { E2E_API: `http://localhost:${PORT}/api`, E2E_JWT_SECRET: SECRET, E2E_TYPESAFE_STUB: typesafe.url, E2E_GOOGLE_KEY: google.privateKeyPem, E2E_GOOGLE_CLIENT_ID };
   const failures = [];
   for (const [name, file] of selected) {
     console.log(`\n── ${name} ──`);
@@ -108,6 +113,7 @@ try {
 } finally {
   server?.kill();
   await typesafe.close();
+  await google.close();
   await rs.stop();
   rmSync(cwd, { recursive: true, force: true });
 }

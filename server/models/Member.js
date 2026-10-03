@@ -8,6 +8,8 @@ const memberSchema = new mongoose.Schema(
   {
     /** Set for members who sign in with Google; absent for desk-registered walk-ins. */
     firebaseUid: { type: String, trim: true, set: blankToUndefined },
+    /** Google account id (the token "sub") for members using the Sign in with Google button. */
+    googleSub: { type: String, trim: true, set: blankToUndefined },
     email: { type: String, lowercase: true, trim: true, set: blankToUndefined },
     name: { type: String, required: true, trim: true },
     phone: { type: String, trim: true, set: canonicalPhone },
@@ -58,6 +60,7 @@ const memberSchema = new mongoose.Schema(
 const presentString = (field) => ({ partialFilterExpression: { [field]: { $type: 'string' } } });
 
 memberSchema.index({ firebaseUid: 1 }, { unique: true, ...presentString('firebaseUid') });
+memberSchema.index({ googleSub: 1 }, { unique: true, ...presentString('googleSub') });
 memberSchema.index({ email: 1 }, { unique: true, ...presentString('email') });
 memberSchema.index({ memberCode: 1 }, { unique: true, ...presentString('memberCode') });
 // Phones are not unique: families often share one number. Duplicates are flagged in the UI instead.

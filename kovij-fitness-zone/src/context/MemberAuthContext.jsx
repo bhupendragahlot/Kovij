@@ -96,6 +96,16 @@ export function MemberAuthProvider({ children }) {
     return data;
   }, []);
 
+  /** "Sign in with Google" button: the server verifies Google's ID token for our OAuth client. */
+  const googleIdSignIn = useCallback(async (credential) => {
+    const { data } = await axios.post(`${base}/api/member/auth/google-id`, { credential });
+    if (!data?.token) throw new Error("No token from server");
+    localStorage.setItem("memberToken", data.token);
+    setMember(data.member);
+    saveMember(data.member);
+    return data;
+  }, []);
+
   /** Test-mode mobile sign-in (server has DEFAULT_OTP): phone number + the fixed code, no SMS. */
   const otpSignIn = useCallback(async ({ phone, code, name, memberId }) => {
     const { data } = await axios.post(`${base}/api/member/auth/otp/verify`, { phone, code, name, memberId });
@@ -127,11 +137,12 @@ export function MemberAuthProvider({ children }) {
       setError,
       exchangeSession,
       otpSignIn,
+      googleIdSignIn,
       loginWithGoogle,
       logout,
       refreshMember: loadMe,
     }),
-    [member, loading, error, loadMe, exchangeSession, otpSignIn, loginWithGoogle, logout]
+    [member, loading, error, loadMe, exchangeSession, otpSignIn, googleIdSignIn, loginWithGoogle, logout]
   );
 
   return <MemberAuthContext.Provider value={value}>{children}</MemberAuthContext.Provider>;

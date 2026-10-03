@@ -11,6 +11,11 @@ const mobile = z
 
 export const otpRequestSchema = z.object({ phone: mobile });
 
+/** The ID token (JWT) the "Sign in with Google" button hands the page. */
+export const googleIdSchema = z.object({
+  credential: z.string().trim().min(20, 'Missing Google sign-in').max(8000),
+});
+
 export const otpVerifySchema = z.object({
   phone: mobile,
   code: z.string().trim().regex(/^\d{4,8}$/, 'Enter the code'),

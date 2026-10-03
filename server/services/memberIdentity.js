@@ -36,6 +36,38 @@ export function identityFromClaims(decoded = {}) {
 
 const idOf = (m) => String(m._id);
 
+/** Claims from a verified "Sign in with Google" ID token (services/googleIdToken.js). */
+export function identityFromGoogle(claims = {}) {
+  return {
+    googleSub: String(claims.sub || ''),
+    email: typeof claims.email === 'string' && claims.email ? claims.email.toLowerCase().trim() : undefined,
+    emailVerified: claims.email_verified === true || claims.email_verified === 'true',
+    name: typeof claims.name === 'string' ? claims.name.trim() : '',
+    picture: typeof claims.picture === 'string' ? claims.picture : '',
+  };
+}
+
+/**
+ * Which member a direct Google sign-in belongs to.
+ *  1. The member already linked to this Google account (googleSub): use it.
+ *  2. Otherwise the member with the same Google-verified email: link it. Google has proven the
+ *     person owns that address, so this also covers members who used Google through Firebase
+ *     before, or whom the desk registered with that email.
+ *  3. Otherwise create a member (Google always gives a name; fall back to the email's name).
+ * An email matched to a member already linked to a *different* Google account is refused.
+ */
+export function decideGoogleLink({ identity, bySub = null, byEmail = null }) {
+  if (!identity.googleSub) return { action: 'refuse', code: 'GOOGLE_TOKEN_INVALID' };
+  if (bySub) return { action: 'use', member: bySub };
+  if (!identity.email || !identity.emailVerified) return { action: 'refuse', code: 'GOOGLE_EMAIL_NOT_VERIFIED' };
+  if (byEmail) {
+    if (byEmail.googleSub && byEmail.googleSub !== identity.googleSub) return { action: 'refuse', code: 'EMAIL_IN_USE' };
+    return { action: 'link', member: byEmail };
+  }
+  const name = identity.name || identity.email.split('@')[0];
+  return { action: 'create', name: name.slice(0, 120) };
+}
+
 /**
  * @param {object} input
  * @param {ReturnType<typeof identityFromClaims>} input.identity
