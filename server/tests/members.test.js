@@ -198,5 +198,5 @@ test('member notices say what changed in plain words, and emails escape them', (
   assert.equal(membershipNotice('unfrozen', { membership, event, endedHow: 'cancelled' }).title, 'Your planned freeze was removed');
   assert.throws(() => membershipNotice('nope', { membership, event }));
   const { html } = membershipUpdateEmail({ name: '<b>Asha</b>', heading: 'Hi', message: '<img src=x onerror=1>', gymName: 'Kovij' });
-  assert.ok(!html.includes('<img') && html.includes('&lt;b&gt;Asha'));
+  assert.ok(!html.includes('<img src=x') && html.includes('&lt;img src=x') && html.includes('&lt;b&gt;Asha'));
 });

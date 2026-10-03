@@ -66,7 +66,7 @@ export function buildPushPayload(notification) {
     tag: notification.kind,
     notificationId: String(notification._id || ''),
     icon: '/icons/icon-192.png',
-    badge: '/icons/icon-192.png',
+    badge: '/icons/badge-96.png', // monochrome K: Android draws badges from transparency only
     timestamp: new Date(notification.createdAt || Date.now()).getTime(),
   });
 }

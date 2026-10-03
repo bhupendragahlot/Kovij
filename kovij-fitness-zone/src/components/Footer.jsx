@@ -21,13 +21,13 @@ function Footer() {
         {theme === "dark" && <div className="pointer-events-none absolute inset-0 grid-noise fx-noise-drift opacity-[0.06]" />}
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-12">
           <div className="lg:col-span-5">
-            <span
-              className={`font-['Lexend'] text-xl font-black uppercase tracking-widest ${
-                theme === "dark" ? "text-neutral-100" : "text-gray-900"
-              }`}
-            >
-              KOVIJ FITNESS ZONE
-            </span>
+            <img
+              src={theme === "dark" ? "/brand/kovij-logo-horizontal-on-dark.svg" : "/brand/kovij-logo-horizontal.svg"}
+              alt="Kovij Fitness Zone"
+              width="357"
+              height="100"
+              className="h-12 w-auto"
+            />
             <p className={`mt-4 max-w-xl text-sm ${theme === "dark" ? "text-neutral-500" : "text-gray-600"}`}>
               {settings?.heroDescription ||
                 "Transforming lives through fitness. A performance-first facility built for disciplined athletes."}

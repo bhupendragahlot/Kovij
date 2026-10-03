@@ -1,10 +1,18 @@
 import { escapeHtml } from '../../utils/strings.js';
 import { toGymTime } from '../../utils/time.js';
+import { BRAND_IMAGES, absoluteAppUrl } from '../../utils/publicUrl.js';
 
 const DEFAULT_GYM = 'Kovij Fitness Zone';
 
-function wrapHtml(title, body) {
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title></head><body style="font-family:system-ui,sans-serif;line-height:1.5;color:#15171a">${body}</body></html>`;
+/**
+ * Email page. Plain emails get the Kovij logo on top (alt text stands in when images are blocked);
+ * designs that draw their own header pass { logo: false }.
+ */
+function wrapHtml(title, body, { logo = true } = {}) {
+  const header = logo
+    ? `<p style="margin:0 0 20px"><img src="${escapeHtml(absoluteAppUrl(BRAND_IMAGES.logoOnLight))}" alt="Kovij Fitness Zone" width="168" height="47" style="display:block;border:0;height:auto;max-width:168px"></p>`
+    : '';
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escapeHtml(title)}</title></head><body style="font-family:system-ui,sans-serif;line-height:1.5;color:#15171a">${header}${body}</body></html>`;
 }
 
 const formatDate = (value) => (value ? toGymTime(value).format('DD MMM YYYY') : '');

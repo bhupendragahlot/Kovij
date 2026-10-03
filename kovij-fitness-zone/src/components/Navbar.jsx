@@ -54,12 +54,9 @@ function Navbar() {
     >
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-red-600/70 to-transparent opacity-70" />
       <div className="kv-container flex items-center justify-between py-2 sm:py-4">
-        <Link
-          to="/"
-          className="font-['Lexend'] text-base font-black italic uppercase tracking-widest text-white sm:text-2xl"
-          aria-label="Kovij Fitness Home"
-        >
-          <span className="fx-text-shine">KOVIJ FITNESS</span>
+        <Link to="/" className="shrink-0" aria-label="Kovij Fitness Zone home">
+          {/* The bar is always dark, so the on-dark logo (white wordmark) in both themes. */}
+          <img src="/brand/kovij-logo-horizontal-on-dark.svg" alt="Kovij Fitness Zone" width="357" height="100" className="h-8 w-auto sm:h-10" />
         </Link>
 
         <div className="hidden items-center space-x-8 md:flex">

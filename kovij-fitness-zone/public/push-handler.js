@@ -13,6 +13,8 @@
   var DEFAULT_TITLE = "Kovij Fitness Zone";
   var DEFAULT_URL = "/member/dashboard";
   var ICON = "/icons/icon-192.png";
+  // Android draws the badge from transparency only: the white K alone (scripts/generate-icons.mjs).
+  var BADGE = "/icons/badge-96.png";
 
   function readPayload(event) {
     if (!event.data) return {};
@@ -38,7 +40,7 @@
     var options = {
       body: String(data.body || "").slice(0, 240),
       icon: data.icon || ICON,
-      badge: data.badge || ICON,
+      badge: data.badge || BADGE,
       data: { url: safePath(data.url), notificationId: data.notificationId || null },
       timestamp: Number(data.timestamp) || Date.now(),
     };

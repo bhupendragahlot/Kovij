@@ -8,6 +8,7 @@
  */
 import { escapeHtml } from '../../utils/strings.js';
 import { toGymTime } from '../../utils/time.js';
+import { BRAND_IMAGES, absoluteAppUrl } from '../../utils/publicUrl.js';
 import { registerTemplates, wrapEmail } from './index.js';
 
 const DEFAULT_GYM = 'Kovij Fitness Zone';
@@ -106,7 +107,7 @@ export function layout(o) {
   <tr><td align="center">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:${C.surface};border-radius:16px;overflow:hidden">
       <tr><td style="background:${C.rail};padding:18px 24px;border-top:4px solid ${C.brand}">
-        <p style="margin:0;font-size:17px;font-weight:700;color:#ffffff;letter-spacing:-0.01em">${escapeHtml(gymName)}</p>
+        <img src="${escapeHtml(absoluteAppUrl(BRAND_IMAGES.logoOnDark))}" alt="${escapeHtml(gymName)}" width="150" height="42" style="display:block;border:0;height:auto;max-width:150px;font-size:17px;font-weight:700;color:#ffffff">
       </td></tr>
       ${image ? `<tr><td><img src="${escapeHtml(image)}" alt="" width="560" style="display:block;width:100%;max-width:560px;height:auto;border:0"></td></tr>` : ''}
       <tr><td style="padding:28px 24px 8px">
@@ -124,7 +125,7 @@ export function layout(o) {
     )}</p>
   </td></tr>
 </table>`;
-  return wrapEmail(o.heading, html);
+  return wrapEmail(o.heading, html, { logo: false });
 }
 
 export function reminderExpirySoonEmail({ name, gymName = DEFAULT_GYM, planName, endDate, days, renewPrice, contact, ctaUrl }) {

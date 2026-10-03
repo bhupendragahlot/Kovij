@@ -1,24 +1,39 @@
 /**
- * Generates the PWA icons in public/icons from the "K" mark geometry (same as BrandMark.jsx).
- * Pure Node: a tiny supersampled rasteriser + PNG encoder, no image libraries needed.
+ * Generates the favicon and app icons from the Kovij mark (public/brand/kovij-mark.svg): a slanted
+ * white "K" on a red tile with the top-right corner cut. Pure Node: a small supersampled
+ * rasteriser + PNG/ICO encoders, no image libraries.
  *
  *   node scripts/generate-icons.mjs
+ *
+ * Writes public/favicon.ico (16/32/48), public/icons/icon.svg, icon-192.png, icon-512.png,
+ * icon-maskable-512.png, apple-touch-icon.png and badge-96.png (push notification badge).
  */
 import { deflateSync } from "node:zlib";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const OUT = join(dirname(fileURLToPath(import.meta.url)), "..", "public", "icons");
-const BRAND = [0xff, 0x7a, 0x1a, 255];
-const INK = [0x1f, 0x10, 0x03, 255];
+const PUBLIC = join(dirname(fileURLToPath(import.meta.url)), "..", "public");
+const OUT = join(PUBLIC, "icons");
+const RED = [0xd3, 0x2f, 0x2f];
+const WHITE = [0xff, 0xff, 0xff];
 
-// Mark geometry in a 32×32 box.
+// ── Geometry (100 × 100), identical to public/brand/kovij-mark.svg ────────────
+const SLANT = Math.tan((10 * Math.PI) / 180);
+const slant = ([x, y]) => [x + (50 - y) * SLANT, y];
+const TILE = [[0, 0], [76, 0], [100, 24], [100, 100], [0, 100]];
 const K_SHAPES = [
-  [[8.5, 8], [13.1, 8], [13.1, 24], [8.5, 24]],
-  [[13.1, 13.9], [19.6, 8], [24.9, 8], [13.1, 19.4]],
-  [[15.2, 14.9], [24.9, 24], [19.3, 24], [13.1, 18.2]],
-];
+  [[23, 21], [41, 21], [41, 79], [23, 79]],
+  [[41, 45], [62.5, 21], [83, 21], [41, 67.5]],
+  [[47, 55], [84, 79], [63, 79], [41, 67.5]],
+].map((shape) => shape.map(slant));
+
+const K_BOX = (() => {
+  const pts = K_SHAPES.flat();
+  const xs = pts.map((p) => p[0]);
+  const ys = pts.map((p) => p[1]);
+  return { x1: Math.min(...xs), x2: Math.max(...xs), y1: Math.min(...ys), y2: Math.max(...ys) };
+})();
 
 function inPolygon(x, y, pts) {
   let inside = false;
@@ -30,51 +45,52 @@ function inPolygon(x, y, pts) {
   return inside;
 }
 
-function inRoundedRect(x, y, size, r) {
-  if (x < 0 || y < 0 || x > size || y > size) return false;
-  const cx = x < r ? r : x > size - r ? size - r : x;
-  const cy = y < r ? r : y > size - r ? size - r : y;
-  return (x - cx) ** 2 + (y - cy) ** 2 <= r * r;
-}
-
 /**
- * @param {number} px      output size in pixels
- * @param {object} opts
- * @param {boolean} opts.fullBleed  square background (maskable / Apple), else rounded tile
- * @param {number} opts.markScale   fraction of the canvas the 32-unit mark occupies
+ * @param {number} px output size
+ * @param {"mark"|"fullBleed"|"badge"} style  mark: the cut-corner tile on transparent; fullBleed: red
+ *        square edge to edge (maskable / Apple), the K centred at `kScale` of the canvas height;
+ *        badge: the white K alone on transparent (Android draws notification badges from alpha only)
  */
-function render(px, { fullBleed, markScale }) {
+function render(px, { style, padding = 0, kScale = 0.56 }) {
   const data = Buffer.alloc(px * px * 4);
-  const SS = 4; // 4×4 supersampling
-  const unit = (px * markScale) / 32; // pixels per mark unit
-  const offset = (px - 32 * unit) / 2;
+  const SS = 4;
+  // Map pixels to mark units.
+  let toMark;
+  if (style === "mark") {
+    const unit = (px * (1 - 2 * padding)) / 100;
+    const off = px * padding;
+    toMark = (fx, fy) => [(fx - off) / unit, (fy - off) / unit];
+  } else {
+    const kH = K_BOX.y2 - K_BOX.y1;
+    const unit = (px * kScale) / kH;
+    const cx = (K_BOX.x1 + K_BOX.x2) / 2;
+    const cy = (K_BOX.y1 + K_BOX.y2) / 2;
+    toMark = (fx, fy) => [cx + (fx - px / 2) / unit, cy + (fy - px / 2) / unit];
+  }
   for (let y = 0; y < px; y++) {
     for (let x = 0; x < px; x++) {
       let bg = 0;
-      let ink = 0;
+      let k = 0;
       for (let sy = 0; sy < SS; sy++) {
         for (let sx = 0; sx < SS; sx++) {
-          const fx = x + (sx + 0.5) / SS;
-          const fy = y + (sy + 0.5) / SS;
-          const inBg = fullBleed ? true : inRoundedRect(fx, fy, px, (px * 9) / 32);
+          const [mx, my] = toMark(x + (sx + 0.5) / SS, y + (sy + 0.5) / SS);
+          const inK = K_SHAPES.some((s) => inPolygon(mx, my, s));
+          const inBg = style === "badge" ? inK : style === "fullBleed" || inPolygon(mx, my, TILE);
           if (!inBg) continue;
           bg += 1;
-          const mx = (fx - offset) / unit;
-          const my = (fy - offset) / unit;
-          if (K_SHAPES.some((s) => inPolygon(mx, my, s))) ink += 1;
+          if (inK) k += 1;
         }
       }
-      const total = SS * SS;
       const i = (y * px + x) * 4;
-      const inkT = ink / total;
-      const bgT = bg / total;
-      for (let c = 0; c < 3; c++) data[i + c] = Math.round(BRAND[c] * (1 - inkT / Math.max(bgT, 1e-9)) + INK[c] * (inkT / Math.max(bgT, 1e-9)));
-      data[i + 3] = Math.round(255 * bgT);
+      const kShare = bg ? k / bg : 0;
+      for (let c = 0; c < 3; c++) data[i + c] = Math.round(RED[c] * (1 - kShare) + WHITE[c] * kShare);
+      data[i + 3] = Math.round((255 * bg) / (SS * SS));
     }
   }
   return data;
 }
 
+// ── PNG and ICO encoders ──────────────────────────────────────────────────────
 const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
   let c = n;
   for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
@@ -113,15 +129,50 @@ function png(px, rgba) {
   ]);
 }
 
+/** ICO with PNG-compressed images (supported by every current browser and Windows). */
+function ico(images) {
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(images.length, 4);
+  let offset = 6 + 16 * images.length;
+  const entries = images.map(({ px, data }) => {
+    const e = Buffer.alloc(16);
+    e[0] = px >= 256 ? 0 : px;
+    e[1] = px >= 256 ? 0 : px;
+    e.writeUInt16LE(1, 4); // planes
+    e.writeUInt16LE(32, 6); // bits per pixel
+    e.writeUInt32LE(data.length, 8);
+    e.writeUInt32LE(offset, 12);
+    offset += data.length;
+    return e;
+  });
+  return Buffer.concat([header, ...entries, ...images.map((i) => i.data)]);
+}
+
+// ── Output ────────────────────────────────────────────────────────────────────
 mkdirSync(OUT, { recursive: true });
 const ICONS = [
-  { file: "icon-192.png", px: 192, fullBleed: false, markScale: 1 },
-  { file: "icon-512.png", px: 512, fullBleed: false, markScale: 1 },
-  // Maskable: full-bleed background, mark kept inside the 80% safe zone.
-  { file: "icon-maskable-512.png", px: 512, fullBleed: true, markScale: 0.78 },
-  { file: "apple-touch-icon.png", px: 180, fullBleed: true, markScale: 0.9 },
+  { file: "icon-192.png", px: 192, style: "mark", padding: 0.04 },
+  { file: "icon-512.png", px: 512, style: "mark", padding: 0.04 },
+  // Maskable: red edge to edge; the K stays well inside the 80% safe circle.
+  { file: "icon-maskable-512.png", px: 512, style: "fullBleed", kScale: 0.5 },
+  // iOS fills transparency with black and rounds the corners itself.
+  { file: "apple-touch-icon.png", px: 180, style: "fullBleed", kScale: 0.56 },
+  // Small monochrome icon in the Android status bar for push notifications.
+  { file: "badge-96.png", px: 96, style: "badge", kScale: 0.8 },
 ];
 for (const { file, px, ...opts } of ICONS) {
   writeFileSync(join(OUT, file), png(px, render(px, opts)));
   console.log(`wrote public/icons/${file}`);
 }
+
+writeFileSync(join(PUBLIC, "favicon.ico"), ico([16, 32, 48].map((px) => ({ px, data: png(px, render(px, { style: "mark" })) }))));
+console.log("wrote public/favicon.ico (16, 32, 48)");
+
+const pts = (shape) => shape.map(([x, y]) => `${Math.round(x * 100) / 100} ${Math.round(y * 100) / 100}`).join("L");
+writeFileSync(
+  join(OUT, "icon.svg"),
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><title>Kovij Fitness Zone</title><path d="M${pts(TILE)}Z" fill="#D32F2F"/><path d="${K_SHAPES.map((s) => `M${pts(s)}Z`).join("")}" fill="#FFFFFF"/></svg>\n`
+);
+console.log("wrote public/icons/icon.svg");

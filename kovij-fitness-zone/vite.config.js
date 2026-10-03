@@ -19,7 +19,7 @@ export default defineConfig({
       injectRegister: false,
       // public/manifest.webmanifest is the old hand-written file; this generated one replaces it.
       manifestFilename: "app.webmanifest",
-      includeAssets: ["icons/apple-touch-icon.png", "icons/icon.svg"],
+      includeAssets: ["favicon.ico", "icons/apple-touch-icon.png", "icons/icon.svg"],
       manifest: {
         id: "/admin",
         name: "Kovij Front Desk",
@@ -47,6 +47,8 @@ export default defineConfig({
         // Push notification and notification-click handling (owned by the engagement module).
         importScripts: ["/push-handler.js"],
         globPatterns: ["**/*.{js,css,html,svg,png,woff2}"],
+        // The brand kit's PNG exports are downloads for print and social media, not app assets (the SVG logos stay cached).
+        globIgnores: ["brand/png/**", "brand/social/**", "brand/kovij-brand-sheet.png"],
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api\//, /^\/uploads\//],
         cleanupOutdatedCaches: true,

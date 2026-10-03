@@ -5,6 +5,7 @@ import { getSettingsDoc } from '../models/Settings.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { escapeHtml } from '../utils/strings.js';
 import { toGymTime } from '../utils/time.js';
+import { BRAND_IMAGES, absoluteAppUrl } from '../utils/publicUrl.js';
 import { notifyMember } from './notify.js';
 import './emailTemplates/paymentTemplates.js';
 
@@ -62,8 +63,6 @@ const STATUS = {
   failed: { label: 'Cancelled', color: '#474c54', bg: '#eceef1' },
 };
 
-const absoluteUrl = (url) => (/^https?:\/\//i.test(String(url || '')) ? url : '');
-
 /**
  * Printable receipt (or bill, for a due). Self-contained HTML: prints on A4 or a phone screen,
  * and is also the body of the receipt email. Every interpolated value is escaped.
@@ -71,7 +70,8 @@ const absoluteUrl = (url) => (/^https?:\/\//i.test(String(url || '')) ? url : ''
  */
 export function renderReceiptHtml({ member, payment, settings, planName, due }) {
   const gymName = settings?.gymName || 'Kovij Fitness Zone';
-  const logo = absoluteUrl(settings?.logoUrl);
+  // The gym's own logo when set (uploads are site paths), else the Kovij mark. Absolute: emailed receipts open outside the site.
+  const logo = absoluteAppUrl(settings?.logoUrl) || absoluteAppUrl(BRAND_IMAGES.mark);
   const status = STATUS[payment.status] || STATUS.pending;
   const isDue = payment.status === 'pending';
   const title = isDue ? 'Bill' : payment.status === 'refunded' ? 'Receipt (refunded)' : 'Payment receipt';
@@ -132,7 +132,7 @@ export function renderReceiptHtml({ member, payment, settings, planName, due }) 
 </style></head>
 <body><main class="r">
   <header class="head">
-    ${logo ? `<img src="${escapeHtml(logo)}" alt="">` : ''}
+    ${logo ? `<img src="${escapeHtml(logo)}" alt="" width="56" height="56">` : ''}
     <div>
       <h1>${escapeHtml(gymName)}</h1>
       ${settings?.address ? `<p class="muted">${escapeHtml(settings.address)}</p>` : ''}

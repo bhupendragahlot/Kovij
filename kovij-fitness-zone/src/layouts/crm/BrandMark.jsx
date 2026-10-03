@@ -1,15 +1,17 @@
 import { cn } from "../../shared/lib/cn";
 
-/** The "K" mark: the same geometry is used for the PWA icons (scripts/generate-icons.mjs). */
+/**
+ * The Kovij mark: slanted K on a tile with the top-right corner cut. Same geometry as the brand kit
+ * (public/brand/kovij-mark.svg) and the icons (scripts/generate-icons.mjs); in the app's own colours.
+ */
 export function KMark({ className }) {
   return (
-    <svg viewBox="0 0 32 32" className={className} aria-hidden>
-      <rect width="32" height="32" rx="9" fill="var(--kv-brand)" />
-      <g fill="var(--kv-on-brand)">
-        <rect x="8.5" y="8" width="4.6" height="16" rx="1" />
-        <path d="M13.1 13.9 19.6 8h5.3L13.1 19.4z" />
-        <path d="M15.2 14.9 24.9 24h-5.6l-6.2-5.8z" />
-      </g>
+    <svg viewBox="0 0 100 100" className={className} aria-hidden>
+      <path d="M0 0H76L100 24V100H0Z" fill="var(--kv-brand)" />
+      <path
+        d="M28.11 21H46.11L35.89 79H17.89ZM41.88 45L67.61 21H88.11L37.91 67.5ZM46.12 55L78.89 79H57.89L37.91 67.5Z"
+        fill="var(--kv-on-brand)"
+      />
     </svg>
   );
 }

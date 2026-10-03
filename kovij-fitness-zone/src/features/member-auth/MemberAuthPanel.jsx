@@ -223,6 +223,8 @@ export default function MemberAuthPanel({ title, subtitle }) {
 
   return (
     <div className="w-full max-w-md rounded-2xl border border-neutral-800 bg-neutral-950/90 p-6 shadow-xl sm:p-8">
+      {/* Sign-in and join pages have no site header, so the full logo lives here (the panel is always dark). */}
+      <img src="/brand/kovij-logo-horizontal-on-dark.svg" alt="Kovij Fitness Zone" width="357" height="100" className="mx-auto mb-5 h-10 w-auto" />
       <h1 className="text-center font-['Lexend'] text-2xl font-black uppercase text-white">{title}</h1>
       {subtitle && <p className="mt-2 text-center text-sm text-neutral-400">{subtitle}</p>}
 

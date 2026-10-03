@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { Home, UserCircle, Calendar, Receipt, LogOut, Menu, X, Dumbbell, User } from "lucide-react";
+import { Home, UserCircle, Calendar, Receipt, LogOut, Menu, X, User } from "lucide-react";
 import { useTheme } from "../../context/ThemeContext";
 import { useMemberAuth } from "../../context/MemberAuthContext";
 
@@ -47,13 +47,7 @@ export default function MemberSidebar({ sidebarOpen, setSidebarOpen }) {
       >
         <div className={`p-6 border-b ${theme === "dark" ? "border-gray-700" : "border-gray-200"}`}>
           <div className="flex items-center space-x-3">
-            <div
-              className={`w-10 h-10 rounded-lg ${
-                theme === "dark" ? "bg-red-600" : "bg-red-500"
-              } flex items-center justify-center`}
-            >
-              <Dumbbell className="w-6 h-6 text-white" />
-            </div>
+            <img src="/icons/icon.svg" alt="" width="40" height="40" className="w-10 h-10" />
             <div>
               <h2 className={`text-xl font-bold ${theme === "dark" ? "text-white" : "text-gray-900"}`}>Kovij</h2>
               <p className={`text-sm ${theme === "dark" ? "text-gray-400" : "text-gray-500"}`}>Member Dashboard</p>
