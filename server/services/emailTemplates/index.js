@@ -125,6 +125,17 @@ export function campaignBodyEmail({ subject, bodyHtml, name, gymName = DEFAULT_G
   return { subject: fill(subject, String), html: fill(bodyHtml, escapeHtml) };
 }
 
+/** Settings → Email → Send test email. */
+export function emailTestEmail({ provider, server, gymName = DEFAULT_GYM }) {
+  const subject = `Test email from ${gymName}`;
+  const html = wrapHtml(
+    subject,
+    `<p>This is a test from the ${escapeHtml(gymName)} app. If you can read it, email is working.</p>
+    <p style="color:#626771;font-size:13px">Sent through ${escapeHtml(server || '')} (${escapeHtml(provider || '')}).</p>`
+  );
+  return { subject, html };
+}
+
 const TEMPLATES = {
   welcome: welcomeEmail,
   joinReceived: joinReceivedEmail,
@@ -134,6 +145,7 @@ const TEMPLATES = {
   paymentBill: paymentBillEmail,
   contactNotification: contactNotificationEmail,
   contactAutoReply: contactAutoReplyEmail,
+  emailTest: emailTestEmail,
   offer: campaignBodyEmail,
   festival: campaignBodyEmail,
   info: campaignBodyEmail,

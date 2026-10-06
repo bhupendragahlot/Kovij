@@ -8,7 +8,7 @@ import Plan from '../models/Plan.js';
 import User from '../models/User.js';
 import { getSettingsDoc } from '../models/Settings.js';
 import { can } from '../config/permissions.js';
-import { queueEmail } from '../services/emailService.js';
+import { queueEmail, waitForEmail } from '../services/emailService.js';
 import {
   exportMembersCsv,
   findPossibleDuplicates,
@@ -254,8 +254,11 @@ export const notifyMember = asyncHandler(async (req, res) => {
   if (!member.email) throw new AppError('This member has no email address', 422, 'NO_EMAIL');
   const settings = await getSettingsDoc();
   const { subject, bodyHtml } = req.validated.body;
-  await queueEmail({ to: member.email, templateKey: 'info', vars: { subject, bodyHtml, name: member.name, gymName: settings.gymName } });
-  res.json({ success: true, message: 'Email queued' });
+  const log = await queueEmail({ to: member.email, templateKey: 'info', vars: { subject, bodyHtml, name: member.name, gymName: settings.gymName } });
+  // Wait for the send so staff hear whether it really went.
+  const outcome = await waitForEmail(log?._id);
+  if (outcome.status === 'failed') throw new AppError(`The email couldn't be sent: ${outcome.error}`, 422, 'EMAIL_NOT_SENT');
+  res.json({ success: true, message: outcome.status === 'sent' ? `Email sent to ${member.email}` : `Email is on its way to ${member.email}` });
 });
 
 /** GET /api/admin/members/:id/id-proof — ID documents are never served publicly. */

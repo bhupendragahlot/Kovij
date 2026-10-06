@@ -48,6 +48,7 @@ export async function notifyMember({ memberId, kind, title, body = '', link = ''
   const prefs = member.notificationPrefs || {};
   const optedOut = preference && prefs[preference] === false;
   const update = {};
+  let emailLogId = null;
 
   // Email
   if (!email) update['channels.email'] = { status: 'skipped', reason: 'not_requested' };
@@ -55,7 +56,9 @@ export async function notifyMember({ memberId, kind, title, body = '', link = ''
   else if (optedOut || prefs.email === false) update['channels.email'] = { status: 'skipped', reason: 'opted_out' };
   else {
     try {
-      await queueEmail({ to: member.email, templateKey: email.templateKey, vars: { name: member.name, ...email.vars } });
+      // Linked to the notification, so its email status becomes the real outcome (sent, or failed and why).
+      const log = await queueEmail({ to: member.email, templateKey: email.templateKey, vars: { name: member.name, ...email.vars }, notificationId: notification._id });
+      emailLogId = log?._id || null;
       update['channels.email'] = { status: 'queued', at: new Date() };
     } catch (e) {
       logger.warn(`notify email failed for ${memberId}: ${e.message}`);
@@ -78,6 +81,12 @@ export async function notifyMember({ memberId, kind, title, body = '', link = ''
     }
   }
 
-  const saved = await Notification.findByIdAndUpdate(notification._id, { $set: update }, { new: true }).lean();
-  return { notification: saved, created: true };
+  // Only set the email status if the send hasn't already finished and recorded its outcome.
+  const emailUpdate = update['channels.email'];
+  delete update['channels.email'];
+  await Notification.updateOne({ _id: notification._id, 'channels.email.status': { $nin: ['sent', 'failed'] } }, { $set: { 'channels.email': emailUpdate } });
+  const saved = Object.keys(update).length
+    ? await Notification.findByIdAndUpdate(notification._id, { $set: update }, { new: true }).lean()
+    : await Notification.findById(notification._id).lean();
+  return { notification: saved, created: true, emailLogId };
 }

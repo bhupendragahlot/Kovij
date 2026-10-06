@@ -7,6 +7,7 @@ import { escapeHtml } from '../utils/strings.js';
 import { toGymTime } from '../utils/time.js';
 import { BRAND_IMAGES, absoluteAppUrl } from '../utils/publicUrl.js';
 import { notifyMember } from './notify.js';
+import { waitForEmail } from './emailService.js';
 import './emailTemplates/paymentTemplates.js';
 
 const TYPE_LABELS = {
@@ -202,14 +203,15 @@ export async function notifyMembershipActivated(membership, { createdBy } = {}) 
  * Tell the member about a payment and email them the receipt (through notifyMember, so it shows
  * in the member app and respects their email choice).
  *   auto: true   sent once per payment (dedupeKey), e.g. after an online or UPI payment is confirmed
- *   auto: false  a copy someone asked for; always recorded as a new message
- * @returns {{ emailed: boolean, reason?: string, to?: string }}
+ *   auto: false  a copy someone asked for; always recorded as a new message, and we wait for the
+ *                send so the person who asked hears whether it really went
+ * @returns {{ emailed: boolean, status: 'sent'|'queued'|'failed'|'skipped', reason?: string, to?: string }}
  */
 export async function sendReceipt(paymentId, { auto = false, createdBy, memberId } = {}) {
   const { payment, member, settings, planName, html } = await loadReceipt(paymentId, { memberId });
   if (!['paid', 'refunded'].includes(payment.status)) throw new AppError('Receipts are only available for paid payments', 409, 'NOT_PAID');
   const item = planName ? `${paymentTypeLabel(payment.type)}: ${planName}` : paymentTypeLabel(payment.type);
-  const { notification, created } = await notifyMember({
+  const { notification, created, emailLogId } = await notifyMember({
     memberId: payment.memberId,
     kind: 'receipt',
     title: `Payment received: ${inr(payment.amount)}`,
@@ -221,5 +223,12 @@ export async function sendReceipt(paymentId, { auto = false, createdBy, memberId
     createdBy,
   });
   const email = notification?.channels?.email;
-  return { created, emailed: email?.status === 'queued' || email?.status === 'sent', reason: email?.reason || '', to: member?.email || '' };
+  let status = email?.status || 'skipped';
+  let reason = email?.reason || '';
+  if (!auto && emailLogId) {
+    const outcome = await waitForEmail(emailLogId);
+    status = outcome.status;
+    reason = outcome.error || reason;
+  }
+  return { created, emailed: status === 'sent' || status === 'queued', status, reason, to: member?.email || '' };
 }

@@ -17,6 +17,7 @@ import { apiLimiter } from "./middleware/rateLimiter.js";
 import { activityLog } from "./middleware/activityLog.js";
 import { PUBLIC_AVATAR_DIR, LEGACY_MEMBER_DIR } from "./services/storageService.js";
 import { runStartupMigrations } from "./migrations/index.js";
+import { failAbandonedEmails, reportEmailSetup } from "./services/emailService.js";
 import { contentSecurityPolicy } from "./config/csp.js";
 import { asyncHandler } from "./utils/asyncHandler.js";
 import { logger } from "./utils/logger.js";
@@ -86,6 +87,10 @@ mongoose
   .then(async () => {
     logger.info("MongoDB connected");
     await runStartupMigrations();
+    reportEmailSetup();
+    failAbandonedEmails()
+      .then((n) => n && logger.warn(`${n} queued emails were lost in a restart; marked failed`))
+      .catch((e) => logger.warn(`Abandoned email check failed: ${e.message}`));
     startAllCrons();
   })
   .catch((error) => logger.error("MongoDB connection error:", error));

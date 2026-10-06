@@ -234,9 +234,11 @@ export const sendReceiptEmail = asyncHandler(async (req, res) => {
       no_email: 'This member has no email address. Add one to their profile, or print the receipt.',
       opted_out: 'This member turned off emails from the gym. Print the receipt instead.',
     };
-    throw new AppError(reasons[result.reason] || "The receipt couldn't be emailed. Try again, or print it.", 422, result.reason === 'no_email' ? 'NO_EMAIL' : 'EMAIL_NOT_SENT');
+    const message = reasons[result.reason] || `The receipt couldn't be emailed${result.reason ? `: ${result.reason}` : '. Try again, or print it.'}`;
+    throw new AppError(message, 422, result.reason === 'no_email' ? 'NO_EMAIL' : 'EMAIL_NOT_SENT');
   }
-  res.json({ success: true, message: `Receipt emailed to ${result.to}` });
+  // "queued" = still sending when we stopped waiting; the member's notification shows the outcome.
+  res.json({ success: true, message: result.status === 'sent' ? `Receipt emailed to ${result.to}` : `Receipt is on its way to ${result.to}` });
 });
 
 /** GET /api/admin/payments/online-status: whether online payments can work (never the keys). */

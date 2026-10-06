@@ -84,3 +84,6 @@ export const settingsSchema = z
       .partial(),
   })
   .partial();
+
+/** POST /api/admin/settings/email/test — empty `to` sends to the signed-in staff member. */
+export const testEmailSchema = z.object({ to: optionalEmail });

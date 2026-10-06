@@ -1,6 +1,6 @@
 import Lead from '../models/Lead.js';
 import { getSettingsDoc } from '../models/Settings.js';
-import { queueEmail } from '../services/emailService.js';
+import { gymInbox, queueEmail } from '../services/emailService.js';
 import { queueLeadTriage } from '../services/leadTriage.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { endOfGymDay } from '../utils/time.js';
@@ -26,7 +26,8 @@ export const sendEmail = asyncHandler(async (req, res) => {
   // Sorted in the background (topic, spam, readiness); the visitor never waits for it.
   queueLeadTriage(lead._id);
 
-  const ownerInbox = settings.email || process.env.EMAIL_USER;
+  // Settings email, else the address the app sends from (EMAIL_FROM / EMAIL_USER).
+  const ownerInbox = gymInbox(settings.email);
   await Promise.all([
     queueEmail({ to: ownerInbox, templateKey: 'contactNotification', vars: { name, email, phone, message } }),
     queueEmail({ to: email, templateKey: 'contactAutoReply', vars: { name, gymName: settings.gymName } }),

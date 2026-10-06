@@ -125,6 +125,7 @@ const ACTIONS = [
   ['PATCH', '/admin/settings', 'settings.update', 'changed gym settings'],
   ['POST', '/admin/settings/logo', 'settings.logo', 'updated the gym logo'],
   ['DELETE', '/admin/settings/logo', 'settings.logo_remove', 'removed the gym logo'],
+  ['POST', '/admin/settings/email/test', 'settings.email_test', 'sent a test email'],
   ['POST', '/admin/staff', 'staff.create', 'added a staff account'],
   ['PATCH', '/admin/staff/:id', 'staff.update', 'changed a staff account'],
   ['POST', '/admin/staff/:id/reset-link', 'staff.reset_link', 'sent a password reset link'],

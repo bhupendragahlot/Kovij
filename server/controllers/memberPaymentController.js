@@ -118,10 +118,15 @@ export const getMyReceipt = asyncHandler(async (req, res) => {
 export const emailMyReceipt = asyncHandler(async (req, res) => {
   const result = await sendReceipt(req.params.id, { memberId: req.member.memberId });
   if (!result.emailed) {
-    const message = result.reason === 'no_email' ? 'Add an email address to your profile first.' : 'Turn on emails in your notification settings first.';
+    const messages = {
+      no_email: 'Add an email address to your profile first.',
+      opted_out: 'Turn on emails in your notification settings first.',
+    };
+    // Server-side mail problems are for the gym to fix; members get a plain answer.
+    const message = messages[result.reason] || "We couldn't email the receipt just now. Download it instead, or try again later.";
     throw new AppError(message, 422, result.reason === 'no_email' ? 'NO_EMAIL' : 'EMAIL_NOT_SENT');
   }
-  res.json({ success: true, message: `Receipt sent to ${result.to}` });
+  res.json({ success: true, message: result.status === 'sent' ? `Receipt sent to ${result.to}` : `Receipt is on its way to ${result.to}` });
 });
 
 /** GET /api/member/payments/dues/:id/upi: a upi://pay link and the details for a QR code. */

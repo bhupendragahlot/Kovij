@@ -57,3 +57,17 @@ export function useGymLogo() {
   const remove = useMutation({ mutationFn: () => api.delete("/admin/settings/logo"), onSuccess });
   return { upload, remove };
 }
+
+/** Settings → Email: how the server sends email and how the last week went (owner). */
+export function useEmailSetup({ enabled = true } = {}) {
+  return useQuery({ queryKey: ["settings", "email"], queryFn: () => api.get("/admin/settings/email"), enabled });
+}
+
+/** Sends one test email and waits for the real result. */
+export function useSendTestEmail() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (to) => api.post("/admin/settings/email/test", { to: to || undefined }),
+    onSettled: () => queryClient.invalidateQueries({ queryKey: ["settings", "email"] }),
+  });
+}

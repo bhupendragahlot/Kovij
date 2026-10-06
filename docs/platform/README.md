@@ -122,6 +122,11 @@ Each module owns its **backend** (models, services, controllers, validators, rou
 - **Service worker push:** `kovij-fitness-zone/public/push-handler.js` is imported into the service worker (owned by the engagement module).
 - **New settings fields:** `logoUrl`, `openingHours[{ day, closed, slots[{open, close}] }]`, `holidays[{ date, name }]`, `payments { upiId, payeeName, onlineEnabled, acceptCash, acceptUpi, acceptCard, allowPartial }`, `reminders { enabled, expiryDaysBefore[], onExpiryDay, afterExpiryDays[], paymentDue, paymentDueEveryDays, birthday, sendHour }`.
 
+- **Email delivery:**
+  - `services/emailService.js` sends through Gmail SMTP (`EMAIL_USER` + a 16-letter App Password in `EMAIL_PASS`), or through Brevo's HTTPS API when `BREVO_API_KEY` is set (`EMAIL_FROM` = a verified sender; `EMAIL_PROVIDER` forces one).
+  - Render's free plan blocks outbound SMTP (since September 2025), so the live site needs Brevo or a paid instance.
+  - Every email's real outcome is in `EmailLog`, and member notifications follow it (`notify.js` links them).
+  - Owner check: Settings → Email shows the setup, last week's sent and failed counts with the latest error, and a test send.
 - **ExerciseDB (built):** trainers search ExerciseDB and schedule exercises for a member on a day; members tick them off.
   - Client: `services/training/exerciseDb.js`. Only the server calls ExerciseDB. It uses the free host `https://oss.exercisedb.dev` with no key, or the paid RapidAPI host when `EXERCISEDB_RAPIDAPI_KEY` is set.
   - Endpoints used: `GET /api/v1/exercises` (`name`, `bodyParts`, `targetMuscles`, `equipments`, `exerciseTypes`, `limit` ≤ 25, cursor `after`), `GET /api/v1/exercises/{id}`, and the lists `/bodyparts`, `/muscles`, `/equipments`, `/exercisetypes` (the free host has no exercise types).

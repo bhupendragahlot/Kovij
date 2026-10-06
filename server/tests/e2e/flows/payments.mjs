@@ -199,7 +199,8 @@ let ptPayment;
   check('refunded receipt says so', refundedReceipt.text.includes('Refunded') && refundedReceipt.text.includes('Trainer left'));
 
   const emailed = await call('POST', `/admin/payments/${ptPayment._id}/send-receipt`, { token: D });
-  check('desk emails a receipt copy', emailed.status === 200 && emailed.body.message.includes('@'), emailed.body);
+  // The test server has no email settings, so the send really fails; the desk must be told, not "emailed".
+  check('a receipt that could not be sent says so and why (422)', emailed.status === 422 && emailed.body.code === 'EMAIL_NOT_SENT' && /not configured/.test(emailed.body.message), emailed.body);
   const noEmailMember = await call('POST', '/admin/members', { token: T, body: { details: { name: uniq('No Email '), phone: uniqPhone() }, force: true }, idem: key() });
   const cashNoEmail = await call('POST', '/admin/payments', { token: D, body: { memberId: noEmailMember.body.member._id, type: 'other', amount: 50, mode: 'cash' }, idem: key() });
   const noEmail = await call('POST', `/admin/payments/${cashNoEmail.body.payment._id}/send-receipt`, { token: D });
@@ -270,7 +271,9 @@ let ptPayment;
   check("another member can't open it (404)", (await call('GET', `/member/payments/${due.id}/receipt`, { token: other.token })).status === 404);
   check('no receipt for an unpaid bill (409)', (await call('GET', `/member/payments/${otherDue.id}/receipt`, { token: other.token })).status === 409);
   check('member views one payment', (await call('GET', `/member/payments/${due.id}`, { token: mt })).body.payment?.status === 'paid');
-  check('member emails themselves a copy', (await call('POST', `/member/payments/${due.id}/email-receipt`, { token: mt })).status === 200);
+  // No email settings on the test server: the member is told it didn't go, in plain words.
+  const copy = await call('POST', `/member/payments/${due.id}/email-receipt`, { token: mt });
+  check('member asking for a copy hears it could not be emailed', copy.status === 422 && copy.body.code === 'EMAIL_NOT_SENT' && /couldn't email/.test(copy.body.message), copy.body);
   const kinds = await inboxKinds(mt);
   check('member was told about the rejection and got the receipt (in-app)', kinds === null || (kinds.includes('payment_verification') && kinds.includes('receipt')), kinds);
   check('legacy portal list still works', (await call('GET', '/payments/me', { token: mt })).body.payments?.some((p) => p._id === due.id));
