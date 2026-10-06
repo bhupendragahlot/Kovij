@@ -1,6 +1,6 @@
 // Members & membership lifecycle: registration fields, photos, list filters and export, permissions,
 // freeze / unfreeze / extend, plan changes in history, renewals desk, and the member-app API.
-import { API, ORIGIN, adminToken, call, check, createMember, createPlan, finish, key, memberToken, staffToken, uniq, uniqPhone } from '../lib.mjs';
+import { API, ORIGIN, adminToken, call, check, createMember, createPlan, finish, key, memberToken, staffToken, uniq, uniqPhone, testDob } from '../lib.mjs';
 
 const DAY = 86_400_000;
 const T = await adminToken();
@@ -49,7 +49,7 @@ const joinedDay = dayKey(-40);
 const reg1 = await call('POST', '/admin/members', {
   token: D,
   idem: key(),
-  body: { details: { name: `${tag} Asha`, phone: uniqPhone(), joinedAt: joinedDay, referral: { channel: 'instagram' } }, force: true },
+  body: { details: { dob: testDob(), name: `${tag} Asha`, phone: uniqPhone(), joinedAt: joinedDay, referral: { channel: 'instagram' } }, force: true },
 });
 check('front desk registers a member with joining date and referral (201)', reg1.status === 201, reg1.body);
 const ASHA = reg1.body.member?._id;
@@ -59,7 +59,7 @@ check('referral channel stored', reg1.body.member?.referral?.channel === 'instag
 const reg2 = await call('POST', '/admin/members', {
   token: T,
   idem: key(),
-  body: { details: { name: `${tag} Bhanu`, phone: uniqPhone(), referral: { referredByMemberId: ASHA } }, force: true },
+  body: { details: { dob: testDob(), name: `${tag} Bhanu`, phone: uniqPhone(), referral: { referredByMemberId: ASHA } }, force: true },
 });
 const BHANU = reg2.body.member?._id;
 check('referred-by member stored with their name, channel defaults to friend', reg2.body.member?.referral?.referredByName === `${tag} Asha` && reg2.body.member.referral.channel === 'friend', reg2.body.member?.referral);
@@ -68,14 +68,14 @@ check('joining date defaults to today', ms(reg2.body.member?.joinedAt) === ms(gy
 const badRef = await call('POST', '/admin/members', {
   token: T,
   idem: key(),
-  body: { details: { name: 'Ref Missing', phone: uniqPhone(), referral: { referredByMemberId: '64b7f0c2a1b2c3d4e5f60718' } }, force: true },
+  body: { details: { dob: testDob(), name: 'Ref Missing', phone: uniqPhone(), referral: { referredByMemberId: '64b7f0c2a1b2c3d4e5f60718' } }, force: true },
 });
 check('unknown referring member is a field error (422)', badRef.status === 422 && badRef.body.details?.fields?.['details.referral.referredByMemberId'], badRef.body);
-const future = await call('POST', '/admin/members', { token: T, idem: key(), body: { details: { name: 'Future', phone: uniqPhone(), joinedAt: dayKey(3) }, force: true } });
+const future = await call('POST', '/admin/members', { token: T, idem: key(), body: { details: { dob: testDob(), name: 'Future', phone: uniqPhone(), joinedAt: dayKey(3) }, force: true } });
 check('joining date in the future is refused (422)', future.status === 422 && future.body.details?.fields?.['details.joinedAt'], future.body);
-const badEmergency = await call('POST', '/admin/members', { token: T, idem: key(), body: { details: { name: 'EC', phone: uniqPhone(), emergencyContact: { phone: 'call my dad' } }, force: true } });
+const badEmergency = await call('POST', '/admin/members', { token: T, idem: key(), body: { details: { dob: testDob(), name: 'EC', phone: uniqPhone(), emergencyContact: { phone: 'call my dad' } }, force: true } });
 check('bad emergency phone is a field error (422)', badEmergency.status === 422 && badEmergency.body.details?.fields?.['details.emergencyContact.phone'], badEmergency.body);
-check('trainer cannot register members (403)', (await call('POST', '/admin/members', { token: TR, idem: key(), body: { details: { name: 'No', phone: uniqPhone() }, force: true } })).status === 403);
+check('trainer cannot register members (403)', (await call('POST', '/admin/members', { token: TR, idem: key(), body: { details: { dob: testDob(), name: 'No', phone: uniqPhone() }, force: true } })).status === 403);
 
 const detailB = await detail(BHANU);
 check('profile shows who referred them', detailB.member.referral?.referredBy?.name === `${tag} Asha`, detailB.member.referral);
@@ -98,7 +98,7 @@ check('unassigned-trainer filter', noTrainer.body.members?.length === 2, noTrain
 const someTrainer = await call('GET', `/admin/members?q=${encodeURIComponent(tag)}&trainerId=64b7f0c2a1b2c3d4e5f60718`, { token: T });
 check('trainer filter excludes members of other trainers', someTrainer.body.members?.length === 0, someTrainer.body.members?.length);
 
-const evil = await call('POST', '/admin/members', { token: T, idem: key(), body: { details: { name: `=HYPERLINK("http://x") ${tag}`, phone: uniqPhone() }, health: { weightKg: 71 }, force: true } });
+const evil = await call('POST', '/admin/members', { token: T, idem: key(), body: { details: { dob: testDob(), name: `=HYPERLINK("http://x") ${tag}`, phone: uniqPhone() }, health: { weightKg: 71 }, force: true } });
 const csvRes = await fetch(`${API}/admin/members/export.csv?q=${encodeURIComponent(tag)}`, { headers: { Authorization: `Bearer ${T}` } });
 const csv = await csvRes.text();
 check('export is a CSV download', csvRes.status === 200 && /text\/csv/.test(csvRes.headers.get('content-type')) && /attachment/.test(csvRes.headers.get('content-disposition')), csvRes.status);

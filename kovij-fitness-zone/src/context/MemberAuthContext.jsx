@@ -116,6 +116,16 @@ export function MemberAuthProvider({ children }) {
     return data;
   }, []);
 
+  /** Mobile number, email or member ID + password (`memberId` answers CHOOSE_MEMBER). */
+  const passwordSignIn = useCallback(async ({ login, password, memberId }) => {
+    const { data } = await axios.post(`${base}/api/member/auth/password`, { login, password, memberId });
+    if (!data?.token) throw new Error("No token from server");
+    localStorage.setItem("memberToken", data.token);
+    setMember(data.member);
+    saveMember(data.member);
+    return data;
+  }, []);
+
   const loginWithGoogle = useCallback(async () => {
     setError(null);
     const user = await signInWithGoogle();
@@ -138,11 +148,12 @@ export function MemberAuthProvider({ children }) {
       exchangeSession,
       otpSignIn,
       googleIdSignIn,
+      passwordSignIn,
       loginWithGoogle,
       logout,
       refreshMember: loadMe,
     }),
-    [member, loading, error, loadMe, exchangeSession, otpSignIn, googleIdSignIn, loginWithGoogle, logout]
+    [member, loading, error, loadMe, exchangeSession, otpSignIn, googleIdSignIn, passwordSignIn, loginWithGoogle, logout]
   );
 
   return <MemberAuthContext.Provider value={value}>{children}</MemberAuthContext.Provider>;

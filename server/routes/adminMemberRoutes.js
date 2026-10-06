@@ -12,6 +12,7 @@ import {
   sellPlan,
   cancelMembership,
   notifyMember,
+  resetAppPassword,
   getIdProof,
 } from '../controllers/adminMemberController.js';
 import { adminAuth } from '../middleware/adminAuth.js';
@@ -60,6 +61,8 @@ router.post(
   cancelMembership
 );
 router.post('/:id/notify', byId, requirePermission('communication.send'), validate(notifyMemberSchema), notifyMember);
+// Member forgot their app password: back to their date of birth.
+router.post('/:id/app-password/reset', byId, requirePermission('members.edit'), resetAppPassword);
 // ID documents are for the desk (verification), not coaching.
 router.get('/:id/id-proof', byId, requirePermission('members.edit'), getIdProof);
 

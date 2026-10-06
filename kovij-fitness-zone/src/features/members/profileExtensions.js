@@ -18,4 +18,5 @@ export const PROFILE_TABS = [
 /** Header actions: components rendered beside the profile's own buttons. Receive { member }. */
 export const PROFILE_ACTIONS = [
   { key: "message", permission: "communication.send", Component: lazy(() => import("../communication/MemberMessageAction")) },
+  { key: "app-login", permission: "members.view", Component: lazy(() => import("./MemberAppLoginAction")) },
 ];

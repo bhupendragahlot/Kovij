@@ -1,7 +1,7 @@
 // Member sign-in exchange. Real Firebase tokens can't be minted here, so this covers the wiring
 // and refusals; the linking rules themselves are unit-tested in tests/memberIdentity.test.js.
 import { createRequire } from 'node:module';
-import { adminToken, call, check, createMember, finish, key, uniq, uniqPhone } from '../lib.mjs';
+import { adminToken, call, check, createMember, finish, key, uniq, uniqPhone, testDob } from '../lib.mjs';
 
 const bad = await call('POST', '/member/auth/session', { body: { idToken: 'not-a-real-firebase-token-xxxxxxxx' } });
 check('a forged sign-in token is refused (401)', bad.status === 401 && bad.body.code === 'FIREBASE_AUTH_FAILED', bad.body);
@@ -44,7 +44,7 @@ check('a desk-registered member lands in their existing account', desk.status ==
 // Two members on one family phone: the person chooses.
 const shared = uniqPhone();
 for (const n of ['Family One', 'Family Two']) {
-  await call('POST', '/admin/members', { token: T, body: { details: { name: uniq(n), phone: shared }, force: true }, idem: key() });
+  await call('POST', '/admin/members', { token: T, body: { details: { dob: testDob(), name: uniq(n), phone: shared }, force: true }, idem: key() });
 }
 const choose = await call('POST', '/member/auth/otp/verify', { body: { phone: shared, code: '112233' } });
 check('a shared number asks who you are', choose.status === 409 && choose.body.code === 'CHOOSE_MEMBER' && choose.body.details.candidates.length === 2, choose.body);

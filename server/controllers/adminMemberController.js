@@ -9,6 +9,7 @@ import User from '../models/User.js';
 import { getSettingsDoc } from '../models/Settings.js';
 import { can } from '../config/permissions.js';
 import { queueEmail, waitForEmail } from '../services/emailService.js';
+import { applyDefaultPassword, appPasswordInfo, describeDefaultPassword, resetMemberPassword } from '../services/memberPasswordService.js';
 import {
   exportMembersCsv,
   findPossibleDuplicates,
@@ -91,7 +92,7 @@ export const getMember = asyncHandler(async (req, res) => {
   const settings = await getSettingsDoc();
   const detail = await getMemberDetail(req.params.id, { expiringWindowDays: settings.expiringWindowDays });
   if (!detail) throw new AppError('Member not found', 404, 'NOT_FOUND');
-  res.json({ success: true, ...redactMemberDetail(detail, visibility(req)) });
+  res.json({ success: true, ...redactMemberDetail(detail, visibility(req)), appPassword: appPasswordInfo(detail.member) });
 });
 
 /** GET /api/admin/members/:id/timeline — joins, renewals, freezes, extensions, cancellations. */
@@ -166,11 +167,27 @@ export const updateMember = asyncHandler(async (req, res) => {
     if (joinedAt !== undefined) member.joinedAt = joinedAtFromDay(joinedAt);
     if (referral === null) member.referral = undefined;
     else if (referral !== undefined) member.referral = (await resolveReferral(referral, { selfId: member._id })) || undefined;
+    // A date of birth gives a member without a password their first one; a still-default password follows a corrected date.
+    if (member.isModified('dob') || !member.passwordSetAt) await applyDefaultPassword(member);
     await member.save();
   }
   await upsertProfile(member._id, health);
   const profile = visibility(req).health ? await MemberProfile.findOne({ memberId: member._id }).lean() : null;
   res.json({ success: true, member: member.toObject(), profile });
+});
+
+/**
+ * POST /api/admin/members/:id/app-password/reset — the member forgot their app password: put it
+ * back to their date of birth and sign them out on other devices. Answers with what to tell them.
+ */
+export const resetAppPassword = asyncHandler(async (req, res) => {
+  const member = await resetMemberPassword(req.params.id);
+  res.json({
+    success: true,
+    member: { _id: member._id, name: member.name },
+    appPassword: appPasswordInfo(member),
+    message: `${member.name}'s app password is now ${describeDefaultPassword(member.dob)}.`,
+  });
 });
 
 /** POST /api/admin/members/:id/photo — multipart `photo` (camera or file); replaces the old one. */

@@ -122,6 +122,11 @@ Each module owns its **backend** (models, services, controllers, validators, rou
 - **Service worker push:** `kovij-fitness-zone/public/push-handler.js` is imported into the service worker (owned by the engagement module).
 - **New settings fields:** `logoUrl`, `openingHours[{ day, closed, slots[{open, close}] }]`, `holidays[{ date, name }]`, `payments { upiId, payeeName, onlineEnabled, acceptCash, acceptUpi, acceptCard, allowPartial }`, `reminders { enabled, expiryDaysBefore[], onExpiryDay, afterExpiryDays[], paymentDue, paymentDueEveryDays, birthday, sendHour }`.
 
+- **Member app passwords:**
+  - Desk registration requires a date of birth, which becomes the member's first password as DDMMYYYY (`services/memberPasswordService.js`).
+  - Members sign in at `POST /api/member/auth/password` with their mobile number, email or member ID. They change the password at `/password/change` (current, new, confirm), which signs out their other devices.
+  - Staff reset it to the date of birth with `POST /api/admin/members/:id/app-password/reset` (the "App login" button on the profile).
+  - `Member.passwordHash` is `select: false`, removed when serialising, and stripped from every Member aggregation by a pre-aggregate hook.
 - **Email delivery:**
   - `services/emailService.js` sends through Gmail SMTP (`EMAIL_USER` + a 16-letter App Password in `EMAIL_PASS`), or through Brevo's HTTPS API when `BREVO_API_KEY` is set (`EMAIL_FROM` = a verified sender; `EMAIL_PROVIDER` forces one).
   - Render's free plan blocks outbound SMTP (since September 2025), so the live site needs Brevo or a paid instance.

@@ -5,6 +5,7 @@ import { uploadMemberPhoto, useCreateMember, useDuplicateCheck } from "./api";
 import { SaleFields } from "./SaleFields";
 import { EMPTY_SALE, saleSummary, salePayload } from "./sale";
 import { AddressFields, ContactFields, HealthFields, JoiningFields } from "./MemberFormFields";
+import { dobPassword } from "./appPassword";
 import { EMPTY_HEALTH, fieldErrorsFor, newMemberDetails, toDetailsPayload, toHealthPayload } from "./memberForm";
 import { PhotoPicker } from "./PhotoField";
 import { useSellablePlans } from "../catalog/api";
@@ -89,6 +90,7 @@ export default function NewMemberPage() {
     const errors = {};
     if (!details.name.trim()) errors.name = "Enter the member's name";
     if (String(details.phone).replace(/\D/g, "").length < 10) errors.phone = "Enter a 10-digit mobile number";
+    if (!details.dob) errors.dob = "Enter the date of birth. It is also their app password.";
     if (withPlan && !sale.planId) errors.planId = "Choose a plan, or turn off “Start a plan now”";
     setClientErrors(errors);
     if (Object.keys(errors).length) {
@@ -110,7 +112,7 @@ export default function NewMemberPage() {
           idempotency.reset();
           const planPayment = data.sale?.payments?.find((p) => p.type !== "registration" && p.status === "paid");
           toast.success(`${data.member.name} registered`, {
-            description: data.sale ? `${data.sale.planName}${planPayment ? `, ${formatINR(total)} collected` : ", payment due"}` : `Member code ${data.member.memberCode}`,
+            description: `${data.sale ? `${data.sale.planName}${planPayment ? `, ${formatINR(total)} collected` : ", payment due"}` : `Member code ${data.member.memberCode}`}. App login: mobile number + ${dobPassword(data.member.dob)}.`,
             action: planPayment ? { label: "Print", onClick: () => openReceipt(planPayment._id) } : undefined,
           });
           // The member exists now; a failed photo upload must not undo that, so it only warns.
@@ -146,7 +148,7 @@ export default function NewMemberPage() {
 
   return (
     <>
-      <PageHeader title="New member" description="Walk-in registration. Only name and mobile are required." back={{ to: "/admin/members", label: "Members" }} />
+      <PageHeader title="New member" description="Walk-in registration. Only name, mobile and date of birth are required." back={{ to: "/admin/members", label: "Members" }} />
 
       <form onSubmit={submit} noValidate className="max-w-3xl pb-24">
         <FormError error={create.error?.code === "DUPLICATE_MEMBER" ? null : create.error} />
@@ -156,7 +158,7 @@ export default function NewMemberPage() {
             <div className="mb-5">
               <PhotoPicker name={details.name} file={photo} onChange={setPhoto} disabled={create.isPending || savingPhoto} />
             </div>
-            <ContactFields value={details} onChange={setDetails} errors={detailErrors} />
+            <ContactFields value={details} onChange={setDetails} errors={detailErrors} dobRequired />
             <DuplicateNotice matches={matches} forced={force} onForce={matches?.some((m) => m.phone && m.phone.replace(/\D/g, "").endsWith(details.phone.replace(/\D/g, "").slice(-10))) ? setForce : null} />
           </Card>
 

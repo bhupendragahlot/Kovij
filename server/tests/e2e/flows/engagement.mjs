@@ -1,6 +1,6 @@
 // Engagement: automatic reminders (expiry, come back, payment due, birthday), announcements,
 // member inbox and preferences, web push subscriptions, staff messages, permissions, idempotency.
-import { adminToken, call, check, createPlan, finish, key, memberToken, staffToken, uniq, uniqPhone } from '../lib.mjs';
+import { adminToken, call, check, createPlan, finish, key, memberToken, staffToken, uniq, uniqPhone, testDob } from '../lib.mjs';
 
 const T = await adminToken();
 const trainer = await staffToken('trainer', T);
@@ -26,7 +26,7 @@ const today = gymDay();
 
 /** Register a member at the desk; `plan` sells a plan (paid now unless collect: 'later'). */
 async function member({ planId, collect = 'now', email = true, dob } = {}) {
-  const details = { name: uniq('Eng '), phone: uniqPhone(), ...(email && { email: `${uniq('eng')}@example.com` }), ...(dob && { dob }) };
+  const details = { name: uniq('Eng '), phone: uniqPhone(), ...(email && { email: `${uniq('eng')}@example.com` }), dob: dob || testDob() };
   const body = { details, force: true };
   if (planId) body.membership = { planId, payment: collect === 'now' ? { collect: 'now', mode: 'cash' } : { collect: 'later' } };
   const r = await call('POST', '/admin/members', { token: T, body, idem: key() });

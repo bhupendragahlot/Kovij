@@ -8,6 +8,7 @@ import { getSettingsDoc } from '../models/Settings.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { isTestOtpOn, matchesTestOtp, testOtpCode } from '../services/testOtp.js';
+import { appPasswordInfo, changeMemberPassword, memberForPassword } from '../services/memberPasswordService.js';
 
 const REFUSALS = {
   EMAIL_NOT_VERIFIED: ['Verify your email first. Open the link we sent you, then sign in again.', 403],
@@ -252,5 +253,20 @@ export const me = asyncHandler(async (req, res) => {
       role: member.role,
       createdAt: member.createdAt,
     },
+    appPassword: appPasswordInfo(member),
   });
+});
+
+/** POST /api/member/auth/password — sign in with mobile number, email or member ID and a password. */
+export const passwordSignIn = asyncHandler(async (req, res) => {
+  sendSession(res, await memberForPassword(req.validated.body), false);
+});
+
+/**
+ * POST /api/member/auth/password/change — current password (if there is one), new, and confirm.
+ * Signs out every other device; this one gets a fresh session token.
+ */
+export const changePassword = asyncHandler(async (req, res) => {
+  const member = await changeMemberPassword(req.member.memberId, req.validated.body);
+  res.json({ success: true, token: signMemberToken(member), appPassword: appPasswordInfo(member), message: 'Password changed' });
 });

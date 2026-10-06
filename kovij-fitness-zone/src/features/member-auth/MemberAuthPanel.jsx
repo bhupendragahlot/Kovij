@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-import { ArrowLeft, Eye, EyeOff, Loader2, Mail, MailCheck, Smartphone, UserRound } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff, KeyRound, Loader2, Mail, MailCheck, Smartphone, UserRound } from "lucide-react";
 import { useMemberAuth } from "../../context/MemberAuthContext";
 import { authErrorMessage } from "./authErrors";
 import { GoogleButton } from "./GoogleButton";
@@ -19,7 +19,7 @@ const API_BASE = API_ORIGIN;
  * Views: phone → otp · email → signup · forgot · verify (email link) · name (new account) · choose (shared phone)
  */
 export default function MemberAuthPanel({ title, subtitle }) {
-  const { exchangeSession, otpSignIn, googleIdSignIn } = useMemberAuth();
+  const { exchangeSession, otpSignIn, googleIdSignIn, passwordSignIn } = useMemberAuth();
   // Our own Google OAuth client (server GOOGLE_CLIENT_ID); without it, Firebase's Google popup.
   const [googleClientId, setGoogleClientId] = useState(null);
   const [view, setView] = useState("phone");
@@ -33,6 +33,8 @@ export default function MemberAuthPanel({ title, subtitle }) {
   const [phone, setPhone] = useState("");
   const [code, setCode] = useState("");
   const [email, setEmail] = useState("");
+  /** Password sign-in: mobile number, email or member ID. */
+  const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
@@ -89,12 +91,14 @@ export default function MemberAuthPanel({ title, subtitle }) {
 
   /**
    * Swap a sign-in for a gym session, answering any follow-up the server asks.
-   * `pending` is a Firebase user, or `{ otp: { phone, code } }` for test-mode mobile sign-in.
+   * `pending` is a Firebase user, `{ otp: { phone, code } }` for test-mode mobile sign-in, or
+   * `{ password: { login, password } }` for password sign-in.
    */
   async function finish(pending, extra = {}) {
     pendingUser.current = pending;
     try {
       if (pending.otp) await otpSignIn({ ...pending.otp, ...extra });
+      else if (pending.password) await passwordSignIn({ ...pending.password, ...extra });
       else await exchangeSession(pending, extra);
     } catch (err) {
       const data = err?.response?.data;
@@ -108,13 +112,13 @@ export default function MemberAuthPanel({ title, subtitle }) {
       }
       if (data?.code === "EMAIL_NOT_VERIFIED") return setView("verify");
       pendingUser.current = null;
-      if (!pending.otp) await fb.signOutFirebase();
+      if (!pending.otp && !pending.password) await fb.signOutFirebase();
       throw err;
     }
   }
 
   async function startOver() {
-    const wasFirebase = pendingUser.current && !pendingUser.current.otp;
+    const wasFirebase = pendingUser.current && !pendingUser.current.otp && !pendingUser.current.password;
     pendingUser.current = null;
     chosenMember.current = undefined;
     confirmation.current = null;
@@ -152,15 +156,36 @@ export default function MemberAuthPanel({ title, subtitle }) {
     return run("verify", async () => finish(await confirmation.current.confirm(value)));
   };
 
-  const emailSignIn = (e) => {
+  /**
+   * Mobile number, email or member ID + password, checked by the gym's server (desk-registered
+   * members start with their date of birth). Accounts created here with an email keep their
+   * password with Firebase, so an email the server doesn't know a password for is tried there too.
+   */
+  const passwordLogin = (e) => {
     e.preventDefault();
-    run("email", async () => {
-      const user = await fb.signInWithEmail(email, password);
-      if (!user.emailVerified) {
-        pendingUser.current = user;
-        return setView("verify");
+    const who = login.trim();
+    if (!who) return setError("Enter your mobile number, email or member ID.");
+    if (!password) return setError("Enter your password.");
+    return run("password", async () => {
+      try {
+        await finish({ password: { login: who, password } });
+      } catch (err) {
+        const code = err?.response?.data?.code;
+        if (who.includes("@") && (code === "WRONG_PASSWORD" || code === "NO_PASSWORD")) {
+          let user = null;
+          try {
+            user = await fb.signInWithEmail(who, password);
+          } catch {
+            /* not a Firebase account either: show the server's answer */
+          }
+          if (user && !user.emailVerified) {
+            pendingUser.current = user;
+            return setView("verify");
+          }
+          if (user) return finish(user);
+        }
+        throw err;
       }
-      return finish(user);
     });
   };
 
@@ -178,7 +203,7 @@ export default function MemberAuthPanel({ title, subtitle }) {
   const checkVerified = () =>
     run("check", async () => {
       const user = await fb.reloadCurrentUser();
-      if (!user) return go("email");
+      if (!user) return go("password");
       if (!user.emailVerified) {
         return setError("We can’t see the click yet. Open the link in the email, then tap the button again.");
       }
@@ -218,8 +243,8 @@ export default function MemberAuthPanel({ title, subtitle }) {
     return run(`choose-${memberId}`, async () => finish(pendingUser.current, { memberId }));
   };
 
-  const tab = view === "phone" || view === "otp" ? "phone" : "email";
-  const showTabs = ["phone", "email", "signup"].includes(view);
+  const tab = view === "phone" || view === "otp" ? "phone" : "password";
+  const showTabs = ["phone", "password", "signup"].includes(view);
 
   return (
     <div className="w-full max-w-md rounded-2xl border border-neutral-800 bg-neutral-950/90 p-6 shadow-xl sm:p-8">
@@ -233,8 +258,8 @@ export default function MemberAuthPanel({ title, subtitle }) {
           <TabButton active={tab === "phone"} onClick={() => go("phone")} icon={Smartphone}>
             Mobile
           </TabButton>
-          <TabButton active={tab === "email"} onClick={() => go("email")} icon={Mail}>
-            Email
+          <TabButton active={tab === "password"} onClick={() => go("password")} icon={KeyRound}>
+            Password
           </TabButton>
         </div>
       )}
@@ -317,13 +342,30 @@ export default function MemberAuthPanel({ title, subtitle }) {
           </form>
         )}
 
-        {view === "email" && (
-          <form onSubmit={emailSignIn} className="space-y-4" noValidate>
-            <EmailField value={email} onChange={setEmail} />
-            <PasswordField value={password} onChange={setPassword} autoComplete="current-password" extra={
-              <TextButton onClick={() => go("forgot")}>Forgot password?</TextButton>
-            } />
-            <PrimaryButton busy={busy === "email"}>Sign in</PrimaryButton>
+        {view === "password" && (
+          <form onSubmit={passwordLogin} className="space-y-4" noValidate>
+            <Field label="Mobile number, email or member ID">
+              {(id) => (
+                <input
+                  id={id}
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  value={login}
+                  onChange={(e) => setLogin(e.target.value)}
+                  placeholder="98765 43210"
+                  className={inputClass}
+                />
+              )}
+            </Field>
+            <PasswordField
+              value={password}
+              onChange={setPassword}
+              autoComplete="current-password"
+              hint="Joined at the gym desk? Your first password is your date of birth, like 15081995."
+              extra={<TextButton onClick={() => go("forgot")}>Forgot password?</TextButton>}
+            />
+            <PrimaryButton busy={busy === "password"}>Sign in</PrimaryButton>
             <p className="text-center text-sm text-neutral-400">
               New here? <TextButton onClick={() => go("signup")}>Create an account</TextButton>
             </p>
@@ -341,15 +383,19 @@ export default function MemberAuthPanel({ title, subtitle }) {
             <PasswordField value={password} onChange={setPassword} autoComplete="new-password" hint={`At least ${MIN_PASSWORD} characters.`} />
             <PrimaryButton busy={busy === "signup"}>Create account</PrimaryButton>
             <p className="text-center text-sm text-neutral-400">
-              Already have an account? <TextButton onClick={() => go("email")}>Sign in</TextButton>
+              Already have an account? <TextButton onClick={() => go("password")}>Sign in</TextButton>
             </p>
           </form>
         )}
 
         {view === "forgot" && (
           <form onSubmit={sendReset} className="space-y-4" noValidate>
-            <BackLink onClick={() => go("email")}>Back to sign in</BackLink>
-            <p className="text-sm text-neutral-300">Enter the email you signed up with. We’ll send a link to set a new password.</p>
+            <BackLink onClick={() => go("password")}>Back to sign in</BackLink>
+            <p className="text-sm text-neutral-300">
+              Sign in with a code sent to your mobile (the Mobile tab), then set a new password under Profile. Or ask the gym desk to reset it to your date
+              of birth.
+            </p>
+            <p className="text-sm text-neutral-300">Created your account here with an email? We can email you a link to set a new password.</p>
             <EmailField value={email} onChange={setEmail} />
             <PrimaryButton busy={busy === "reset"}>Send reset link</PrimaryButton>
           </form>
@@ -412,14 +458,17 @@ export default function MemberAuthPanel({ title, subtitle }) {
                 {busy === `choose-${c.id}` && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
               </button>
             ))}
-            <button
-              type="button"
-              disabled={Boolean(busy)}
-              onClick={() => choose("new")}
-              className="min-h-11 w-full rounded-lg border border-dashed border-neutral-700 px-4 py-2 text-sm text-neutral-300 hover:border-neutral-500 hover:text-white disabled:opacity-60"
-            >
-              {busy === "choose-new" ? "Creating…" : "None of these — create a new account"}
-            </button>
+            {/* A password belongs to existing members, so there's nothing new to create. */}
+            {!pendingUser.current?.password && (
+              <button
+                type="button"
+                disabled={Boolean(busy)}
+                onClick={() => choose("new")}
+                className="min-h-11 w-full rounded-lg border border-dashed border-neutral-700 px-4 py-2 text-sm text-neutral-300 hover:border-neutral-500 hover:text-white disabled:opacity-60"
+              >
+                {busy === "choose-new" ? "Creating…" : "None of these — create a new account"}
+              </button>
+            )}
             <div className="text-center">
               <TextButton onClick={startOver}>Cancel</TextButton>
             </div>

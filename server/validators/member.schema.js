@@ -26,12 +26,18 @@ export const referralSchema = z.object({
   referredByName: optionalText(120),
 });
 
+/** A real date of birth: not in the future, not before 1900. */
+const birthDate = z.coerce
+  .date({ errorMap: () => ({ message: 'Enter the date of birth' }) })
+  .refine((d) => d <= new Date(), 'Can’t be in the future')
+  .refine((d) => d >= new Date('1900-01-01'), 'Check the year');
+
 export const memberDetailsSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(120),
   phone,
   email: optionalEmail,
   gender: z.enum(['male', 'female', 'other', 'prefer_not_say']).optional(),
-  dob: z.coerce.date().optional(),
+  dob: birthDate.optional(),
   address: z
     .object({ line1: optionalText(200), city: optionalText(80), state: optionalText(80) })
     .optional(),
@@ -79,7 +85,8 @@ export const saleSchema = z.object({
 });
 
 export const createMemberSchema = z.object({
-  details: memberDetailsSchema,
+  // Required on registration: it is the member's first app password.
+  details: memberDetailsSchema.extend({ dob: birthDate }),
   health: healthSchema,
   membership: saleSchema.optional(),
   force: z.boolean().default(false),

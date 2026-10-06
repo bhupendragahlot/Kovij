@@ -3,7 +3,7 @@
  * Every endpoint is a member endpoint: /api/member/… (own data only, enforced by the server).
  */
 import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { mapi } from "./http";
+import { MEMBER_TOKEN_KEY, mapi } from "./http";
 import { exerciseDbRetry } from "../exercisedb/format";
 
 export const meKeys = {
@@ -176,3 +176,20 @@ export const useLibraryExercise = (id) =>
 
 /** For ExerciseDbBrowser. */
 export const memberExerciseDb = { useFilters: useLibraryFilters, useSearch: useLibrarySearch };
+
+/**
+ * Change (or first set) the app password. The server signs out every other device and answers
+ * with a new token for this one, saved before anything refetches with the old (now refused) token.
+ */
+export const useChangePassword = () =>
+  useMeMutation(async (body) => {
+    const data = await mapi.post("/member/auth/password/change", body);
+    if (data?.token) {
+      try {
+        localStorage.setItem(MEMBER_TOKEN_KEY, data.token);
+      } catch {
+        /* storage blocked: this phone signs in again next time */
+      }
+    }
+    return data;
+  }, [meKeys.profile]);

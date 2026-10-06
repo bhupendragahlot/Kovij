@@ -53,8 +53,26 @@ const memberSchema = new mongoose.Schema(
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     isActive: { type: Boolean, default: true },
+
+    /**
+     * Member app password (bcrypt). Never selected unless asked for (`+passwordHash`) and never
+     * serialised. Desk-registered members start with their date of birth (DDMMYYYY); see
+     * services/memberPasswordService.js.
+     */
+    passwordHash: { type: String, select: false },
+    /** When the current password was set (any way). Absent = no password yet. */
+    passwordSetAt: { type: Date },
+    /** The current password is still the date-of-birth default. */
+    passwordIsDefault: { type: Boolean },
+    /** Member sessions issued before this are signed out (member changed it, or staff reset it). */
+    passwordChangedAt: { type: Date },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    // The hash never leaves the server, even from a document that loaded it.
+    toJSON: { transform: (doc, ret) => (delete ret.passwordHash, ret) },
+    toObject: { transform: (doc, ret) => (delete ret.passwordHash, ret) },
+  }
 );
 
 const presentString = (field) => ({ partialFilterExpression: { [field]: { $type: 'string' } } });
@@ -67,5 +85,14 @@ memberSchema.index({ memberCode: 1 }, { unique: true, ...presentString('memberCo
 memberSchema.index({ phone: 1 });
 memberSchema.index({ createdAt: -1 });
 memberSchema.index({ assignedTrainerId: 1 });
+
+// Aggregations ignore `select: false`, so every pipeline over members drops the password hash
+// itself (after a leading $match/$geoNear/$search, which must stay first).
+const MUST_BE_FIRST = ['$match', '$geoNear', '$search', '$searchMeta', '$vectorSearch'];
+memberSchema.pre('aggregate', function hidePasswordHash() {
+  const pipeline = this.pipeline();
+  const at = pipeline[0] && MUST_BE_FIRST.includes(Object.keys(pipeline[0])[0]) ? 1 : 0;
+  pipeline.splice(at, 0, { $unset: 'passwordHash' });
+});
 
 export default mongoose.model('Member', memberSchema);

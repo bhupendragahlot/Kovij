@@ -4,7 +4,8 @@ import { gymDayKey } from "../../shared/lib/format";
 import { MemberPicker } from "./MemberPicker";
 import { REFERRAL_CHANNEL_LABEL } from "./memberStatus";
 
-export function ContactFields({ value, onChange, errors = {}, phoneHint }) {
+/** `dobRequired` (registration): the date of birth is also the member's first app password. */
+export function ContactFields({ value, onChange, errors = {}, phoneHint, dobRequired = false }) {
   const set = (k) => (e) => onChange({ ...value, [k]: e.target.value });
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -26,7 +27,13 @@ export function ContactFields({ value, onChange, errors = {}, phoneHint }) {
           <option value="prefer_not_say">Prefer not to say</option>
         </Select>
       </Field>
-      <Field label="Date of birth" optional error={errors.dob}>
+      <Field
+        label="Date of birth"
+        optional={!dobRequired}
+        required={dobRequired}
+        error={errors.dob}
+        hint={dobRequired ? "Also their first app password, as DDMMYYYY." : undefined}
+      >
         <Input type="date" value={value.dob} onChange={set("dob")} max={gymDayKey()} />
       </Field>
     </div>

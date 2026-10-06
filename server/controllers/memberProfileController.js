@@ -2,6 +2,7 @@ import Member from '../models/Member.js';
 import MemberProfile from '../models/MemberProfile.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { appPasswordInfo } from '../services/memberPasswordService.js';
 
 function computeBmi(heightCm, weightKg) {
   if (!heightCm || !weightKg) return undefined;
@@ -14,7 +15,7 @@ export const getMyProfile = asyncHandler(async (req, res) => {
   const member = await Member.findById(req.member.memberId).lean();
   if (!member) throw new AppError('Member not found', 404, 'NOT_FOUND');
   const profile = await MemberProfile.findOne({ memberId: member._id }).lean();
-  res.json({ success: true, member, profile });
+  res.json({ success: true, member, profile, appPassword: appPasswordInfo(member) });
 });
 
 export const updateMyProfile = asyncHandler(async (req, res) => {

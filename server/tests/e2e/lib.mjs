@@ -77,8 +77,18 @@ export async function staffToken(role = 'staff', adminT) {
 export const memberToken = (memberId) => jwt.sign({ memberId: String(memberId), type: 'member', role: 'user' }, SECRET, { expiresIn: '1h' });
 
 /** Register a desk member (optionally with an active plan) and return { member, token }. */
-export async function createMember(adminT, { planId, collect = 'now', name } = {}) {
-  const body = { details: { name: name || uniq('Member '), phone: uniqPhone(), email: `${uniq('m')}@example.com` }, force: true };
+/**
+ * A date of birth for test registrations (required at the desk). About six months from today, so
+ * it never makes a birthday reminder fire during a test run.
+ */
+export function testDob(now = new Date()) {
+  const d = new Date(now.getTime() + 182 * 86_400_000);
+  const md = d.toISOString().slice(5, 10);
+  return `1990-${md === '02-29' ? '02-28' : md}`;
+}
+
+export async function createMember(adminT, { planId, collect = 'now', name, dob } = {}) {
+  const body = { details: { name: name || uniq('Member '), phone: uniqPhone(), email: `${uniq('m')}@example.com`, dob: dob || testDob() }, force: true };
   if (planId) body.membership = { planId, payment: collect === 'now' ? { collect: 'now', mode: 'cash' } : { collect: 'later' } };
   const r = await call('POST', '/admin/members', { token: adminT, body, idem: key() });
   if (r.status !== 201) throw new Error(`create member failed: ${JSON.stringify(r.body)}`);

@@ -1,6 +1,6 @@
 // Payments, online payments, revenue and expenses: money paths, permissions, validation, idempotency.
 import { createRequire } from 'node:module';
-import { adminToken, call, check, createMember, createPlan, finish, key, memberToken, staffToken, uniq, uniqPhone } from '../lib.mjs';
+import { adminToken, call, check, createMember, createPlan, finish, key, memberToken, staffToken, uniq, uniqPhone, testDob } from '../lib.mjs';
 
 const require = createRequire(import.meta.url);
 const T = await adminToken();
@@ -201,7 +201,7 @@ let ptPayment;
   const emailed = await call('POST', `/admin/payments/${ptPayment._id}/send-receipt`, { token: D });
   // The test server has no email settings, so the send really fails; the desk must be told, not "emailed".
   check('a receipt that could not be sent says so and why (422)', emailed.status === 422 && emailed.body.code === 'EMAIL_NOT_SENT' && /not configured/.test(emailed.body.message), emailed.body);
-  const noEmailMember = await call('POST', '/admin/members', { token: T, body: { details: { name: uniq('No Email '), phone: uniqPhone() }, force: true }, idem: key() });
+  const noEmailMember = await call('POST', '/admin/members', { token: T, body: { details: { dob: testDob(), name: uniq('No Email '), phone: uniqPhone() }, force: true }, idem: key() });
   const cashNoEmail = await call('POST', '/admin/payments', { token: D, body: { memberId: noEmailMember.body.member._id, type: 'other', amount: 50, mode: 'cash' }, idem: key() });
   const noEmail = await call('POST', `/admin/payments/${cashNoEmail.body.payment._id}/send-receipt`, { token: D });
   check('emailing a member without email explains what to do (422)', noEmail.status === 422 && noEmail.body.code === 'NO_EMAIL', noEmail.body);

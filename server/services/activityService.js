@@ -103,6 +103,7 @@ const ACTIONS = [
   ['DELETE', '/admin/members/:id/progress/entries/:id', 'progress.delete', 'deleted {member’s} measurements'],
   ['POST', '/admin/members/:id/progress/photos', 'progress.photo', 'added progress photos for {member}'],
   ['DELETE', '/admin/members/:id/progress/photos/:id', 'progress.photo_delete', 'deleted a progress photo of {member}'],
+  ['POST', '/admin/members/:id/app-password/reset', 'member.app_password_reset', 'reset {member’s} app password to their date of birth'],
   ['POST', '/admin/members/:id/notes', 'note.create', 'added a note on {member}'],
   ['PATCH', '/admin/members/:id/notes/:id', 'note.update', 'edited a note on {member}'],
   ['DELETE', '/admin/members/:id/notes/:id', 'note.delete', 'deleted a note on {member}'],

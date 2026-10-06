@@ -446,3 +446,9 @@ body {
     @apply flex h-10 w-10 items-center justify-center border transition-all sm:h-12 sm:w-12;
   }
 }
+
+/* Edge/IE draw their own "show password" eye; our fields have their own toggle. */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear {
+  display: none;
+}

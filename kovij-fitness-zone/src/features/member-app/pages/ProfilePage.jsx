@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ChevronRight, LogOut, MapPin, MessageCircle, Monitor, Moon, Pencil, Phone, Sun } from "lucide-react";
+import { ChevronRight, KeyRound, LogOut, MapPin, MessageCircle, Monitor, Moon, Pencil, Phone, Sun } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemberAuth } from "../../../context/MemberAuthContext";
 import { MEMBER_NAV } from "../nav";
-import { useGym, useMyProfile, useNotificationPrefs, useUpdatePrefs, useUpdateProfile } from "../queries";
+import { useChangePassword, useGym, useMyProfile, useNotificationPrefs, useUpdatePrefs, useUpdateProfile } from "../queries";
 import { DAY_NAMES, WEEK_ORDER, formatClock, normaliseWeek } from "../../settings/hours";
 import { useThemeControls } from "../../../app/theme";
 import { Avatar, Button, Card, CardHeader, Dialog, ErrorState, Field, FormError, Input, PageHeader, SegmentedControl, Select, SkeletonList, Switch, useConfirm, useToast } from "../../../shared/ui";
@@ -69,6 +69,7 @@ export default function ProfilePage() {
             </Button>
           </Card>
         )}
+        {profile.data && <PasswordCard appPassword={profile.data.appPassword} />}
         <NotificationSettings />
         <Appearance />
         <GymDetails />
@@ -127,6 +128,94 @@ function EditDetails({ member, onClose }) {
         <p className="text-[13px] text-ink-3">To change your phone number or email, ask at the desk.</p>
       </form>
     </Dialog>
+  );
+}
+
+const EMPTY_PASSWORDS = { currentPassword: "", newPassword: "", confirmPassword: "" };
+
+/** Change the app password (current, new, confirm), or set a first one if there's none yet. */
+function PasswordCard({ appPassword }) {
+  const change = useChangePassword();
+  const toast = useToast();
+  const [open, setOpen] = useState(false);
+  const [show, setShow] = useState(false);
+  const [form, setForm] = useState(EMPTY_PASSWORDS);
+  const [clientErrors, setClientErrors] = useState({});
+  const hasPassword = Boolean(appPassword?.set);
+  const errors = { ...(change.error?.fields || {}), ...clientErrors };
+  const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
+
+  const close = () => {
+    setOpen(false);
+    setForm(EMPTY_PASSWORDS);
+    setClientErrors({});
+    change.reset();
+  };
+
+  const submit = (e) => {
+    e.preventDefault();
+    const next = {};
+    if (hasPassword && !form.currentPassword) next.currentPassword = "Enter your current password";
+    if (form.newPassword.length < 8) next.newPassword = "Use at least 8 characters.";
+    if (form.confirmPassword !== form.newPassword) next.confirmPassword = "The two new passwords don’t match.";
+    setClientErrors(next);
+    if (Object.keys(next).length) return;
+    change.mutate(
+      { ...(hasPassword && { currentPassword: form.currentPassword }), newPassword: form.newPassword, confirmPassword: form.confirmPassword },
+      {
+        onSuccess: () => {
+          toast.success(hasPassword ? "Password changed" : "Password set", { description: "Any other phone signed in to your account has been signed out." });
+          close();
+        },
+      }
+    );
+  };
+
+  const status = !hasPassword
+    ? "You sign in with a code sent to your mobile. Add a password to sign in with it too."
+    : appPassword.isDefault
+      ? "You’re still using your date of birth. Change it so only you can sign in."
+      : `Last changed ${formatDate(appPassword.setAt)}.`;
+
+  return (
+    <Card>
+      <CardHeader
+        title="Password"
+        description={status}
+        action={
+          !open && (
+            <Button variant={appPassword?.isDefault ? "primary" : "secondary"} icon={KeyRound} onClick={() => setOpen(true)}>
+              {hasPassword ? "Change" : "Set password"}
+            </Button>
+          )
+        }
+      />
+      {open && (
+        <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
+          <FormError error={Object.keys(change.error?.fields || {}).length ? null : change.error} />
+          {hasPassword && (
+            <Field label="Current password" error={errors.currentPassword} hint={appPassword.isDefault ? "Your date of birth, like 15081995." : undefined}>
+              <Input type={show ? "text" : "password"} autoComplete="current-password" value={form.currentPassword} onChange={set("currentPassword")} />
+            </Field>
+          )}
+          <Field label="New password" error={errors.newPassword} hint="At least 8 characters. Not your date of birth or mobile number.">
+            <Input type={show ? "text" : "password"} autoComplete="new-password" value={form.newPassword} onChange={set("newPassword")} />
+          </Field>
+          <Field label="Confirm new password" error={errors.confirmPassword}>
+            <Input type={show ? "text" : "password"} autoComplete="new-password" value={form.confirmPassword} onChange={set("confirmPassword")} />
+          </Field>
+          <Switch label="Show passwords" checked={show} onChange={setShow} />
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button variant="secondary" onClick={close}>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" loading={change.isPending}>
+              {hasPassword ? "Change password" : "Set password"}
+            </Button>
+          </div>
+        </form>
+      )}
+    </Card>
   );
 }
 

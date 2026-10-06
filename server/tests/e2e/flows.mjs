@@ -16,6 +16,12 @@ function check(name, cond, extra = "") {
 }
 const key = () => crypto.randomUUID().replace(/-/g, "");
 
+/** Date of birth for registrations (required at the desk), ~6 months from today so no birthday fires. */
+function testDob() {
+  const md = new Date(Date.now() + 182 * 86_400_000).toISOString().slice(5, 10);
+  return `1990-${md === "02-29" ? "02-28" : md}`;
+}
+
 async function call(method, path, { body, token, idem, raw } = {}) {
   const headers = { "Content-Type": "application/json" };
   if (token) headers.Authorization = `Bearer ${token}`;
@@ -54,7 +60,7 @@ const badPlan = await call("POST", "/plans", { token: T, body: { name: "", price
 check("plan validation returns 422 with field errors", badPlan.status === 422 && badPlan.body.details?.fields?.name, JSON.stringify(badPlan.body));
 
 // ── Desk registration with idempotent payment
-const reg = { details: { name: "Priya Sharma", phone: "98765 43210", email: "priya@example.com", gender: "female" }, membership: { planId: PLAN, payment: { collect: "now", mode: "upi", txnRef: "UPI123" } } };
+const reg = { details: { dob: testDob(), name: "Priya Sharma", phone: "98765 43210", email: "priya@example.com", gender: "female" }, membership: { planId: PLAN, payment: { collect: "now", mode: "upi", txnRef: "UPI123" } } };
 const K1 = key();
 const r1 = await call("POST", "/admin/members", { token: T, body: reg, idem: K1 });
 check("register member with plan (201)", r1.status === 201 && r1.body.member.memberCode, JSON.stringify(r1.body));
@@ -67,15 +73,15 @@ check("same key + different body is 422", r1c.status === 422 && r1c.body.code ==
 check("missing Idempotency-Key is 400", (await call("POST", "/admin/members", { token: T, body: reg })).status === 400);
 const PRIYA = r1.body.member._id;
 
-const dup = await call("POST", "/admin/members", { token: T, body: { details: { name: "Priya S", phone: "+91 98765-43210" } }, idem: key() });
+const dup = await call("POST", "/admin/members", { token: T, body: { details: { dob: testDob(), name: "Priya S", phone: "+91 98765-43210" } }, idem: key() });
 check("duplicate phone blocked with matches", dup.status === 409 && dup.body.code === "DUPLICATE_MEMBER" && dup.body.details.matches[0].id === PRIYA, JSON.stringify(dup.body));
-const dupForced = await call("POST", "/admin/members", { token: T, body: { details: { name: "Anu Sharma", phone: "9876543210" }, force: true }, idem: key() });
+const dupForced = await call("POST", "/admin/members", { token: T, body: { details: { dob: testDob(), name: "Anu Sharma", phone: "9876543210" }, force: true }, idem: key() });
 check("duplicate phone allowed with force (family)", dupForced.status === 201, JSON.stringify(dupForced.body));
 
-const later = await call("POST", "/admin/members", { token: T, body: { details: { name: "Rahul Verma", phone: "9811122233" }, membership: { planId: PLAN, payment: { collect: "later" } } }, idem: key() });
+const later = await call("POST", "/admin/members", { token: T, body: { details: { dob: testDob(), name: "Rahul Verma", phone: "9811122233" }, membership: { planId: PLAN, payment: { collect: "later" } } }, idem: key() });
 check("register with pay-later creates dues, plan active", later.status === 201 && later.body.sale.membership.status === "active" && later.body.sale.payments.every((p) => p.status === "pending"), JSON.stringify(later.body));
 const RAHUL = later.body.member._id;
-const noPlan = await call("POST", "/admin/members", { token: T, body: { details: { name: "Neha <script>alert(1)</script>", phone: "9822233344" } }, idem: key() });
+const noPlan = await call("POST", "/admin/members", { token: T, body: { details: { dob: testDob(), name: "Neha <script>alert(1)</script>", phone: "9822233344" } }, idem: key() });
 const NEHA = noPlan.body.member._id;
 
 // ── Lists
@@ -175,7 +181,7 @@ check("member token can't create plans (403)", (await call("POST", "/plans", { t
 check("members can no longer record their own payments (404)", (await call("POST", "/payments/record", { token: memberToken, body: { type: "membership", amount: 0, mode: "cash", status: "paid" } })).status === 404);
 
 // ── Self-join is priced by the server and waits for payment
-const joiner = await call("POST", "/admin/members", { token: T, body: { details: { name: "Online Joiner", phone: "9833344455" } }, idem: key() });
+const joiner = await call("POST", "/admin/members", { token: T, body: { details: { dob: testDob(), name: "Online Joiner", phone: "9833344455" } }, idem: key() });
 const JID = joiner.body.member._id;
 const jt = jwt.sign({ memberId: JID, type: "member", role: "user" }, SECRET, { expiresIn: "1h" });
 const join = await call("POST", "/membership/join", {

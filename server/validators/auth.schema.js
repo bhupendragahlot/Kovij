@@ -31,3 +31,17 @@ export const memberSessionSchema = z.object({
   /** Answer to CHOOSE_MEMBER: one of the offered ids, or 'new' for a separate account. */
   memberId: z.union([z.literal('new'), objectId]).optional(),
 });
+
+/** POST /api/member/auth/password — mobile number, email or member ID, and the password. */
+export const memberPasswordSignInSchema = z.object({
+  login: z.string().trim().min(1, 'Enter your mobile number, email or member ID').max(120),
+  password: z.string().min(1, 'Enter your password').max(128),
+  memberId: objectId.optional(),
+});
+
+/** POST /api/member/auth/password/change — rules for the new password are in memberPasswordService. */
+export const changeMemberPasswordSchema = z.object({
+  currentPassword: z.string().max(128).optional(),
+  newPassword: z.string().min(1, 'Enter a new password').max(128, 'Use at most 128 characters.'),
+  confirmPassword: z.string().max(128),
+});

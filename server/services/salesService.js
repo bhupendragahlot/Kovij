@@ -13,6 +13,7 @@ import {
 } from './membershipService.js';
 import { createPayment } from './paymentService.js';
 import { findPossibleDuplicates, joinedAtFromDay, nextMemberCode, resolveReferral, upsertProfile } from './memberService.js';
+import { defaultPasswordFields } from './memberPasswordService.js';
 
 /** Plans that count as the member's history (a request withdrawn before it started doesn't). */
 const countsAsHistory = (m) => m.status !== 'cancelled' || hasRun(m);
@@ -222,6 +223,8 @@ export async function registerDeskMember({ details, health, membership, force, s
         memberCode,
         source,
         createdBy: staff.id,
+        // First member app password: their date of birth (see memberPasswordService).
+        ...(details.dob && (await defaultPasswordFields(details.dob))),
       },
     ],
     { session }
