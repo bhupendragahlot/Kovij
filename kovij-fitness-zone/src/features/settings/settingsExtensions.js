@@ -10,4 +10,5 @@ export const SETTINGS_SECTIONS = [
   { value: "payment-methods", label: "Payments", permission: "revenue.view", Component: lazy(() => import("../payments/PaymentSettings")) },
   { value: "reminders", label: "Reminders", permission: "reminders.manage", Component: lazy(() => import("../reminders/ReminderSettings")) },
   { value: "email", label: "Email", permission: "settings.manage", Component: lazy(() => import("./EmailSettings")) },
+  { value: "member-sign-in", label: "Member sign-in", permission: "settings.manage", Component: lazy(() => import("./MemberSignInSettings")) },
 ];

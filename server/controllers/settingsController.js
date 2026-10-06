@@ -8,7 +8,7 @@ const PUBLIC_FIELDS = [
 ];
 
 /** Settings groups whose fields are patched individually, so saving one field keeps the others. */
-const NESTED_GROUPS = ['payments', 'reminders'];
+const NESTED_GROUPS = ['payments', 'reminders', 'memberSignIn'];
 
 /** { payments: { upiId } } → { 'payments.upiId': … }; arrays and other fields are replaced whole. */
 export function toSettingsUpdate(patch) {

@@ -82,6 +82,7 @@ export const settingsSchema = z
         sendHour: z.number().int().min(6).max(21),
       })
       .partial(),
+    memberSignIn: z.object({ mobileOtp: z.boolean(), google: z.boolean() }).partial(),
   })
   .partial();
 

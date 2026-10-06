@@ -25,7 +25,7 @@ export default function MemberLogin() {
       ) : (
         <MemberAuthPanel
           title="Member sign in"
-          subtitle={expired ? "Your session ended. Sign in again to continue." : "Sign in with your mobile number, email or Google account."}
+          subtitle={expired ? "Your session ended. Sign in again to continue." : "Sign in with your mobile number, email or member ID."}
         />
       )}
     </div>

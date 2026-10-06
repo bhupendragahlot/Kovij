@@ -4,11 +4,22 @@ import { signMemberToken } from '../services/tokenService.js';
 import { nextMemberCode } from '../services/memberService.js';
 import { decideGoogleLink, decideMemberLink, identityFromClaims, identityFromGoogle } from '../services/memberIdentity.js';
 import { GoogleTokenError, googleClientId, verifyGoogleIdToken } from '../services/googleIdToken.js';
-import { getSettingsDoc } from '../models/Settings.js';
+import { getSettingsDoc, memberSignInMethods } from '../models/Settings.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { isTestOtpOn, matchesTestOtp, testOtpCode } from '../services/testOtp.js';
 import { appPasswordInfo, changeMemberPassword, memberForPassword } from '../services/memberPasswordService.js';
+
+/** The owner can turn mobile-code and Google sign-in off (Settings → Member sign-in); password stays on. */
+const METHOD_OFF = {
+  mobileOtp: 'Signing in with a mobile code is turned off. Sign in with your mobile number and password instead.',
+  google: 'Continue with Google is turned off. Sign in with your mobile number, email or member ID and password.',
+};
+
+async function assertMethodOn(method) {
+  const methods = memberSignInMethods(await getSettingsDoc());
+  if (!methods[method]) throw new AppError(METHOD_OFF[method], 403, 'SIGNIN_METHOD_OFF', { method });
+}
 
 const REFUSALS = {
   EMAIL_NOT_VERIFIED: ['Verify your email first. Open the link we sent you, then sign in again.', 403],
@@ -132,6 +143,7 @@ const GOOGLE_REFUSALS = {
  * Verifies Google's ID token for our OAuth client (GOOGLE_CLIENT_ID) and starts a member session.
  */
 export const googleIdSignIn = asyncHandler(async (req, res) => {
+  await assertMethodOn('google');
   if (!googleClientId()) throw new AppError('Google sign-in isn’t set up yet. Use your mobile number or email.', 409, 'GOOGLE_SIGNIN_OFF');
   let claims;
   try {
@@ -205,18 +217,25 @@ export const createSession = asyncHandler(async (req, res) => {
   } catch {
     throw new AppError('Your sign-in expired. Please try again.', 401, 'FIREBASE_AUTH_FAILED');
   }
-  await signIn(res, identityFromClaims(decoded), { name, memberId });
+  const identity = identityFromClaims(decoded);
+  // Firebase signs people in with Google, a phone code or an email password: honour the owner's switches.
+  if (identity.provider === 'phone') await assertMethodOn('mobileOtp');
+  if (identity.provider === 'google.com') await assertMethodOn('google');
+  await signIn(res, identity, { name, memberId });
 });
 
 /** GET /api/member/auth/config — how the app should do mobile sign-in. */
 export const authConfig = asyncHandler(async (req, res) => {
+  const methods = memberSignInMethods(await getSettingsDoc());
   const test = testOtpCode();
   res.json({
     success: true,
-    phoneSignIn: test ? 'test' : 'firebase',
-    ...(test && { codeLength: test.length }),
+    // Which sign-in options the page shows (password is always on).
+    methods,
+    phoneSignIn: !methods.mobileOtp ? 'off' : test ? 'test' : 'firebase',
+    ...(methods.mobileOtp && test && { codeLength: test.length }),
     // Public OAuth client id for the "Sign in with Google" button; null = use Firebase's Google popup.
-    googleClientId: googleClientId(),
+    googleClientId: methods.google ? googleClientId() : null,
   });
 });
 
@@ -224,12 +243,14 @@ const testModeOff = () => new AppError('Mobile sign-in by SMS is handled by the 
 
 /** POST /api/member/auth/otp/request — test mode: nothing is sent; the app asks for the test code. */
 export const requestTestOtp = asyncHandler(async (req, res) => {
+  await assertMethodOn('mobileOtp');
   if (!isTestOtpOn()) throw testModeOff();
   res.json({ success: true, testMode: true, phone: req.validated.body.phone, message: 'Test mode: no SMS is sent. Enter the test code.' });
 });
 
 /** POST /api/member/auth/otp/verify — test mode: the fixed code signs in that phone number. */
 export const verifyTestOtp = asyncHandler(async (req, res) => {
+  await assertMethodOn('mobileOtp');
   if (!isTestOtpOn()) throw testModeOff();
   const { phone, code, name, memberId } = req.validated.body;
   if (!matchesTestOtp(code)) throw new AppError('That code is wrong. Check it and try again.', 401, 'OTP_WRONG', { fields: { code: 'Wrong code' } });

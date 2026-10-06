@@ -82,6 +82,17 @@ const SettingSchema = new mongoose.Schema(
       /** Hour of day (gym time) when reminders go out. */
       sendHour: { type: Number, default: 9, min: 6, max: 21 },
     },
+
+    /**
+     * How members may sign in to the member app (owner's choice). Mobile number, email or member
+     * ID with a password is always on; these two can be switched off. Missing = on.
+     */
+    memberSignIn: {
+      /** A code sent to their mobile number (SMS, or the test code). */
+      mobileOtp: { type: Boolean, default: true },
+      /** "Continue with Google". */
+      google: { type: Boolean, default: true },
+    },
   },
   { timestamps: true }
 );
@@ -96,3 +107,10 @@ export async function getSettingsDoc() {
 }
 
 export default Settings;
+
+/** Which member sign-in methods are on. Password sign-in can't be turned off; missing settings = on. */
+export const memberSignInMethods = (settings) => ({
+  password: true,
+  mobileOtp: settings?.memberSignIn?.mobileOtp !== false,
+  google: settings?.memberSignIn?.google !== false,
+});

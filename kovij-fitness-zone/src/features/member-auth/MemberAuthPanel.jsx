@@ -22,7 +22,10 @@ export default function MemberAuthPanel({ title, subtitle }) {
   const { exchangeSession, otpSignIn, googleIdSignIn, passwordSignIn } = useMemberAuth();
   // Our own Google OAuth client (server GOOGLE_CLIENT_ID); without it, Firebase's Google popup.
   const [googleClientId, setGoogleClientId] = useState(null);
-  const [view, setView] = useState("phone");
+  // Password sign-in (mobile number, email or member ID) is the default and always on; the owner
+  // can turn mobile-code and Google sign-in off (Settings → Member sign-in). Hidden until known.
+  const [methods, setMethods] = useState({ mobileOtp: false, google: false });
+  const [view, setView] = useState("password");
   // "test" when the server accepts a fixed code instead of SMS (DEFAULT_OTP); else Firebase SMS.
   const [phoneMode, setPhoneMode] = useState("firebase");
   const [codeLength, setCodeLength] = useState(6);
@@ -52,6 +55,8 @@ export default function MemberAuthPanel({ title, subtitle }) {
       .get(`${API_BASE}/api/member/auth/config`)
       .then(({ data }) => {
         if (cancelled) return;
+        // (A server from before the switches existed sends no `methods`: everything was on then.)
+        setMethods(data?.methods || { mobileOtp: true, google: true });
         if (data?.googleClientId) setGoogleClientId(data.googleClientId);
         if (data?.phoneSignIn !== "test") return;
         setPhoneMode("test");
@@ -62,6 +67,11 @@ export default function MemberAuthPanel({ title, subtitle }) {
       cancelled = true;
     };
   }, []);
+
+  // Mobile sign-in was switched off: leave its screens.
+  useEffect(() => {
+    if (!methods.mobileOtp && (view === "phone" || view === "otp")) setView("password");
+  }, [methods.mobileOtp, view]);
 
   useEffect(() => {
     if (cooldown <= 0) return undefined;
@@ -123,7 +133,7 @@ export default function MemberAuthPanel({ title, subtitle }) {
     chosenMember.current = undefined;
     confirmation.current = null;
     if (wasFirebase) await fb.signOutFirebase();
-    go("phone");
+    go("password");
   }
 
   const google = () => run("google", async () => finish(await fb.signInWithGoogle()));
@@ -253,13 +263,13 @@ export default function MemberAuthPanel({ title, subtitle }) {
       <h1 className="text-center font-['Lexend'] text-2xl font-black uppercase text-white">{title}</h1>
       {subtitle && <p className="mt-2 text-center text-sm text-neutral-400">{subtitle}</p>}
 
-      {showTabs && (
+      {showTabs && methods.mobileOtp && (
         <div role="tablist" aria-label="Sign-in method" className="mt-6 grid grid-cols-2 gap-1 rounded-xl bg-neutral-900 p-1">
-          <TabButton active={tab === "phone"} onClick={() => go("phone")} icon={Smartphone}>
-            Mobile
-          </TabButton>
           <TabButton active={tab === "password"} onClick={() => go("password")} icon={KeyRound}>
             Password
+          </TabButton>
+          <TabButton active={tab === "phone"} onClick={() => go("phone")} icon={Smartphone}>
+            Mobile code
           </TabButton>
         </div>
       )}
@@ -392,8 +402,9 @@ export default function MemberAuthPanel({ title, subtitle }) {
           <form onSubmit={sendReset} className="space-y-4" noValidate>
             <BackLink onClick={() => go("password")}>Back to sign in</BackLink>
             <p className="text-sm text-neutral-300">
-              Sign in with a code sent to your mobile (the Mobile tab), then set a new password under Profile. Or ask the gym desk to reset it to your date
-              of birth.
+              {methods.mobileOtp
+                ? "Sign in with a code sent to your mobile (the Mobile code tab), then set a new password under Profile. Or ask the gym desk to reset it to your date of birth."
+                : "Ask the gym desk to reset it to your date of birth, then sign in and change it under Profile."}
             </p>
             <p className="text-sm text-neutral-300">Created your account here with an email? We can email you a link to set a new password.</p>
             <EmailField value={email} onChange={setEmail} />
@@ -475,7 +486,7 @@ export default function MemberAuthPanel({ title, subtitle }) {
           </div>
         )}
 
-        {showTabs && (
+        {showTabs && methods.google && (
           <>
             <div className="flex items-center gap-3 text-xs uppercase tracking-wider text-neutral-500" aria-hidden>
               <span className="h-px flex-1 bg-neutral-700" />
