@@ -17,30 +17,35 @@ export default defineConfig({
     VitePWA({
       registerType: "prompt",
       injectRegister: false,
-      // public/manifest.webmanifest is the old hand-written file; this generated one replaces it.
+      // Two installable apps share this site and one service worker:
+      //   app.webmanifest (generated here)  the member app, linked from the website and /member
+      //   public/desk.webmanifest           the staff front desk, linked under /admin
+      // src/app/appIdentity.js points <link rel="manifest"> at the right one for each page.
+      // (public/manifest.webmanifest is an old hand-written file; nothing links it.)
       manifestFilename: "app.webmanifest",
-      includeAssets: ["favicon.ico", "icons/apple-touch-icon.png", "icons/icon.svg"],
+      includeAssets: ["favicon.ico", "icons/apple-touch-icon.png", "icons/icon.svg", "desk.webmanifest"],
       manifest: {
-        id: "/admin",
-        name: "Kovij Front Desk",
-        short_name: "Kovij Desk",
-        description: "Check-ins, members, dues and renewals for Kovij Fitness Zone staff.",
-        start_url: "/admin",
+        id: "/member/",
+        name: "Kovij Fitness Zone",
+        short_name: "Kovij",
+        description: "Your Kovij Fitness Zone membership: check-in pass, workouts, diet, payments and gym updates.",
+        start_url: "/member/home",
         scope: "/",
         display: "standalone",
         orientation: "any",
-        background_color: "#eceef1",
+        background_color: "#131417",
         theme_color: "#131417",
-        categories: ["business", "productivity", "health"],
+        lang: "en-IN",
+        categories: ["health", "fitness", "lifestyle"],
         icons: [
           { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
           { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
           { src: "/icons/icon-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
         ],
         shortcuts: [
-          { name: "Check in a member", short_name: "Check-in", url: "/admin/check-in", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
-          { name: "Register a member", short_name: "New member", url: "/admin/members/new", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
-          { name: "Dues to collect", short_name: "Dues", url: "/admin/payments?status=pending", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
+          { name: "Check-in pass", short_name: "Pass", url: "/member/pass", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
+          { name: "Workouts", short_name: "Workouts", url: "/member/workouts", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
+          { name: "Payments", short_name: "Payments", url: "/member/payments", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
         ],
       },
       workbox: {
@@ -66,6 +71,24 @@ export default defineConfig({
               cacheName: "kv-api",
               networkTimeoutSeconds: 6,
               expiration: { maxEntries: 150, maxAgeSeconds: 24 * 60 * 60 },
+              cacheableResponse: { statuses: [200] },
+            },
+          },
+          {
+            // Member app screens: fresh when online, the last copy when offline (an installed app
+            // opens at the gym with no signal). Only this member's reads; cleared on sign-out
+            // (MemberAuthContext) so the next person on a shared phone never sees them.
+            urlPattern: ({ url, request }) =>
+              request.method === "GET" &&
+              url.origin === self.location.origin &&
+              /^\/api\/(member\/(home|membership(\/(card|history|plans))?|attendance\/(streak|month|history)|workouts(\/logs)?|exercises\/(schedule|history)|diet|progress|notifications|announcements|trainer|payments(\/dues)?|support|auth\/(me|profile))|settings)$/.test(
+                url.pathname
+              ),
+            handler: "NetworkFirst",
+            options: {
+              cacheName: "kv-member-api",
+              networkTimeoutSeconds: 6,
+              expiration: { maxEntries: 120, maxAgeSeconds: 7 * 24 * 60 * 60 },
               cacheableResponse: { statuses: [200] },
             },
           },

@@ -122,6 +122,13 @@ Each module owns its **backend** (models, services, controllers, validators, rou
 - **Service worker push:** `kovij-fitness-zone/public/push-handler.js` is imported into the service worker (owned by the engagement module).
 - **New settings fields:** `logoUrl`, `openingHours[{ day, closed, slots[{open, close}] }]`, `holidays[{ date, name }]`, `payments { upiId, payeeName, onlineEnabled, acceptCash, acceptUpi, acceptCard, allowPartial }`, `reminders { enabled, expiryDaysBefore[], onExpiryDay, afterExpiryDays[], paymentDue, paymentDueEveryDays, birthday, sendHour }`.
 
+- **Installable apps (PWA):**
+  - One site, one service worker, two apps:
+    - **Kovij Fitness Zone** for members and website visitors (`app.webmanifest`, generated in `vite.config.js`; opens `/member/home`).
+    - **Kovij Front Desk** for staff (`public/desk.webmanifest`, scope `/admin`).
+  - `src/app/appIdentity.js` points `<link rel="manifest">` and the iPhone home-screen title at the right app on start-up and on every route change.
+  - Install buttons use `src/app/install.js`, which captures `beforeinstallprompt`. iPhones get Add to Home Screen steps (`shared/ui/InstallApp.jsx`). They appear on the member Home and Profile and in the staff account menu.
+  - Offline: member reads are cached NetworkFirst (`kv-member-api`, cleared on member sign-out) next to the staff `kv-api` cache. Queries fail at once with "You're offline" instead of waiting on a skeleton.
 - **Member app passwords:**
   - Desk registration requires a date of birth, which becomes the member's first password as DDMMYYYY (`services/memberPasswordService.js`).
   - Members sign in at `POST /api/member/auth/password` with their mobile number, email or member ID. They change the password at `/password/change` (current, new, confirm), which signs out their other devices.

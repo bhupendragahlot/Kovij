@@ -7,7 +7,7 @@ import { MEMBER_NAV } from "../nav";
 import { useChangePassword, useGym, useMyProfile, useNotificationPrefs, useUpdatePrefs, useUpdateProfile } from "../queries";
 import { DAY_NAMES, WEEK_ORDER, formatClock, normaliseWeek } from "../../settings/hours";
 import { useThemeControls } from "../../../app/theme";
-import { Avatar, Button, Card, CardHeader, Dialog, ErrorState, Field, FormError, Input, PageHeader, SegmentedControl, Select, SkeletonList, Switch, useConfirm, useToast } from "../../../shared/ui";
+import { Avatar, Button, Card, CardHeader, Dialog, ErrorState, Field, FormError, Input, InstallAppCard, PageHeader, SegmentedControl, Select, SkeletonList, Switch, useConfirm, useToast } from "../../../shared/ui";
 import { formatDate, formatPhone, gymDayKey, phoneHref } from "../../../shared/lib/format";
 import { PASS_STORAGE_KEY } from "./PassPage";
 
@@ -70,6 +70,7 @@ export default function ProfilePage() {
           </Card>
         )}
         {profile.data && <PasswordCard appPassword={profile.data.appPassword} />}
+        <InstallAppCard appName="Kovij" description="Your pass, workouts and payments on your home screen, even without signal." />
         <NotificationSettings />
         <Appearance />
         <GymDetails />

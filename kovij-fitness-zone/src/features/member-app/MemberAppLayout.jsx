@@ -92,7 +92,7 @@ export default function MemberAppLayout() {
       </header>
 
       <div className="lg:pl-[248px]">
-        <OfflineBanner />
+        <OfflineBanner>Showing what you saw last. Your check-in pass still works.</OfflineBanner>
         <main className="mx-auto w-full max-w-2xl px-4 pb-32 pt-5 lg:max-w-3xl lg:px-8 lg:pb-12 lg:pt-8">
           <Outlet />
         </main>

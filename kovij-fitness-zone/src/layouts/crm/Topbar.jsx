@@ -1,8 +1,9 @@
 import { useEffect } from "react";
 import { useLocation, useMatches, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { Check, LogOut, Monitor, Moon, Search, Sun, UserCog, UserPlus } from "lucide-react";
-import { ButtonLink, Menu } from "../../shared/ui";
+import { Check, Download, LogOut, Monitor, Moon, Search, Sun, UserCog, UserPlus } from "lucide-react";
+import { ButtonLink, IosInstallDialog, Menu } from "../../shared/ui";
+import { useInstallAction } from "../../shared/hooks/useInstallAction";
 import { cn } from "../../shared/lib/cn";
 import { initials } from "../../shared/lib/format";
 import { commandPaletteSet } from "../../app/uiSlice";
@@ -28,36 +29,42 @@ function AccountMenu() {
   const logout = useLogout();
   const navigate = useNavigate();
   const { preference, setTheme } = useThemeControls();
+  // "Install desk app" while it isn't installed on this device (iPhone: Add to Home Screen steps).
+  const install = useInstallAction();
   const themeItem = (value, label, icon) => ({
     label,
     icon: preference === value ? Check : icon,
     onSelect: () => setTheme(value),
   });
   return (
-    <Menu
-      label="Account"
-      trigger={(props) => (
-        <button
-          {...props}
-          type="button"
-          aria-label="Account and theme"
-          className="grid size-10 place-items-center rounded-full bg-ink text-[13px] font-bold text-canvas hover:opacity-90"
-        >
-          {initials(user?.name || user?.username || "")}
-        </button>
-      )}
-      items={[
-        { type: "heading", label: user?.name || user?.username || "Signed in", hint: ROLE_LABEL[user?.role] },
-        { type: "separator" },
-        { label: "My account", icon: UserCog, onSelect: () => navigate("/admin/settings?tab=account") },
-        { type: "separator" },
-        themeItem("light", "Light theme", Sun),
-        themeItem("dark", "Dark theme", Moon),
-        themeItem("system", "Match device", Monitor),
-        { type: "separator" },
-        { label: "Sign out", icon: LogOut, onSelect: logout, tone: "danger" },
-      ]}
-    />
+    <>
+      <Menu
+        label="Account"
+        trigger={(props) => (
+          <button
+            {...props}
+            type="button"
+            aria-label="Account and theme"
+            className="grid size-10 place-items-center rounded-full bg-ink text-[13px] font-bold text-canvas hover:opacity-90"
+          >
+            {initials(user?.name || user?.username || "")}
+          </button>
+        )}
+        items={[
+          { type: "heading", label: user?.name || user?.username || "Signed in", hint: ROLE_LABEL[user?.role] },
+          { type: "separator" },
+          { label: "My account", icon: UserCog, onSelect: () => navigate("/admin/settings?tab=account") },
+          install && { label: "Install desk app", icon: Download, onSelect: install.install },
+          { type: "separator" },
+          themeItem("light", "Light theme", Sun),
+          themeItem("dark", "Dark theme", Moon),
+          themeItem("system", "Match device", Monitor),
+          { type: "separator" },
+          { label: "Sign out", icon: LogOut, onSelect: logout, tone: "danger" },
+        ].filter(Boolean)}
+      />
+      {install && <IosInstallDialog open={install.stepsOpen} onClose={install.closeSteps} appName="Kovij Desk" />}
+    </>
   );
 }
 

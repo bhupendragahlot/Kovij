@@ -7,6 +7,7 @@ import { memberRoutes } from "./features/member-app/routes";
 import { MemberAuthProvider } from "./context/MemberAuthContext";
 import { RequireStaff } from "./features/auth/RequireStaff";
 import { ConfirmProvider } from "./shared/ui/ConfirmProvider";
+import { applyAppIdentity } from "./app/appIdentity";
 
 // The staff app is loaded only when someone opens /admin, so the public site stays light.
 const CrmLayout = lazy(() => import("./layouts/crm/CrmLayout"));
@@ -123,6 +124,9 @@ const router = createBrowserRouter([
     ],
   },
 ]);
+
+// Each navigation keeps <link rel="manifest"> on the right app (member or front desk).
+router.subscribe((state) => applyAppIdentity(state.location.pathname));
 
 export default function App() {
   return (

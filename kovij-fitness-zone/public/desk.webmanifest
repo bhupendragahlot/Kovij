@@ -1,0 +1,24 @@
+{
+  "id": "/admin",
+  "name": "Kovij Front Desk",
+  "short_name": "Kovij Desk",
+  "description": "Check-ins, members, dues and renewals for Kovij Fitness Zone staff.",
+  "start_url": "/admin",
+  "scope": "/admin",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#131417",
+  "theme_color": "#131417",
+  "lang": "en-IN",
+  "categories": ["business", "productivity", "health"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Check in a member", "short_name": "Check-in", "url": "/admin/check-in", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Register a member", "short_name": "New member", "url": "/admin/members/new", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Dues to collect", "short_name": "Dues", "url": "/admin/payments?status=pending", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}

@@ -7,8 +7,10 @@ export const queryClient = new QueryClient({
     queries: {
       staleTime: 30_000,
       gcTime: 10 * 60_000,
-      // 4xx won't fix itself; retry only network and server failures.
-      retry: (count, err) => count < 2 && !isClientError(err),
+      // 4xx won't fix itself; retry only network and server failures. Offline, fail at once
+      // (the screen says "You're offline") instead of pausing on a skeleton until the signal is
+      // back; refetchOnReconnect loads it again then.
+      retry: (count, err) => count < 2 && !isClientError(err) && err?.code !== "OFFLINE",
       refetchOnWindowFocus: true,
       // Try the network (the service worker may answer from cache) even when offline.
       networkMode: "offlineFirst",

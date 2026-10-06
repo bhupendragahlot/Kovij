@@ -15,6 +15,7 @@ export { DataTable } from "./DataTable";
 export { PageHeader, SearchInput, FilterChips, Tabs, TabPanel, Pagination } from "./navigation";
 export { KpiTile, Meter } from "./KpiTile";
 export { OfflineBanner } from "./OfflineBanner";
+export { InstallAppCard, IosInstallDialog } from "./InstallApp";
 export { InlineAlert, FormError } from "./InlineAlert";
 export { TagInput } from "./TagInput";
 export { Toaster } from "./toast/Toaster";

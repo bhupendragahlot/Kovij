@@ -1,10 +1,11 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronRight, Clock, Dumbbell, Flame, ListChecks, Footprints, LifeBuoy, Megaphone, MessageCircle, Phone, RefreshCcw, Scale, Wallet } from "lucide-react";
 import { useMemberAuth } from "../../../context/MemberAuthContext";
 import { MembershipCard } from "../MembershipCard";
 import { useAnnouncements, useExerciseSchedule, useGym, useHome, useMyMembership, useMyTrainer, useWorkout } from "../queries";
 import { openState } from "../../settings/hours";
-import { Avatar, Card, CardHeader, ErrorState, Skeleton } from "../../../shared/ui";
+import { Avatar, Card, CardHeader, ErrorState, InstallAppCard, Skeleton } from "../../../shared/ui";
 import { formatINR, formatNumber, formatRelativeDay, formatRelativeTime, greeting, phoneHref, pluralize } from "../../../shared/lib/format";
 import { cn } from "../../../shared/lib/cn";
 
@@ -33,6 +34,7 @@ export default function HomePage() {
       )}
 
       <QuickActions standing={standing.data} />
+      <InstallPrompt />
       {home.isPending ? <Skeleton className="h-44 rounded-card" /> : home.data && <Stats home={home.data} dues={standing.data?.dues} />}
       {home.data && <ThisWeek week={home.data.visits.week} />}
       <GymNow crowd={home.data?.crowd} />
@@ -216,6 +218,31 @@ function GymNow({ crowd }) {
       )}
     </Card>
   );
+}
+
+const INSTALL_DISMISSED_KEY = "kv.installDismissedAt";
+const INSTALL_SNOOZE_DAYS = 30;
+
+/** "Install the app" until it's installed or dismissed (it comes back after a month; Profile always has it). */
+function InstallPrompt() {
+  const [hidden, setHidden] = useState(() => {
+    try {
+      const at = Number(localStorage.getItem(INSTALL_DISMISSED_KEY));
+      return Boolean(at) && Date.now() - at < INSTALL_SNOOZE_DAYS * 86_400_000;
+    } catch {
+      return false;
+    }
+  });
+  if (hidden) return null;
+  const dismiss = () => {
+    try {
+      localStorage.setItem(INSTALL_DISMISSED_KEY, String(Date.now()));
+    } catch {
+      /* storage blocked: hide for now only */
+    }
+    setHidden(true);
+  };
+  return <InstallAppCard appName="Kovij" description="Open your check-in pass in one tap, get workout and payment alerts, and use it without signal at the gym." onDismiss={dismiss} />;
 }
 
 /** Exercises the trainer scheduled for today (and any still open from earlier this week). */

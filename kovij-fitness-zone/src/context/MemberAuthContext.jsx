@@ -33,6 +33,8 @@ function clearSession() {
   } catch {
     /* ignore */
   }
+  // The service worker's offline copies of this member's screens (vite.config.js, kv-member-api).
+  if (typeof caches !== "undefined") caches.delete("kv-member-api").catch(() => {});
 }
 
 export function MemberAuthProvider({ children }) {
