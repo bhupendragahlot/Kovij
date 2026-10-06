@@ -27,3 +27,6 @@ export const apiLimiter = limiter(60 * 1000, 300, 'Too many requests. Slow down 
 
 /** Bulk email / campaign sends */
 export const campaignLimiter = limiter(60 * 1000, 10, 'Too many campaign requests. Wait a minute.');
+
+/** ExerciseDB browsing: keeps one device from using up the gym's shared ExerciseDB quota. */
+export const exerciseDbLimiter = limiter(60 * 1000, 60, 'Too many exercise searches. Wait a minute and try again.');

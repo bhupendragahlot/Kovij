@@ -122,6 +122,21 @@ Each module owns its **backend** (models, services, controllers, validators, rou
 - **Service worker push:** `kovij-fitness-zone/public/push-handler.js` is imported into the service worker (owned by the engagement module).
 - **New settings fields:** `logoUrl`, `openingHours[{ day, closed, slots[{open, close}] }]`, `holidays[{ date, name }]`, `payments { upiId, payeeName, onlineEnabled, acceptCash, acceptUpi, acceptCard, allowPartial }`, `reminders { enabled, expiryDaysBefore[], onExpiryDay, afterExpiryDays[], paymentDue, paymentDueEveryDays, birthday, sendHour }`.
 
+- **ExerciseDB (built):** trainers search ExerciseDB and schedule exercises for a member on a day; members tick them off.
+  - Client: `services/training/exerciseDb.js`. Only the server calls ExerciseDB. It uses the free host `https://oss.exercisedb.dev` with no key, or the paid RapidAPI host when `EXERCISEDB_RAPIDAPI_KEY` is set.
+  - Endpoints used: `GET /api/v1/exercises` (`name`, `bodyParts`, `targetMuscles`, `equipments`, `exerciseTypes`, `limit` ≤ 25, cursor `after`), `GET /api/v1/exercises/{id}`, and the lists `/bodyparts`, `/muscles`, `/equipments`, `/exercisetypes` (the free host has no exercise types).
+  - The free host answers 429 after about ten quick calls. The client stops calling for the `retry_after` period and serves cached answers meanwhile; users see "busy, try again in N seconds" (503 `EXERCISEDB_BUSY`, `expose: true`).
+  - Cache: in memory for `EXERCISEDB_CACHE_TTL_SECONDS` (default 6 h; `0` = off), never past Monday 00:00 UTC, when ExerciseDB rotates media links. Only the exercise id and a name/muscle/equipment snapshot are stored; GIFs are always fetched live.
+  - Data: `models/ExerciseAssignment.js` (one exercise, one member, one gym day; `assigned` / `completed` / `cancelled`, never deleted). Rules live in `services/training/exerciseAssignmentService.js`: trainers change only their own members' exercises; members tick off up to 7 days late, and not before the day.
+  - API:
+    - `/api/admin/exercisedb/*` (search, `workouts.manage`)
+    - `/api/admin/exercise-assignments` (overview, member schedule and history, assign, edit, cancel, complete, reopen)
+    - `/api/member/exercises` (`library/*`, `schedule`, `history`, `:id/complete`, `:id/reopen`)
+  - UI:
+    - Staff: Exercise library → ExerciseDB tab, `/admin/exercise-assignments`, and the member profile Workouts tab.
+    - Member app: Workouts → Schedule / My plan / Explore, plus a home card.
+  - The e2e suite uses a local ExerciseDB stand-in (`tests/e2e/exerciseDbStub.mjs`), never the real API.
+
 ## 6. Testing
 
 - Unit tests: `server/tests/<module>.test.js` with `node:test`. Run all with `npm test` (from the repo root).

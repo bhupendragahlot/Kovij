@@ -32,6 +32,7 @@ const ExpensesPage = lazy(() => import("./features/expenses/ExpensesPage"));
 const WorkoutsPage = lazy(() => import("./features/workouts/WorkoutsPage"));
 const WorkoutPlanPage = lazy(() => import("./features/workouts/WorkoutPlanPage"));
 const ExerciseLibraryPage = lazy(() => import("./features/workouts/ExerciseLibraryPage"));
+const AssignedExercisesPage = lazy(() => import("./features/workouts/exercisedb/AssignedExercisesPage"));
 const DietPlansPage = lazy(() => import("./features/diet/DietPlansPage"));
 const DietPlanPage = lazy(() => import("./features/diet/DietPlanPage"));
 const AnnouncementsPage = lazy(() => import("./features/announcements/AnnouncementsPage"));
@@ -101,6 +102,7 @@ const router = createBrowserRouter([
       { path: "workouts", element: <WorkoutsPage />, handle: { title: "Workout plans" } },
       { path: "workouts/:id", element: <WorkoutPlanPage />, handle: { title: "Workout plan" } },
       { path: "exercises", element: <ExerciseLibraryPage />, handle: { title: "Exercise library" } },
+      { path: "exercise-assignments", element: <AssignedExercisesPage />, handle: { title: "Assigned exercises" } },
       { path: "diets", element: <DietPlansPage />, handle: { title: "Diet plans" } },
       { path: "diets/:id", element: <DietPlanPage />, handle: { title: "Diet plan" } },
       { path: "announcements", element: <AnnouncementsPage />, handle: { title: "Announcements" } },

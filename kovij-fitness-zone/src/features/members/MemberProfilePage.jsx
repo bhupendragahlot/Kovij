@@ -154,7 +154,8 @@ export default function MemberProfilePage() {
   const extraActions = PROFILE_ACTIONS.filter((a) => can(role, a.permission));
   const confirm = useConfirm();
   const toast = useToast();
-  const [tab, setTab] = useState("overview");
+  // ?tab=workouts (links from other pages) opens a module tab directly.
+  const [tab, setTab] = useState(() => (extraTabs.some((t) => t.value === params.get("tab")) ? params.get("tab") : "overview"));
   const [collectTarget, setCollectTarget] = useState(null);
 
   const action = params.get("action");

@@ -39,7 +39,8 @@ export function errorHandler(rawErr, req, res, next) {
   const err = normalize(rawErr);
   const { statusCode } = err;
 
-  if (statusCode >= 500) {
+  // `expose`: a 5xx whose message was written for users (an outside service is down or busy).
+  if (statusCode >= 500 && !err.expose) {
     logger.error(err.stack || err.message, { path: req.path, method: req.method });
   } else {
     logger.warn(err.message, { path: req.path, code: err.code });
@@ -48,7 +49,7 @@ export function errorHandler(rawErr, req, res, next) {
   res.status(statusCode).json({
     success: false,
     // Never leak internal error text for 5xx outside development.
-    message: statusCode >= 500 && process.env.NODE_ENV !== 'development' ? 'Something went wrong on our side. Try again.' : err.message,
+    message: statusCode >= 500 && !err.expose && process.env.NODE_ENV !== 'development' ? 'Something went wrong on our side. Try again.' : err.message,
     code: err.code,
     ...(err.details && { details: err.details }),
     ...(process.env.NODE_ENV === 'development' && statusCode >= 500 && { stack: err.stack }),

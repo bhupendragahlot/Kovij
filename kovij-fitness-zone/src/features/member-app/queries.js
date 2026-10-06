@@ -2,8 +2,9 @@
  * Member app data (TanStack Query). Keys start with "me" so signing out clears them in one go.
  * Every endpoint is a member endpoint: /api/member/… (own data only, enforced by the server).
  */
-import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { mapi } from "./http";
+import { exerciseDbRetry } from "../exercisedb/format";
 
 export const meKeys = {
   all: ["me"],
@@ -20,6 +21,12 @@ export const meKeys = {
   payments: (page) => ["me", "payments", page],
   workout: ["me", "workout"],
   workoutLogs: ["me", "workout", "logs"],
+  exercises: ["me", "exercises"],
+  exerciseSchedule: ["me", "exercises", "schedule"],
+  exerciseHistory: ["me", "exercises", "history"],
+  libraryFilters: ["me", "library", "filters"],
+  librarySearch: (params) => ["me", "library", "search", params],
+  libraryExercise: (id) => ["me", "library", "exercise", id],
   trainer: ["me", "trainer"],
   diet: ["me", "diet"],
   progress: ["me", "progress"],
@@ -101,3 +108,71 @@ export const useReplyTicket = (id) =>
 export const useResolveTicket = (id) => useMeMutation(() => mapi.post(`/member/support/${id}/resolve`, {}), [meKeys.support], (data, _v, qc) => qc.setQueryData(meKeys.ticket(id), data));
 
 export const useUpdateProfile = () => useMeMutation((patch) => mapi.patch("/member/auth/profile", patch), [meKeys.profile, meKeys.card]);
+
+// ── Exercises: trainer-scheduled ones, and browsing ExerciseDB ─────────────
+
+export const useExerciseSchedule = () => useQuery(q(meKeys.exerciseSchedule, "/member/exercises/schedule"));
+
+export const useExerciseHistory = () =>
+  useInfiniteQuery({
+    queryKey: meKeys.exerciseHistory,
+    queryFn: ({ pageParam }) => mapi.get("/member/exercises/history", { status: "done", page: pageParam, limit: 20 }),
+    initialPageParam: 1,
+    getNextPageParam: (last) => (last.page * last.limit < last.total ? last.page + 1 : undefined),
+  });
+
+/** Tick off (or undo). Shows straight away and rolls back if the server says no. */
+export function useSetMyExerciseDone() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, done, memberNote }) => mapi.post(`/member/exercises/${id}/${done ? "complete" : "reopen"}`, done ? { memberNote } : {}),
+    onMutate: async ({ id, done }) => {
+      await queryClient.cancelQueries({ queryKey: meKeys.exerciseSchedule });
+      const before = queryClient.getQueryData(meKeys.exerciseSchedule);
+      if (before) {
+        const target = [...before.today, ...before.overdue].find((a) => a._id === id);
+        const flips = target && (target.status === "completed") !== done;
+        const flip = (list) => list.map((a) => (a._id === id ? { ...a, status: done ? "completed" : "assigned", state: done ? "done" : a.dayKey < before.todayKey ? "missed" : "today" } : a));
+        const weekStep = flips && target.dayKey >= before.weekStartKey ? (done ? 1 : -1) : 0;
+        queryClient.setQueryData(meKeys.exerciseSchedule, {
+          ...before,
+          today: flip(before.today),
+          overdue: flip(before.overdue),
+          counts: { ...before.counts, weekDone: before.counts.weekDone + weekStep },
+        });
+      }
+      return { before };
+    },
+    onError: (_e, _v, ctx) => ctx?.before && queryClient.setQueryData(meKeys.exerciseSchedule, ctx.before),
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: meKeys.exercises });
+      queryClient.invalidateQueries({ queryKey: meKeys.home });
+    },
+  });
+}
+
+export const useLibraryFilters = () => useQuery({ ...q(meKeys.libraryFilters, "/member/exercises/library/filters", { query: { staleTime: 60 * 60_000 } }), retry: exerciseDbRetry });
+
+export const useLibrarySearch = (params) =>
+  useInfiniteQuery({
+    queryKey: meKeys.librarySearch(params),
+    queryFn: ({ pageParam }) => mapi.get("/member/exercises/library", { ...params, after: pageParam || undefined }),
+    initialPageParam: null,
+    getNextPageParam: (last) => last.nextCursor || undefined,
+    placeholderData: keepPreviousData,
+    staleTime: 10 * 60_000,
+    retry: exerciseDbRetry,
+  });
+
+export const useLibraryExercise = (id) =>
+  useQuery({
+    queryKey: meKeys.libraryExercise(id),
+    queryFn: () => mapi.get(`/member/exercises/library/${encodeURIComponent(id)}`),
+    select: (d) => d.exercise,
+    enabled: Boolean(id),
+    staleTime: 30 * 60_000,
+    retry: exerciseDbRetry,
+  });
+
+/** For ExerciseDbBrowser. */
+export const memberExerciseDb = { useFilters: useLibraryFilters, useSearch: useLibrarySearch };

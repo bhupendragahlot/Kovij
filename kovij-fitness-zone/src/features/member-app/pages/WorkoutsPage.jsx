@@ -1,44 +1,82 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { CheckCircle2, ChevronDown, Dumbbell, PlayCircle } from "lucide-react";
-import { useLogWorkout, useWorkout, useWorkoutLogs } from "../queries";
+import { useExerciseSchedule, useLogWorkout, useWorkout, useWorkoutLogs } from "../queries";
+import { ExploreTab } from "./workouts/ExploreTab";
+import { ScheduleTab } from "./workouts/ScheduleTab";
 import { useIdempotencyKey } from "../../../shared/hooks/useIdempotencyKey";
-import { Badge, Button, Card, CardHeader, EmptyState, ErrorState, FormError, Input, PageHeader, SkeletonList, Tabs, useToast } from "../../../shared/ui";
+import { Badge, Button, Card, CardHeader, EmptyState, ErrorState, FormError, Input, PageHeader, SkeletonList, TabPanel, Tabs, useToast } from "../../../shared/ui";
 import { formatDate, pluralize } from "../../../shared/lib/format";
 import { cn } from "../../../shared/lib/cn";
 
 const GOAL = { muscle_gain: "Build muscle", fat_loss: "Lose fat", strength: "Get stronger", general_fitness: "General fitness", endurance: "Endurance" };
 const firstNumber = (reps) => Number(String(reps || "").match(/\d+/)?.[0] || 0);
 
+const TABS = [
+  { value: "schedule", label: "Schedule" },
+  { value: "plan", label: "My plan" },
+  { value: "explore", label: "Explore" },
+];
+
+/**
+ * Workouts: exercises the trainer scheduled (Schedule), the rotating workout plan (My plan), and
+ * the ExerciseDB catalogue (Explore). Opens on Schedule when anything is scheduled, else on the plan.
+ */
 export default function WorkoutsPage() {
+  const [params, setParams] = useSearchParams();
   const w = useWorkout();
+  const schedule = useExerciseSchedule();
+  const asked = params.get("tab");
+  const s = schedule.data;
+  const scheduled = Boolean(s && (s.today.length || s.overdue.length || s.thisWeek.length || s.upcoming.length));
+  const tab = TABS.some((t) => t.value === asked) ? asked : w.isPending || schedule.isPending ? null : scheduled || !w.data?.plan ? "schedule" : "plan";
+
+  return (
+    <>
+      <PageHeader title="Workouts" />
+      {!tab ? (
+        <Card>
+          <SkeletonList rows={5} />
+        </Card>
+      ) : (
+        <>
+          <Tabs label="Workouts" value={tab} onChange={(t) => setParams({ tab: t }, { replace: true })} tabs={TABS} className="mb-4" />
+          <TabPanel value={tab}>{tab === "schedule" ? <ScheduleTab /> : tab === "plan" ? <PlanTab w={w} /> : <ExploreTab />}</TabPanel>
+        </>
+      )}
+    </>
+  );
+}
+
+/** The rotating workout plan the trainer gave (unchanged from before the tabs). */
+function PlanTab({ w }) {
   const plan = w.data?.plan;
   const today = w.data?.today;
   const [dayIndex, setDayIndex] = useState(null);
   const shown = dayIndex ?? today?.dayIndex ?? 0;
 
-  if (w.isPending) return <><PageHeader title="Workouts" /><Card><SkeletonList rows={5} /></Card></>;
-  if (w.isError) return <><PageHeader title="Workouts" /><Card><ErrorState error={w.error} onRetry={() => w.refetch()} /></Card></>;
+  if (w.isPending) return <Card><SkeletonList rows={5} /></Card>;
+  if (w.isError) return <Card><ErrorState error={w.error} onRetry={() => w.refetch()} /></Card>;
   if (!plan) {
     return (
-      <>
-        <PageHeader title="Workouts" />
-        <Card>
-          <EmptyState
-            icon={Dumbbell}
-            title="No workout plan yet"
-            body="Your trainer adds a plan for you here. Ask at the desk or send the gym a message."
-            action={<Link to="/member/support/new" className="inline-flex h-11 items-center rounded-full bg-brand px-5 font-bold text-on-brand">Ask for a plan</Link>}
-          />
-        </Card>
-      </>
+      <Card>
+        <EmptyState
+          icon={Dumbbell}
+          title="No workout plan yet"
+          body="Your trainer adds a plan for you here. Ask at the desk or send the gym a message."
+          action={<Link to="/member/support/new" className="inline-flex h-11 items-center rounded-full bg-brand px-5 font-bold text-on-brand">Ask for a plan</Link>}
+        />
+      </Card>
     );
   }
 
   const day = plan.days[shown];
   return (
     <>
-      <PageHeader title={plan.name} description={[GOAL[plan.goal], plan.level && `${plan.level[0].toUpperCase()}${plan.level.slice(1)}`, plan.daysPerWeek && `${plan.daysPerWeek} days a week`].filter(Boolean).join(" · ")} />
+      <div className="mb-4">
+        <h2 className="text-lg font-bold">{plan.name}</h2>
+        <p className="text-[13px] text-ink-3">{[GOAL[plan.goal], plan.level && `${plan.level[0].toUpperCase()}${plan.level.slice(1)}`, plan.daysPerWeek && `${plan.daysPerWeek} days a week`].filter(Boolean).join(" · ")}</p>
+      </div>
       <div className="flex flex-col gap-4">
         {plan.days.length > 1 && (
           <Tabs

@@ -15,6 +15,7 @@ import { AssignPlanDialog } from "./AssignPlanDialog";
 import { EditMemberPlanDialog } from "./EditMemberPlanDialog";
 import { ExerciseProgressChart } from "./ExerciseProgressChart";
 import { LogSessionDialog } from "./LogSessionDialog";
+import { MemberExercisesCard } from "./exercisedb/MemberExercisesCard";
 import { LEVEL_LABEL, PLAN_GOAL_LABEL, dayKeyDate, formatKg, formatPrescription, formatRest, perWeek } from "./labels";
 import { usePermission } from "../auth/permissions";
 import {
@@ -402,6 +403,7 @@ export default function MemberWorkoutTab({ member }) {
             />
           )}
         </Card>
+        <MemberExercisesCard member={member} />
         <Progress memberId={member._id} />
         <Sessions memberId={member._id} memberName={member.name} />
       </div>

@@ -10,6 +10,7 @@ import {
   LayoutDashboard,
   Layers,
   LifeBuoy,
+  ListChecks,
   Megaphone,
   Receipt,
   Salad,
@@ -49,6 +50,7 @@ export const NAV_GROUPS = [
     items: [
       { id: "workouts", label: "Workout plans", to: "/admin/workouts", icon: Dumbbell, mobile: "more", permission: "workouts.manage" },
       { id: "exercises", label: "Exercise library", to: "/admin/exercises", icon: BookOpen, mobile: "more", permission: "workouts.manage" },
+      { id: "exercise-assignments", label: "Assigned exercises", to: "/admin/exercise-assignments", icon: ListChecks, mobile: "more", permission: "workouts.manage" },
       { id: "diets", label: "Diet plans", to: "/admin/diets", icon: Salad, mobile: "more", permission: "diets.manage" },
       { id: "trainers", label: "Trainers", to: "/admin/trainers", icon: UserRound, mobile: "more" },
     ],

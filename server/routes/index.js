@@ -28,6 +28,8 @@ import expenseRoutes from './admin/expenseRoutes.js';
 import financeRoutes from './admin/financeRoutes.js';
 import workoutRoutes from './admin/workoutRoutes.js';
 import exerciseRoutes from './admin/exerciseRoutes.js';
+import exerciseDbRoutes from './admin/exerciseDbRoutes.js';
+import exerciseAssignmentRoutes from './admin/exerciseAssignmentRoutes.js';
 import dietRoutes from './admin/dietRoutes.js';
 import progressRoutes from './admin/progressRoutes.js';
 import memberNoteRoutes from './admin/memberNoteRoutes.js';
@@ -42,6 +44,7 @@ import memberMembershipRoutes from './member/membershipRoutes.js';
 import memberPaymentRoutes from './member/paymentRoutes.js';
 import memberAttendanceRoutes from './member/attendanceRoutes.js';
 import memberWorkoutRoutes from './member/workoutRoutes.js';
+import memberExerciseRoutes from './member/exerciseRoutes.js';
 import memberTrainerRoutes from './member/trainerRoutes.js';
 import memberDietRoutes from './member/dietRoutes.js';
 import memberProgressRoutes from './member/progressRoutes.js';
@@ -68,6 +71,7 @@ export const MOUNTS = [
   ['/member/payments', memberPaymentRoutes],
   ['/member/attendance', memberAttendanceRoutes],
   ['/member/workouts', memberWorkoutRoutes],
+  ['/member/exercises', memberExerciseRoutes],
   ['/member/trainer', memberTrainerRoutes],
   ['/member/diet', memberDietRoutes],
   ['/member/progress', memberProgressRoutes],
@@ -93,6 +97,8 @@ export const MOUNTS = [
   ['/admin/trainers', trainerRoutes],
   ['/admin/workouts', workoutRoutes],
   ['/admin/exercises', exerciseRoutes],
+  ['/admin/exercisedb', exerciseDbRoutes],
+  ['/admin/exercise-assignments', exerciseAssignmentRoutes],
   ['/admin/diets', dietRoutes],
   ['/admin/reminders', reminderRoutes],
   ['/admin/announcements', announcementRoutes],

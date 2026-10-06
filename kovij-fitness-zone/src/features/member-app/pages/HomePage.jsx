@@ -1,8 +1,8 @@
 import { Link } from "react-router-dom";
-import { ChevronRight, Clock, Dumbbell, Flame, Footprints, LifeBuoy, Megaphone, MessageCircle, Phone, RefreshCcw, Scale, Wallet } from "lucide-react";
+import { ChevronRight, Clock, Dumbbell, Flame, ListChecks, Footprints, LifeBuoy, Megaphone, MessageCircle, Phone, RefreshCcw, Scale, Wallet } from "lucide-react";
 import { useMemberAuth } from "../../../context/MemberAuthContext";
 import { MembershipCard } from "../MembershipCard";
-import { useAnnouncements, useGym, useHome, useMyMembership, useMyTrainer, useWorkout } from "../queries";
+import { useAnnouncements, useExerciseSchedule, useGym, useHome, useMyMembership, useMyTrainer, useWorkout } from "../queries";
 import { openState } from "../../settings/hours";
 import { Avatar, Card, CardHeader, ErrorState, Skeleton } from "../../../shared/ui";
 import { formatINR, formatNumber, formatRelativeDay, formatRelativeTime, greeting, phoneHref, pluralize } from "../../../shared/lib/format";
@@ -36,6 +36,7 @@ export default function HomePage() {
       {home.isPending ? <Skeleton className="h-44 rounded-card" /> : home.data && <Stats home={home.data} dues={standing.data?.dues} />}
       {home.data && <ThisWeek week={home.data.visits.week} />}
       <GymNow crowd={home.data?.crowd} />
+      <TodayExercises />
       <TodayWorkout />
       <TrainerCard />
       <LatestUpdate />
@@ -214,6 +215,31 @@ function GymNow({ crowd }) {
         </p>
       )}
     </Card>
+  );
+}
+
+/** Exercises the trainer scheduled for today (and any still open from earlier this week). */
+function TodayExercises() {
+  const s = useExerciseSchedule().data;
+  if (!s || (!s.today.length && !s.overdue.length)) return null;
+  const left = s.today.filter((a) => a.status !== "completed").length + s.overdue.filter((a) => a.status !== "completed").length;
+  const done = s.today.filter((a) => a.status === "completed").length;
+  return (
+    <Link to="/member/workouts?tab=schedule" className="group">
+      <Card className="flex items-center gap-4 group-hover:bg-surface-2">
+        <span className="grid size-12 shrink-0 place-items-center rounded-tile bg-brand-soft text-brand-ink">
+          <ListChecks className="size-6" aria-hidden />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-[13px] font-semibold text-ink-3">From your trainer</span>
+          <span className="block truncate text-[17px] font-bold">{left ? `${pluralize(left, "exercise")} to do` : "All done for today"}</span>
+          <span className="block truncate text-[13px] text-ink-3">
+            {s.today.length ? `${done} of ${s.today.length} done today` : "Left over from earlier this week"}
+          </span>
+        </span>
+        <ChevronRight className="size-5 text-ink-3" aria-hidden />
+      </Card>
+    </Link>
   );
 }
 

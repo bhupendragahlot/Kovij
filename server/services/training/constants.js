@@ -35,6 +35,11 @@ export const LIMITS = {
   /** How far back a session can be logged. Members get a shorter window than staff. */
   memberLogDaysBack: 7,
   staffLogDaysBack: 60,
+  /** Scheduling ExerciseDB exercises for a member. */
+  exercisesPerAssign: 20,
+  assignRepeatWeeks: 12,
+  assignRowsMax: 120,
+  assignDaysAhead: 365,
 };
 
 export const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Archive, ArchiveRestore, BookOpen, Ellipsis, Pencil, PlayCircle, Plus, Trash2 } from "lucide-react";
 import { useExercises, useRemoveExercise, useSaveExercise } from "./api";
 import { ExerciseFormDialog } from "./ExerciseFormDialog";
+import { ExerciseDbTab } from "./exercisedb/ExerciseDbTab";
 import { CATEGORY_LABEL, EQUIPMENT_LABEL, MUSCLE_LABEL } from "./labels";
 import { usePermission } from "../auth/permissions";
 import { useDebouncedValue } from "../../shared/hooks/useDebouncedValue";
@@ -21,11 +22,13 @@ import {
   SearchInput,
   SegmentedControl,
   Select,
+  TabPanel,
+  Tabs,
   useConfirm,
   useToast,
 } from "../../shared/ui";
 
-const DEFAULTS = { q: "", muscle: "all", equipment: "all", status: "active", page: 1 };
+const DEFAULTS = { source: "gym", q: "", muscle: "all", equipment: "all", status: "active", page: 1 };
 const LIMIT = 50;
 
 function ExerciseBadges({ e }) {
@@ -63,9 +66,10 @@ export default function ExerciseLibraryPage() {
     if (debounced !== filters.q) setFilters({ q: debounced });
   }, [debounced, filters.q, setFilters]);
 
+  const fromExerciseDb = filters.source === "exercisedb";
   const query = useExercises(
     { q: filters.q || undefined, muscle: filters.muscle, equipment: filters.equipment, status: filters.status, page: filters.page, limit: LIMIT },
-    { enabled: canManage }
+    { enabled: canManage && !fromExerciseDb },
   );
   const data = query.data;
   const archivedView = filters.status === "archived";
@@ -105,7 +109,7 @@ export default function ExerciseLibraryPage() {
       {
         onSuccess: () => toast.success(`${e.name} restored`),
         onError: (err) => toast.error("Couldn't restore the exercise", { description: err.message }),
-      }
+      },
     );
 
   const rowMenu = (e) => (
@@ -140,12 +144,19 @@ export default function ExerciseLibraryPage() {
       cell: (e) => (
         <span className="text-ink-2">
           {MUSCLE_LABEL[e.primaryMuscle]}
-          {e.secondaryMuscles?.length ? <span className="block text-[13px] text-ink-3">Also {e.secondaryMuscles.map((m) => MUSCLE_LABEL[m]).join(", ")}</span> : null}
+          {e.secondaryMuscles?.length ? (
+            <span className="block text-[13px] text-ink-3">Also {e.secondaryMuscles.map((m) => MUSCLE_LABEL[m]).join(", ")}</span>
+          ) : null}
         </span>
       ),
     },
     { id: "equipment", header: "Equipment", cell: (e) => <span className="text-ink-2">{EQUIPMENT_LABEL[e.equipment]}</span> },
-    { id: "how", header: "How to do it", hideBelow: "xl", cell: (e) => <span className="line-clamp-2 max-w-md text-[13px] text-ink-3">{e.instructions || "—"}</span> },
+    {
+      id: "how",
+      header: "How to do it",
+      hideBelow: "xl",
+      cell: (e) => <span className="line-clamp-2 max-w-md text-[13px] text-ink-3">{e.instructions || "—"}</span>,
+    },
     { id: "actions", header: <span className="sr-only">Actions</span>, align: "right", cell: rowMenu },
   ];
 
@@ -171,100 +182,125 @@ export default function ExerciseLibraryPage() {
     <>
       <PageHeader
         title="Exercise library"
-        description="Exercises trainers use to build plans. Built-in ones come with instructions; add your own any time."
+        description={
+          fromExerciseDb
+            ? "Search thousands of exercises with animations and steps, and assign them to members for a day."
+            : "Exercises trainers use to build plans. Built-in ones come with instructions; add your own any time."
+        }
         actions={
-          <Button variant="primary" icon={Plus} onClick={() => setCreating(true)}>
-            Add exercise
-          </Button>
+          !fromExerciseDb && (
+            <Button variant="primary" icon={Plus} onClick={() => setCreating(true)}>
+              Add exercise
+            </Button>
+          )
         }
       />
-
-      <div className="mb-4 flex flex-col gap-3">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center">
-          <SearchInput value={search} onChange={setSearch} placeholder="Search exercises" label="Search exercises" className="md:max-w-sm md:flex-1" />
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:flex md:items-center">
-            <Select aria-label="Equipment" value={filters.equipment} onChange={(e) => setFilters({ equipment: e.target.value })} className="md:w-48">
-              <option value="all">Any equipment</option>
-              {Object.entries(EQUIPMENT_LABEL).map(([v, l]) => (
-                <option key={v} value={v}>
-                  {l}
-                </option>
-              ))}
-            </Select>
-            <SegmentedControl
-              label="Show"
-              value={filters.status}
-              onChange={(status) => setFilters({ status })}
-              options={[
-                { value: "active", label: "In use" },
-                { value: "archived", label: "Archived" },
-              ]}
-            />
-          </div>
-        </div>
-        <FilterChips label="Filter by muscle" value={filters.muscle} onChange={(muscle) => setFilters({ muscle })} options={muscleOptions} />
-      </div>
-
-      <Card padding="none" className="overflow-hidden">
-        <DataTable
-          caption="Exercise library"
-          columns={columns}
-          rows={data?.items}
-          mobileRow={mobileRow}
-          isPending={query.isPending}
-          isFetching={query.isFetching && query.isPlaceholderData}
-          error={query.error}
-          onRetry={() => query.refetch()}
-          empty={
-            isFiltered ? (
-              <EmptyState
-                icon={BookOpen}
-                title="No exercises match"
-                body={filters.q ? `Nothing called “${filters.q}” here. Add it as your own exercise, or clear the filters.` : "Try another muscle or equipment."}
-                action={
-                  <div className="flex flex-wrap justify-center gap-2">
-                    <Button
-                      variant="secondary"
-                      onClick={() => {
-                        setSearch("");
-                        setFilters({ q: "", muscle: "all", equipment: "all" });
-                      }}
-                    >
-                      Clear filters
-                    </Button>
-                    {filters.q && !archivedView && (
-                      <Button variant="primary" icon={Plus} onClick={() => setCreating(true)}>
-                        Add “{filters.q}”
-                      </Button>
-                    )}
-                  </div>
-                }
-              />
-            ) : archivedView ? (
-              <EmptyState icon={Archive} title="Nothing archived" body="Exercises you archive are kept here, and can be restored." />
-            ) : (
-              <EmptyState
-                icon={BookOpen}
-                title="No exercises yet"
-                body="Add the exercises your trainers use."
-                action={
-                  <Button variant="primary" icon={Plus} onClick={() => setCreating(true)}>
-                    Add exercise
-                  </Button>
-                }
-              />
-            )
-          }
-        />
-        {data && <Pagination page={filters.page} limit={LIMIT} total={data.total} onPage={(page) => setFilters({ page })} />}
-      </Card>
-
-      <ExerciseFormDialog
-        open={creating || Boolean(editing)}
-        exercise={editing}
-        initialName={creating ? filters.q : ""}
-        onClose={() => (setCreating(false), setEditing(null))}
+      <Tabs
+        label="Exercise sources"
+        value={filters.source}
+        onChange={(source) => setFilters({ source, q: "", page: 1 })}
+        className="mb-4"
+        tabs={[
+          { value: "gym", label: "Gym library" },
+          { value: "exercisedb", label: "ExerciseDB" },
+        ]}
       />
+      {fromExerciseDb ? (
+        <TabPanel value="exercisedb">
+          <ExerciseDbTab />
+        </TabPanel>
+      ) : (
+        <TabPanel value="gym">
+          <div className="mb-4 flex flex-col gap-3">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center">
+              <SearchInput value={search} onChange={setSearch} placeholder="Search exercises" label="Search exercises" className="md:max-w-sm md:flex-1" />
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:flex md:items-center">
+                <Select aria-label="Equipment" value={filters.equipment} onChange={(e) => setFilters({ equipment: e.target.value })} className="md:w-48">
+                  <option value="all">Any equipment</option>
+                  {Object.entries(EQUIPMENT_LABEL).map(([v, l]) => (
+                    <option key={v} value={v}>
+                      {l}
+                    </option>
+                  ))}
+                </Select>
+                <SegmentedControl
+                  label="Show"
+                  value={filters.status}
+                  onChange={(status) => setFilters({ status })}
+                  options={[
+                    { value: "active", label: "In use" },
+                    { value: "archived", label: "Archived" },
+                  ]}
+                />
+              </div>
+            </div>
+            <FilterChips label="Filter by muscle" value={filters.muscle} onChange={(muscle) => setFilters({ muscle })} options={muscleOptions} />
+          </div>
+
+          <Card padding="none" className="overflow-hidden">
+            <DataTable
+              caption="Exercise library"
+              columns={columns}
+              rows={data?.items}
+              mobileRow={mobileRow}
+              isPending={query.isPending}
+              isFetching={query.isFetching && query.isPlaceholderData}
+              error={query.error}
+              onRetry={() => query.refetch()}
+              empty={
+                isFiltered ? (
+                  <EmptyState
+                    icon={BookOpen}
+                    title="No exercises match"
+                    body={
+                      filters.q ? `Nothing called “${filters.q}” here. Add it as your own exercise, or clear the filters.` : "Try another muscle or equipment."
+                    }
+                    action={
+                      <div className="flex flex-wrap justify-center gap-2">
+                        <Button
+                          variant="secondary"
+                          onClick={() => {
+                            setSearch("");
+                            setFilters({ q: "", muscle: "all", equipment: "all" });
+                          }}
+                        >
+                          Clear filters
+                        </Button>
+                        {filters.q && !archivedView && (
+                          <Button variant="primary" icon={Plus} onClick={() => setCreating(true)}>
+                            Add “{filters.q}”
+                          </Button>
+                        )}
+                      </div>
+                    }
+                  />
+                ) : archivedView ? (
+                  <EmptyState icon={Archive} title="Nothing archived" body="Exercises you archive are kept here, and can be restored." />
+                ) : (
+                  <EmptyState
+                    icon={BookOpen}
+                    title="No exercises yet"
+                    body="Add the exercises your trainers use."
+                    action={
+                      <Button variant="primary" icon={Plus} onClick={() => setCreating(true)}>
+                        Add exercise
+                      </Button>
+                    }
+                  />
+                )
+              }
+            />
+            {data && <Pagination page={filters.page} limit={LIMIT} total={data.total} onPage={(page) => setFilters({ page })} />}
+          </Card>
+
+          <ExerciseFormDialog
+            open={creating || Boolean(editing)}
+            exercise={editing}
+            initialName={creating ? filters.q : ""}
+            onClose={() => (setCreating(false), setEditing(null))}
+          />
+        </TabPanel>
+      )}
     </>
   );
 }
