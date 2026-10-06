@@ -328,8 +328,8 @@ function LeadCard({ lead, onEdit, onLog, triageEnabled }) {
     <Card className="flex w-full flex-col">
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[15px] font-semibold">{lead.name}</p>
-          <p className="truncate text-[13px] text-ink-3">
+          <p className="truncate text-body-lg font-semibold">{lead.name}</p>
+          <p className="truncate text-body-sm text-ink-3">
             {LEAD_SOURCE_LABEL[lead.source]}, added {formatRelativeTime(lead.createdAt)}
           </p>
         </div>
@@ -491,7 +491,7 @@ export default function LeadsPage() {
           <button
             type="button"
             onClick={() => setFilters({ spam: "only" })}
-            className="inline-flex h-9 items-center gap-1.5 self-start rounded-full px-2 text-[13px] font-semibold text-ink-3 hover:text-ink md:ml-auto md:self-auto"
+            className="inline-flex h-9 items-center gap-1.5 self-start rounded-full px-2 text-body-sm font-semibold text-ink-3 hover:text-ink md:ml-auto md:self-auto"
           >
             <ShieldAlert className="size-4" aria-hidden />
             {counts.spam} hidden as likely spam

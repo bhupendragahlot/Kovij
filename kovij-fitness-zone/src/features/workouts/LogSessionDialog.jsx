@@ -57,14 +57,14 @@ function EntryCard({ entry, index, onChange, onRemove }) {
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold text-ink">{entry.name}</p>
-          {entry.target && <p className="text-[13px] text-ink-3">Plan: {entry.target}</p>}
+          {entry.target && <p className="text-body-sm text-ink-3">Plan: {entry.target}</p>}
         </div>
         <IconButton icon={X} label={`Remove ${entry.name}`} onClick={onRemove} />
       </div>
       <table className="mt-2 w-full text-sm">
         <caption className="sr-only">Sets for {entry.name}</caption>
         <thead>
-          <tr className="text-left text-[13px] text-ink-3">
+          <tr className="text-left text-body-sm text-ink-3">
             <th scope="col" className="w-12 py-1 font-semibold">Set</th>
             <th scope="col" className="py-1 font-semibold">Reps</th>
             <th scope="col" className="py-1 font-semibold">Weight</th>
@@ -281,7 +281,7 @@ export function LogSessionDialog({ open, onClose, member }) {
             ) : (
               <p className="rounded-tile bg-surface-2 p-4 text-center text-sm text-ink-3">No exercises yet. Add what they did.</p>
             )}
-            {errors.entries && <p className="text-[13px] font-medium text-bad">{errors.entries}</p>}
+            {errors.entries && <p className="text-body-sm font-medium text-bad">{errors.entries}</p>}
             <Button variant="secondary" icon={Plus} onClick={() => setPicking(true)} block>
               Add exercises
             </Button>

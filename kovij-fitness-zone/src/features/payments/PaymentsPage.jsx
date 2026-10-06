@@ -61,7 +61,7 @@ function MemberCell({ p }) {
       <Avatar name={p.memberId.name} src={p.memberId.profilePhoto} size="sm" />
       <span className="min-w-0">
         <span className="block truncate font-semibold hover:underline">{p.memberId.name}</span>
-        <span className="block text-[13px] text-ink-3">{p.memberId.memberCode}</span>
+        <span className="block text-body-sm text-ink-3">{p.memberId.memberCode}</span>
       </span>
     </Link>
   );
@@ -73,10 +73,10 @@ function ForCell({ p }) {
   return (
     <span>
       <span className="block">{TYPE_LABEL[p.type] || p.type}</span>
-      {p.membershipId?.planName && <span className="block text-[13px] text-ink-3">{p.membershipId.planName}</span>}
-      {p.dueId?.invoiceNo && <span className="block text-[13px] text-ink-3">Part of bill {p.dueId.invoiceNo}</span>}
-      {paidSoFar > 0 && <span className="block text-[13px] text-ink-3">{formatINR(paidSoFar)} of {formatINR(p.originalAmount)} paid</span>}
-      {p.meta?.needsReview && <span className="block text-[13px] font-semibold text-warn">Check: {p.note}</span>}
+      {p.membershipId?.planName && <span className="block text-body-sm text-ink-3">{p.membershipId.planName}</span>}
+      {p.dueId?.invoiceNo && <span className="block text-body-sm text-ink-3">Part of bill {p.dueId.invoiceNo}</span>}
+      {paidSoFar > 0 && <span className="block text-body-sm text-ink-3">{formatINR(paidSoFar)} of {formatINR(p.originalAmount)} paid</span>}
+      {p.meta?.needsReview && <span className="block text-body-sm font-semibold text-warn">Check: {p.note}</span>}
     </span>
   );
 }
@@ -142,15 +142,15 @@ function ModeTotals({ totals }) {
   return (
     <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" aria-label="Collected by payment mode">
       <div className="rounded-tile bg-surface p-3 dark:border dark:border-line">
-        <p className="text-[13px] text-ink-3">Collected</p>
-        <p className="tabular text-lg font-bold">{formatINR(totals.paid.amount)}</p>
-        <p className="text-[13px] text-ink-3">{formatNumber(totals.paid.count)} payments</p>
+        <p className="text-body-sm text-ink-3">Collected</p>
+        <p className="tabular text-title-lg font-bold">{formatINR(totals.paid.amount)}</p>
+        <p className="text-body-sm text-ink-3">{formatNumber(totals.paid.count)} payments</p>
       </div>
       {modes.map(([mode, v]) => (
         <div key={mode} className="rounded-tile bg-surface p-3 dark:border dark:border-line">
-          <p className="text-[13px] text-ink-3">{MODE_LABEL[mode] || mode}</p>
-          <p className="tabular text-lg font-bold">{formatINR(v.amount)}</p>
-          <p className="text-[13px] text-ink-3">{formatNumber(v.count)} payments</p>
+          <p className="text-body-sm text-ink-3">{MODE_LABEL[mode] || mode}</p>
+          <p className="tabular text-title-lg font-bold">{formatINR(v.amount)}</p>
+          <p className="text-body-sm text-ink-3">{formatNumber(v.count)} payments</p>
         </div>
       ))}
     </div>
@@ -229,17 +229,17 @@ export default function PaymentsPage() {
       <Avatar name={p.memberId?.name} src={p.memberId?.profilePhoto} />
       <div className="min-w-0 flex-1">
         <p className="truncate font-semibold">{p.memberId?.name || "Deleted member"}</p>
-        <p className="text-[13px] text-ink-3">
+        <p className="text-body-sm text-ink-3">
           {TYPE_LABEL[p.type]}
           {p.membershipId?.planName ? `: ${p.membershipId.planName}` : ""}, {formatDate(dues ? p.createdAt : p.paidAt || p.createdAt)}
         </p>
-        {p.verification?.state === "submitted" && <p className="text-[13px] text-ink-2">UPI reference {p.verification.utr}</p>}
+        {p.verification?.state === "submitted" && <p className="text-body-sm text-ink-2">UPI reference {p.verification.utr}</p>}
         {p.status === "pending" && p.originalAmount != null && (
-          <p className="text-[13px] text-ink-3">
+          <p className="text-body-sm text-ink-3">
             {formatINR(p.originalAmount - p.amount)} of {formatINR(p.originalAmount)} paid
           </p>
         )}
-        {p.dueId?.invoiceNo && <p className="text-[13px] text-ink-3">Part of bill {p.dueId.invoiceNo}</p>}
+        {p.dueId?.invoiceNo && <p className="text-body-sm text-ink-3">Part of bill {p.dueId.invoiceNo}</p>}
         <div className="mt-1.5">
           <PaymentStatusBadge payment={p} />
         </div>

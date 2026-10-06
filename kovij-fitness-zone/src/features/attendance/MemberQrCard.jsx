@@ -117,7 +117,7 @@ export function MemberQrCard({ member }) {
             )}
           </div>
           <div className="min-w-0 flex-1 text-center sm:text-left">
-            <p className="tabular text-lg font-bold tracking-wide text-ink">{qr.data.memberCode || "No member code"}</p>
+            <p className="tabular text-title-lg font-bold tracking-wide text-ink">{qr.data.memberCode || "No member code"}</p>
             <p className="mt-0.5 text-sm text-ink-3">
               {qr.data.replacedAt ? `Replaced on ${formatDate(qr.data.replacedAt)}` : "Original code"}
               {qr.data.memberCode && ". The desk can also type this code."}

@@ -5,7 +5,7 @@ export function WeekProgress({ done, total, label = "This week", className }) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   return (
     <div className={className}>
-      <p className="mb-1 flex justify-between gap-2 text-[13px]">
+      <p className="mb-1 flex justify-between gap-2 text-body-sm">
         <span className="font-semibold text-ink">{label}</span>
         <span className="tabular text-ink-3">
           {done} of {total} done

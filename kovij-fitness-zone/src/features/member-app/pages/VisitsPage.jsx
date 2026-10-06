@@ -30,11 +30,11 @@ export default function VisitsPage() {
             { icon: Footprints, label: "Last 30 days", value: streak ? formatNumber(streak.last30Days) : "…" },
           ].map((t) => (
             <Card key={t.label} className="p-3.5">
-              <p className="flex items-center gap-1.5 text-[12px] font-semibold text-ink-3">
+              <p className="flex items-center gap-1.5 text-label font-semibold text-ink-3">
                 <t.icon className="size-3.5" aria-hidden />
                 {t.label}
               </p>
-              <p className="tabular mt-1 text-[18px] font-bold">{t.value}</p>
+              <p className="tabular mt-1 text-title-lg font-bold">{t.value}</p>
             </Card>
           ))}
         </div>
@@ -43,10 +43,10 @@ export default function VisitsPage() {
           <div className="mb-4 flex items-center justify-between gap-2">
             <IconButton icon={ChevronLeft} label="Previous month" variant="secondary" size="sm" onClick={() => setMonth(shiftMonth(month, -1))} />
             <div className="text-center">
-              <h2 className="text-[17px] font-bold">
+              <h2 className="text-title-lg font-bold">
                 {formatMonth(month)} {month.slice(0, 4)}
               </h2>
-              {cal.data && <p className="text-[13px] text-ink-3">{pluralize(cal.data.daysVisited, "visit")} of {pluralize(cal.data.openDays, "open day")}</p>}
+              {cal.data && <p className="text-body-sm text-ink-3">{pluralize(cal.data.daysVisited, "visit")} of {pluralize(cal.data.openDays, "open day")}</p>}
             </div>
             <IconButton icon={ChevronRight} label="Next month" variant="secondary" size="sm" onClick={() => setMonth(shiftMonth(month, 1))} disabled={month >= thisMonth} />
           </div>
@@ -94,7 +94,7 @@ function MonthGrid({ month, days }) {
   const today = gymDayKey();
   return (
     <div>
-      <div className="grid grid-cols-7 gap-1 text-center text-[12px] font-semibold text-ink-3" aria-hidden>
+      <div className="grid grid-cols-7 gap-1 text-center text-label font-semibold text-ink-3" aria-hidden>
         {WEEK.map((w, i) => (
           <span key={i}>{w}</span>
         ))}
@@ -112,7 +112,7 @@ function MonthGrid({ month, days }) {
             <li
               key={date}
               className={cn(
-                "grid aspect-square place-items-center rounded-full text-[13px] font-semibold",
+                "grid aspect-square place-items-center rounded-full text-body-sm font-semibold",
                 visited ? "bg-brand text-on-brand" : date === today ? "border-2 border-dashed border-brand" : closed ? "text-ink-3/50" : date > today ? "text-ink-3" : "text-ink-2"
               )}
               aria-label={`${formatDate(`${date}T12:00:00+05:30`)}: ${visited ? "visited" : d?.holiday ? `closed for ${d.holiday}` : closed ? "gym closed" : "no visit"}`}
@@ -123,7 +123,7 @@ function MonthGrid({ month, days }) {
           );
         })}
       </ol>
-      <p className="mt-3 flex items-center gap-2 text-[12px] text-ink-3">
+      <p className="mt-3 flex items-center gap-2 text-label text-ink-3">
         <span className="size-3 rounded-full bg-brand" aria-hidden /> Visited
         <span className="ml-3 size-3 rounded-full border-2 border-dashed border-brand" aria-hidden /> Today
       </p>

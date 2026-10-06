@@ -27,15 +27,15 @@ export function SkeletonList({ rows = 5, className }) {
 /** An empty screen is an invitation to act: say what goes here and offer the first step. */
 export function EmptyState({ icon: Icon, title, body, action, className, compact = false }) {
   return (
-    <div className={cn("flex flex-col items-center text-center", compact ? "px-4 py-8" : "px-6 py-14", className)}>
+    <div className={cn("flex flex-col items-center text-center", compact ? "px-4 py-6" : "px-4 py-10 sm:py-14", className)}>
       {Icon && (
-        <div className="mb-4 grid size-12 place-items-center rounded-tile bg-surface-2 text-ink-2">
+        <div className="mb-3 grid size-12 place-items-center rounded-full bg-surface-2 text-ink-2">
           <Icon className="size-6" aria-hidden />
         </div>
       )}
-      <p className="text-[15px] font-semibold text-ink">{title}</p>
+      <p className="text-title font-semibold text-ink">{title}</p>
       {body && <p className="mt-1 max-w-sm text-sm text-ink-3">{body}</p>}
-      {action && <div className="mt-5">{action}</div>}
+      {action && <div className="mt-4">{action}</div>}
     </div>
   );
 }
@@ -46,16 +46,16 @@ export function ErrorState({ error, onRetry, title, className, compact = false }
   const forbidden = error?.status === 403;
   const Icon = offline ? CloudOff : forbidden ? ShieldCheck : TriangleAlert;
   return (
-    <div role="alert" className={cn("flex flex-col items-center text-center", compact ? "px-4 py-8" : "px-6 py-14", className)}>
-      <div className={cn("mb-4 grid size-12 place-items-center rounded-tile", forbidden ? "bg-surface-2 text-ink-2" : "bg-bad-soft text-bad")}>
+    <div role="alert" className={cn("flex flex-col items-center text-center", compact ? "px-4 py-6" : "px-4 py-10 sm:py-14", className)}>
+      <div className={cn("mb-3 grid size-12 place-items-center rounded-full", forbidden ? "bg-surface-2 text-ink-2" : "bg-bad-soft text-bad")}>
         <Icon className="size-6" aria-hidden />
       </div>
-      <p className="text-[15px] font-semibold text-ink">
+      <p className="text-title font-semibold text-ink">
         {title || (offline ? "You're offline" : forbidden ? "Not available for your role" : "This didn't load")}
       </p>
       <p className="mt-1 max-w-sm text-sm text-ink-3">{error?.message || "Something went wrong."}</p>
       {onRetry && !forbidden && (
-        <Button className="mt-5" variant="secondary" icon={RefreshCw} onClick={onRetry}>
+        <Button className="mt-4" variant="secondary" icon={RefreshCw} onClick={onRetry}>
           Try again
         </Button>
       )}

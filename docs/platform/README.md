@@ -55,12 +55,19 @@ Read this before changing code. Several modules are being built **at the same ti
   - `DataTable` (table on desktop, `mobileRow` card list on phones)
   - `PageHeader`, `SearchInput`, `FilterChips`, `Tabs`, `TabPanel`, `Pagination`
   - `KpiTile`, `Meter`, `InlineAlert`, `FormError`, `useToast`
+  - `NavBar`, `NavBarLink`, `NavBarButton`, `RailLink` (Material navigation bar / rail items, used by both app shells)
+  - Recipes for links and custom controls: `buttonClasses({ variant, size })`, `chipClasses(selected)`, `stickyActionBarClasses`. Don't hand-roll pill buttons.
   - Charts: `shared/ui/charts/` (Recharts; follow `charts.jsx`: thin marks, 4px rounded bar tops, hairline grid, legend when there are ≥ 2 series, and a table view).
-- **Tokens only:** colours through utilities like `bg-surface text-ink border-line bg-brand text-on-brand text-good bg-warn-soft`. **No raw hex, no `theme === "dark"` branches**; dark mode comes from tokens. Radii: `rounded-hero` / `rounded-card` / `rounded-tile` / `rounded-control`.
+- **Tokens only:** colours through utilities like `bg-surface text-ink border-line bg-brand text-on-brand text-good bg-warn-soft`. **No raw hex, no `theme === "dark"` branches**; dark mode comes from tokens.
+- **Type scale (no `text-[13px]`-style sizes):** `text-display` 32/40 · `text-headline` 26/32 (page title from 600 px) · `text-headline-sm` 22/28 (page title on phones) · `text-title-lg` 18/24 · `text-title` 16/24 (card titles) · `text-body-lg` 15/22 · `text-sm` 14/20 (body) · `text-body-sm` 13/18 (supporting text) · `text-label` 12/16 · `text-label-sm` 11/14. Fields use `text-base md:text-sm` (16 px on phones stops iPhones zooming on focus).
+- **Shape:** `rounded-chip` 8 · `rounded-control` / `rounded-tile` 12 · `rounded-card` 16 · `rounded-hero` 28 (sheets, dialogs, hero card) · `rounded-full` for buttons, icon buttons, nav indicators.
+- **Sizes and touch:** buttons 32 / 40 / 48 px (sm / md / lg), icon buttons 32 / 40 / 48, fields 44 px on phones and 40 from 840 px. Every control taps as at least 48 × 48 on touch screens: add `touch-target` (an invisible ::after) to anything custom, and `state-layer` for hover / focus / pressed feedback (8 / 10 / 12 % overlays). Icons: 16 inline, 18 in buttons and fields, 20 in lists and menus, 24 in bars.
+- **Breakpoints (Material window sizes):** `sm` 600 (medium: rail replaces the bottom bar), `md` 840 (expanded: tables, dialogs instead of sheets), `lg` 1024 (member sidebar, two columns), `xl` 1280 (labelled staff rail). Page margins 16 / 24 / 32 px.
+- **App chrome:** top app bars are 56 px (64 from 840 px) plus `env(safe-area-inset-top)`, flat until content scrolls under them (`useScrolled`); the bottom bar is `var(--kv-navbar-h)` (64 px) plus the home-indicator inset. Offset anything fixed by those variables.
 - **Every screen has all its states:** loading (skeleton shaped like the content), empty (says what to do, with an action), error (message plus retry), offline for writes (`useOnlineStatus`), permission-hidden controls, and a success toast named with the same verb as the button ("Save plan" gives "Plan saved").
 - **Phones first:**
   - Lists use `DataTable` with a `mobileRow`.
-  - Forms are one column on phones; controls are at least 44px tall.
+  - Forms are one column on phones; fields are 44px tall, everything else taps at 48px.
   - Dialogs become bottom sheets.
   - No horizontal page scroll at 360px. Grids use `grid-cols-1` before breakpoints.
 - **Copy:** sentence case, no ALL CAPS labels, verbs on buttons, errors say what to do next, and no jargon (not "entity", "record", "sync", or "AI").

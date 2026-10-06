@@ -115,10 +115,10 @@ export default function PaymentSettings({ settings, readOnly }) {
               {previewLink ? (
                 <>
                   <QrCode value={previewLink} label={`UPI QR code for ${form.upiId.trim()}`} className="size-40 p-1" />
-                  <p className="text-center text-[13px] text-ink-3">Scan with any UPI app to check it shows the right name. Don&apos;t pay.</p>
+                  <p className="text-center text-body-sm text-ink-3">Scan with any UPI app to check it shows the right name. Don&apos;t pay.</p>
                 </>
               ) : (
-                <div className="grid size-40 place-items-center rounded-tile border border-dashed border-line-strong p-4 text-center text-[13px] text-ink-3">
+                <div className="grid size-40 place-items-center rounded-tile border border-dashed border-line-strong p-4 text-center text-body-sm text-ink-3">
                   The QR preview appears when the UPI ID looks right.
                 </div>
               )}

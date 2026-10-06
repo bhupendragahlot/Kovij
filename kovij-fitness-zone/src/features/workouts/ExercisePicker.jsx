@@ -105,7 +105,7 @@ export function ExercisePicker({ open, onClose, onPick, title = "Add exercises",
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-semibold text-ink">{e.name}</span>
-                        <span className="block truncate text-[13px] text-ink-3">
+                        <span className="block truncate text-body-sm text-ink-3">
                           {MUSCLE_LABEL[e.primaryMuscle]}, {EQUIPMENT_LABEL[e.equipment]}
                         </span>
                       </span>
@@ -114,7 +114,7 @@ export function ExercisePicker({ open, onClose, onPick, title = "Add exercises",
                 );
               })}
             </ul>
-            <p className="mt-4 text-center text-[13px] text-ink-3">
+            <p className="mt-4 text-center text-body-sm text-ink-3">
               Can't find it?{" "}
               <button type="button" className="font-semibold text-brand-ink hover:underline" onClick={() => setCreating(true)}>
                 Add a new exercise

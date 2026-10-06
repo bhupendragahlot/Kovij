@@ -137,7 +137,7 @@ export function FreezePlanDialog({ open, onClose, member, membership }) {
               <dt className="font-semibold">Plan now ends</dt>
               <dd className="text-right font-bold">
                 {formatDate(plusDays(membership.endDate, days))}
-                <span className="block text-[13px] font-normal text-ink-3">was {formatDate(membership.endDate)}</span>
+                <span className="block text-body-sm font-normal text-ink-3">was {formatDate(membership.endDate)}</span>
               </dd>
             </div>
           </dl>
@@ -230,7 +230,7 @@ export function ExtendPlanDialog({ open, onClose, member, membership }) {
           </Field>
           <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Common reasons">
             {EXTEND_REASONS.map((r) => (
-              <button key={r} type="button" onClick={() => set({ reason: r })} className="h-9 rounded-full bg-surface-2 px-3 text-[13px] font-semibold text-ink-2 hover:bg-surface-3 hover:text-ink">
+              <button key={r} type="button" onClick={() => set({ reason: r })} className="h-9 rounded-full bg-surface-2 px-3 text-body-sm font-semibold text-ink-2 hover:bg-surface-3 hover:text-ink">
                 {r}
               </button>
             ))}

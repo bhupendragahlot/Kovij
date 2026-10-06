@@ -85,30 +85,31 @@ export function Menu({ trigger, items, align = "end", label }) {
           if (!isOpen && menuRef.current?.contains(document.activeElement)) triggerRef.current?.focus();
         }}
         onKeyDown={onMenuKeyDown}
-        className="kv-app font-ui fixed m-0 min-w-52 rounded-tile border border-line bg-surface p-1.5 text-ink shadow-pop"
+        className="kv-app font-ui fixed m-0 min-w-52 max-w-[calc(100vw-16px)] rounded-tile border border-line bg-surface py-1.5 text-ink shadow-pop"
       >
         {visible.map((item, idx) => {
-          if (item.type === "separator") return <div key={`sep-${idx}`} role="separator" className="my-1 h-px bg-line" />;
+          if (item.type === "separator") return <div key={`sep-${idx}`} role="separator" className="my-1.5 h-px bg-line" />;
           if (item.type === "heading") {
             return (
-              <div key={`h-${idx}`} role="presentation" className="px-3 pb-1.5 pt-2">
+              <div key={`h-${idx}`} role="presentation" className="px-4 pb-1.5 pt-2">
                 <p className="text-sm font-semibold text-ink">{item.label}</p>
-                {item.hint && <p className="text-xs text-ink-3">{item.hint}</p>}
+                {item.hint && <p className="text-label text-ink-3">{item.hint}</p>}
               </div>
             );
           }
           const Icon = item.icon;
           const cls = cn(
-            "flex w-full items-center gap-2.5 rounded-[9px] px-3 py-2.5 text-left text-sm font-medium outline-none md:py-2",
-            "hover:bg-surface-2 focus-visible:bg-surface-2",
+            // Material menu items: 48 px rows on touch screens, 40 px with a mouse.
+            "state-layer flex min-h-12 w-full items-center gap-3 px-4 text-left text-sm font-medium outline-none pointer-fine:min-h-10",
+            "focus-visible:bg-surface-2",
             item.tone === "danger" ? "text-bad" : "text-ink",
             item.disabled && "opacity-50"
           );
           const content = (
             <>
-              {Icon && <Icon className="size-4 shrink-0 text-current opacity-80" aria-hidden />}
+              {Icon && <Icon className="size-5 shrink-0 text-current opacity-80" aria-hidden />}
               <span className="flex-1">{item.label}</span>
-              {item.hint && <span className="text-xs text-ink-3">{item.hint}</span>}
+              {item.hint && <span className="text-label text-ink-3">{item.hint}</span>}
             </>
           );
           if (item.to) {

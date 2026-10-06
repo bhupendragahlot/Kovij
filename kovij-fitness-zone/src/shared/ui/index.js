@@ -1,5 +1,5 @@
 export { Button, ButtonLink, IconButton } from "./Button";
-export { buttonClasses, controlClasses } from "./styles";
+export { buttonClasses, chipClasses, controlClasses } from "./styles";
 export { Card, CardHeader, Tile } from "./Card";
 export { Badge } from "./Badge";
 export { StatusBadge } from "./StatusBadge";
@@ -15,6 +15,7 @@ export { DataTable } from "./DataTable";
 export { PageHeader, SearchInput, FilterChips, Tabs, TabPanel, Pagination } from "./navigation";
 export { KpiTile, Meter } from "./KpiTile";
 export { OfflineBanner } from "./OfflineBanner";
+export { NavBar, NavBarButton, NavBarLink, RailLink } from "./navbar";
 export { InstallAppCard, IosInstallDialog } from "./InstallApp";
 export { InlineAlert, FormError } from "./InlineAlert";
 export { TagInput } from "./TagInput";

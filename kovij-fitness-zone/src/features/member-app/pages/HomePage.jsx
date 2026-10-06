@@ -5,7 +5,7 @@ import { useMemberAuth } from "../../../context/MemberAuthContext";
 import { MembershipCard } from "../MembershipCard";
 import { useAnnouncements, useExerciseSchedule, useGym, useHome, useMyMembership, useMyTrainer, useWorkout } from "../queries";
 import { openState } from "../../settings/hours";
-import { Avatar, Card, CardHeader, ErrorState, InstallAppCard, Skeleton } from "../../../shared/ui";
+import { Avatar, Card, CardHeader, ErrorState, InstallAppCard, Skeleton, buttonClasses } from "../../../shared/ui";
 import { formatINR, formatNumber, formatRelativeDay, formatRelativeTime, greeting, phoneHref, pluralize } from "../../../shared/lib/format";
 import { cn } from "../../../shared/lib/cn";
 
@@ -18,7 +18,7 @@ export default function HomePage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-title font-bold">
+      <h1 className="text-headline-sm font-bold sm:text-headline">
         {greeting()}
         {first ? `, ${first}` : ""}
       </h1>
@@ -47,7 +47,7 @@ export default function HomePage() {
 }
 
 function Chip({ to, href, icon: Icon, children, external }) {
-  const cls = "inline-flex h-11 shrink-0 items-center gap-2 rounded-full border border-line-strong bg-surface px-4 text-sm font-semibold text-ink hover:bg-surface-2";
+  const cls = buttonClasses({ variant: "secondary" });
   if (href) {
     return (
       <a href={href} className={cls} {...(external && { target: "_blank", rel: "noreferrer" })}>
@@ -104,12 +104,12 @@ function QuickActions({ standing }) {
 function Tile({ icon: Icon, label, value, sub, to }) {
   const body = (
     <>
-      <span className="flex items-center justify-between text-[13px] font-semibold text-ink-3">
+      <span className="flex items-center justify-between text-body-sm font-semibold text-ink-3">
         {label}
         <Icon className="size-4" aria-hidden />
       </span>
-      <span className="tabular mt-2 block text-[24px] font-bold leading-tight">{value}</span>
-      {sub && <span className="mt-1 block text-[13px] text-ink-3">{sub}</span>}
+      <span className="tabular mt-2 block text-headline-sm font-bold leading-tight">{value}</span>
+      {sub && <span className="mt-1 block text-body-sm text-ink-3">{sub}</span>}
     </>
   );
   const cls = "rounded-card bg-surface p-4 shadow-[0_1px_0_var(--kv-line)]";
@@ -159,10 +159,10 @@ function ThisWeek({ week }) {
       <ol className="grid grid-cols-7 gap-1 text-center">
         {week.map((d) => (
           <li key={d.day} className="flex flex-col items-center gap-1.5">
-            <span className="text-[12px] font-semibold text-ink-3">{d.label.slice(0, 1)}</span>
+            <span className="text-label font-semibold text-ink-3">{d.label.slice(0, 1)}</span>
             <span
               className={cn(
-                "grid size-9 place-items-center rounded-full text-[13px] font-bold",
+                "grid size-9 place-items-center rounded-full text-body-sm font-bold",
                 d.visited ? "bg-brand text-on-brand" : d.isToday ? "border-2 border-dashed border-brand text-ink" : d.isFuture ? "bg-surface-2 text-ink-3" : "bg-surface-2 text-ink-2"
               )}
               aria-label={`${d.label}${d.isToday ? ", today" : ""}: ${d.visited ? "visited" : d.isFuture ? "coming up" : "no visit"}`}
@@ -203,7 +203,7 @@ function GymNow({ crowd }) {
               />
             ))}
           </div>
-          <div className="mt-1 flex justify-between text-[11px] text-ink-3" aria-hidden>
+          <div className="mt-1 flex justify-between text-label-sm text-ink-3" aria-hidden>
             <span>{hourText(crowd.hours[0].hour)}</span>
             <span>{hourText(crowd.hours.at(-1).hour)}</span>
           </div>
@@ -258,9 +258,9 @@ function TodayExercises() {
           <ListChecks className="size-6" aria-hidden />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[13px] font-semibold text-ink-3">From your trainer</span>
-          <span className="block truncate text-[17px] font-bold">{left ? `${pluralize(left, "exercise")} to do` : "All done for today"}</span>
-          <span className="block truncate text-[13px] text-ink-3">
+          <span className="block text-body-sm font-semibold text-ink-3">From your trainer</span>
+          <span className="block truncate text-title-lg font-bold">{left ? `${pluralize(left, "exercise")} to do` : "All done for today"}</span>
+          <span className="block truncate text-body-sm text-ink-3">
             {s.today.length ? `${done} of ${s.today.length} done today` : "Left over from earlier this week"}
           </span>
         </span>
@@ -281,9 +281,9 @@ function TodayWorkout() {
           <Dumbbell className="size-6" aria-hidden />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[13px] font-semibold text-ink-3">{today.doneToday ? "Done today" : "Today’s workout"}</span>
-          <span className="block truncate text-[17px] font-bold">{today.day.name}</span>
-          <span className="block text-[13px] text-ink-3">
+          <span className="block text-body-sm font-semibold text-ink-3">{today.doneToday ? "Done today" : "Today’s workout"}</span>
+          <span className="block truncate text-title-lg font-bold">{today.day.name}</span>
+          <span className="block text-body-sm text-ink-3">
             {pluralize(today.day.exercises.length, "exercise")} · {w.data.plan.name}
           </span>
         </span>
@@ -300,12 +300,12 @@ function TrainerCard() {
     <Card className="flex items-center gap-4">
       <Avatar name={t.name} src={t.image} size="lg" />
       <div className="min-w-0 flex-1">
-        <p className="text-[13px] font-semibold text-ink-3">Your trainer</p>
-        <p className="truncate text-[17px] font-bold">{t.name}</p>
-        <p className="truncate text-[13px] text-ink-3">{[t.title, t.scheduleText].filter(Boolean).join(" · ")}</p>
+        <p className="text-body-sm font-semibold text-ink-3">Your trainer</p>
+        <p className="truncate text-title-lg font-bold">{t.name}</p>
+        <p className="truncate text-body-sm text-ink-3">{[t.title, t.scheduleText].filter(Boolean).join(" · ")}</p>
       </div>
       {t.contact?.whatsappUrl && (
-        <a href={t.contact.whatsappUrl} target="_blank" rel="noreferrer" aria-label={`WhatsApp ${t.name}`} className="grid size-11 shrink-0 place-items-center rounded-full border border-line-strong text-ink-2 hover:bg-surface-2">
+        <a href={t.contact.whatsappUrl} target="_blank" rel="noreferrer" aria-label={`WhatsApp ${t.name}`} className="state-layer touch-target grid size-10 shrink-0 place-items-center rounded-full border border-line-strong text-ink-2">
           <MessageCircle className="size-5" aria-hidden />
         </a>
       )}
@@ -323,7 +323,7 @@ function LatestUpdate() {
           <Megaphone className="size-6" aria-hidden />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[13px] font-semibold text-ink-3">From the gym · {formatRelativeTime(a.publishAt)}</span>
+          <span className="block text-body-sm font-semibold text-ink-3">From the gym · {formatRelativeTime(a.publishAt)}</span>
           <span className="block font-bold">{a.title}</span>
           <span className="line-clamp-2 block text-sm text-ink-2">{a.body}</span>
         </span>

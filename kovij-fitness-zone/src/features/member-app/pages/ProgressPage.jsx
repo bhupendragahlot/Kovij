@@ -20,7 +20,7 @@ const dayLabel = (day) => formatDate(`${day}T12:00:00+05:30`);
 function Change({ value, unit }) {
   if (value == null || value === 0) return null;
   return (
-    <span className="tabular text-[13px] font-semibold text-ink-3">
+    <span className="tabular text-body-sm font-semibold text-ink-3">
       {value > 0 ? "+" : ""}
       {round1(value)} {unit} since you started
     </span>
@@ -45,8 +45,8 @@ export default function ProgressPage() {
             <div className="grid grid-cols-2 gap-3">
               {FIELDS.filter((f) => p.summary.latest[f.key] != null).map((f) => (
                 <Card key={f.key} className="p-4">
-                  <p className="text-[13px] font-semibold text-ink-3">{f.label}</p>
-                  <p className="tabular text-[24px] font-bold">
+                  <p className="text-body-sm font-semibold text-ink-3">{f.label}</p>
+                  <p className="tabular text-headline-sm font-bold">
                     {round1(p.summary.latest[f.key])} <span className="text-base font-semibold text-ink-3">{f.unit}</span>
                   </p>
                   <Change value={p.summary.change[f.key]} unit={f.unit} />
@@ -54,9 +54,9 @@ export default function ProgressPage() {
               ))}
               {p.summary.bmi != null && (
                 <Card className="p-4">
-                  <p className="text-[13px] font-semibold text-ink-3">BMI</p>
-                  <p className="tabular text-[24px] font-bold">{round1(p.summary.bmi)}</p>
-                  <p className="text-[13px] text-ink-3">{BMI_TEXT[p.summary.bmiCategory] || ""}</p>
+                  <p className="text-body-sm font-semibold text-ink-3">BMI</p>
+                  <p className="tabular text-headline-sm font-bold">{round1(p.summary.bmi)}</p>
+                  <p className="text-body-sm text-ink-3">{BMI_TEXT[p.summary.bmiCategory] || ""}</p>
                 </Card>
               )}
             </div>

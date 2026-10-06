@@ -29,6 +29,7 @@ import {
   useToast,
 } from "../../shared/ui";
 import { formatRelativeTime } from "../../shared/lib/format";
+import { stickyActionBarClasses } from "../../shared/ui/styles";
 
 const NEW_PLAN = { name: "", goal: "general_fitness", level: "beginner", daysPerWeek: 3, notes: "" };
 
@@ -225,7 +226,7 @@ export default function WorkoutPlanPage() {
               {plan.activeMembers} {plan.activeMembers === 1 ? "member is" : "members are"} on this plan. Saving changes here doesn't change their copies; give the plan again to update them.
             </InlineAlert>
           )}
-          {!isNew && dirty && exerciseTotal > 0 && !archived && <p className="text-[13px] text-ink-3">Save your changes to give this plan to members.</p>}
+          {!isNew && dirty && exerciseTotal > 0 && !archived && <p className="text-body-sm text-ink-3">Save your changes to give this plan to members.</p>}
           <FormError error={save.error} />
 
           <Card padding="lg">
@@ -270,7 +271,7 @@ export default function WorkoutPlanPage() {
           <PlanDaysEditor days={days} onChange={setDays} errors={errors} />
         </div>
 
-        <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur-md md:bottom-0 md:left-[76px] md:px-6 xl:left-[var(--kv-rail-w)]">
+        <div className={stickyActionBarClasses}>
           <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 xl:px-2">
             <p className="hidden text-sm text-ink-3 sm:block" aria-live="polite">
               {!online

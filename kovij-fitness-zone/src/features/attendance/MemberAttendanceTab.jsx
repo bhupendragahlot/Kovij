@@ -70,7 +70,7 @@ export default function MemberAttendanceTab({ member }) {
     <div className="flex items-center gap-3 px-4 py-3">
       <div className="min-w-0 flex-1">
         <p className="font-semibold">{formatDayShort(v.dayKey)}</p>
-        <p className="tabular text-[13px] text-ink-3">
+        <p className="tabular text-body-sm text-ink-3">
           {formatTime(v.checkedInAt)}
           {v.checkedOutAt ? ` – ${formatTime(v.checkedOutAt)}, ${formatDuration(v.durationMinutes)}` : ""}
           {` · ${METHOD_LABEL[v.method] || v.method}`}

@@ -53,7 +53,7 @@ export default function ResetPasswordPage() {
           <Button type="submit" variant="primary" size="lg" block loading={reset.isPending} icon={KeyRound}>
             Save new password
           </Button>
-          <p className="text-[13px] text-ink-3">You’ll be signed out on every other device.</p>
+          <p className="text-body-sm text-ink-3">You’ll be signed out on every other device.</p>
         </form>
       )}
       <p className="mt-6 text-sm">

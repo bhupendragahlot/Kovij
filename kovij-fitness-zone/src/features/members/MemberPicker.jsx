@@ -55,7 +55,7 @@ export function MemberPicker({ value, onChange, error, label = "Member", exclude
       >
         <SearchInput value={q} onChange={(v) => (setQ(v), setActive(0))} label={`Search ${label.toLowerCase()}`} placeholder="Name, phone or member code" />
       </div>
-      {error && <p className="mt-1.5 text-[13px] font-medium text-bad">{error}</p>}
+      {error && <p className="mt-1.5 text-body-sm font-medium text-bad">{error}</p>}
       {term.length >= 2 && (
         <ul id={listId} role="listbox" className="mt-2 flex flex-col gap-0.5 rounded-tile border border-line p-1">
           {results.isPending && <li className="px-3 py-2 text-sm text-ink-3">Searching…</li>}

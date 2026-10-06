@@ -73,11 +73,11 @@ function ForYou() {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-start justify-between gap-2">
-                      <span className={cn("text-[15px]", unread ? "font-bold" : "font-semibold")}>{n.title}</span>
+                      <span className={cn("text-body-lg", unread ? "font-bold" : "font-semibold")}>{n.title}</span>
                       {unread && <span className="mt-1.5 size-2.5 shrink-0 rounded-full bg-brand" aria-label="Unread" />}
                     </span>
                     {n.body && <span className="mt-0.5 line-clamp-3 block text-sm text-ink-2">{n.body}</span>}
-                    <span className="mt-1 block text-[12px] text-ink-3">{formatRelativeTime(n.createdAt)}</span>
+                    <span className="mt-1 block text-label text-ink-3">{formatRelativeTime(n.createdAt)}</span>
                   </span>
                 </button>
               </li>
@@ -104,10 +104,10 @@ function Announcements() {
               <div className="mb-1 flex flex-wrap items-center gap-2">
                 {a.category && <Badge size="sm" tone={a.category === "offer" ? "brand" : "neutral"}>{CATEGORY[a.category] || a.category}</Badge>}
                 {a.pinned && <Badge size="sm">Pinned</Badge>}
-                <span className="text-[12px] text-ink-3">{formatRelativeTime(a.publishAt)}</span>
+                <span className="text-label text-ink-3">{formatRelativeTime(a.publishAt)}</span>
               </div>
-              <h2 className="text-[17px] font-bold">{a.title}</h2>
-              <p className="mt-1 whitespace-pre-line text-[15px] text-ink-2">{a.body}</p>
+              <h2 className="text-title-lg font-bold">{a.title}</h2>
+              <p className="mt-1 whitespace-pre-line text-body-lg text-ink-2">{a.body}</p>
             </div>
           </Card>
         </li>

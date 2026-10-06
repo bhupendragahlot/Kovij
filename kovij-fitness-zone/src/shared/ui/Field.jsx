@@ -36,13 +36,13 @@ export function Field({ label, hint, error, required, optional, className, child
       )}
       {control}
       {error ? (
-        <p id={errorId} className="flex items-start gap-1.5 text-[13px] font-medium text-bad">
+        <p id={errorId} className="flex items-start gap-1.5 text-body-sm font-medium text-bad">
           <CircleAlert className="mt-0.5 size-3.5 shrink-0" aria-hidden />
           {error}
         </p>
       ) : (
         hint && (
-          <p id={hintId} className="text-[13px] text-ink-3">
+          <p id={hintId} className="text-body-sm text-ink-3">
             {hint}
           </p>
         )

@@ -153,7 +153,7 @@ export default function MembersPage() {
           <Avatar name={m.name} src={m.profilePhoto} />
           <span className="min-w-0">
             <span className="block truncate font-semibold text-ink group-hover:underline">{m.name}</span>
-            <span className="block text-[13px] text-ink-3">{m.memberCode || "No code"}</span>
+            <span className="block text-body-sm text-ink-3">{m.memberCode || "No code"}</span>
           </span>
         </Link>
       ),
@@ -168,7 +168,7 @@ export default function MembersPage() {
         m.current?.endDate && ["active", "expiring", "expired", "paused"].includes(m.state) ? (
           <span className="whitespace-nowrap">
             <span className="text-ink">{formatShortDate(m.current.endDate)}</span>
-            <span className="block text-[13px] text-ink-3">{formatRelativeDay(m.current.endDate)}</span>
+            <span className="block text-body-sm text-ink-3">{formatRelativeDay(m.current.endDate)}</span>
           </span>
         ) : (
           <span className="text-ink-3">—</span>
@@ -193,7 +193,7 @@ export default function MembersPage() {
           <span className="flex items-center gap-2">
             <span className="truncate font-semibold text-ink">{m.name}</span>
           </span>
-          <span className="block truncate text-[13px] text-ink-3">{planLine(m)}</span>
+          <span className="block truncate text-body-sm text-ink-3">{planLine(m)}</span>
           <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
             <MemberStateBadge status={m.state} size="sm" />
             {canSeeMoney && m.dues > 0 && <span className="text-xs font-semibold text-warn">{formatINR(m.dues)} due</span>}

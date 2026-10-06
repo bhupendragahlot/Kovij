@@ -5,6 +5,10 @@
 /* `dark:` follows the .dark class set by the theme setting, not the OS preference. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Input type: fine = mouse or trackpad, coarse = finger (Tailwind 4.0 has no built-in variants). */
+@custom-variant pointer-fine (@media (pointer: fine));
+@custom-variant pointer-coarse (@media (pointer: coarse));
+
 /* ─────────────────────────────────────────────────────────────
    Kovij desk design tokens
    Raw values live on :root / .dark; Tailwind utilities point at them,
@@ -13,19 +17,48 @@
 @theme {
   --font-ui: "Manrope Variable", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  --text-display: 3.5rem;
-  --text-display--line-height: 1;
-  --text-display--letter-spacing: -0.04em;
-  --text-title: 1.625rem;
-  --text-title--line-height: 2rem;
-  --text-title--letter-spacing: -0.02em;
+  /* Window size classes (Material 3): compact < 600 ≤ medium < 840 ≤ expanded. lg (1024) is
+     used for two-column content, xl (1280) for the large / desktop shell. */
+  --breakpoint-sm: 37.5rem;
+  --breakpoint-md: 52.5rem;
 
-  --radius-hero: 1.75rem;
-  --radius-card: 1.25rem;
-  --radius-tile: 0.875rem;
+  /* Type scale. One role per token; sizes follow Material 3, tuned compact for phones.
+     text-sm (14/20) is `body` and text-xs (12/16) matches `label`. */
+  --text-display: 2rem;
+  --text-display--line-height: 2.5rem;
+  --text-display--letter-spacing: -0.03em;
+  --text-headline: 1.625rem;
+  --text-headline--line-height: 2rem;
+  --text-headline--letter-spacing: -0.02em;
+  --text-headline-sm: 1.375rem;
+  --text-headline-sm--line-height: 1.75rem;
+  --text-headline-sm--letter-spacing: -0.015em;
+  --text-title-lg: 1.125rem;
+  --text-title-lg--line-height: 1.5rem;
+  --text-title-lg--letter-spacing: -0.01em;
+  --text-title: 1rem;
+  --text-title--line-height: 1.5rem;
+  --text-body-lg: 0.9375rem;
+  --text-body-lg--line-height: 1.375rem;
+  --text-body: 0.875rem;
+  --text-body--line-height: 1.25rem;
+  --text-body-sm: 0.8125rem;
+  --text-body-sm--line-height: 1.125rem;
+  --text-label: 0.75rem;
+  --text-label--line-height: 1rem;
+  --text-label-sm: 0.6875rem;
+  --text-label-sm--line-height: 0.875rem;
+
+  /* Shape scale: chip 8 · control/tile 12 · card 16 · hero/sheet/dialog 28 · full for pills. */
+  --radius-chip: 0.5rem;
   --radius-control: 0.75rem;
+  --radius-tile: 0.75rem;
+  --radius-card: 1rem;
+  --radius-hero: 1.75rem;
 
   --ease-snap: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Material "emphasized decelerate": sheets and dialogs coming in. */
+  --ease-enter: cubic-bezier(0.05, 0.7, 0.1, 1);
 }
 
 @theme inline {
@@ -73,6 +106,16 @@
 
   --shadow-pop: var(--kv-shadow-pop);
   --shadow-float: var(--kv-shadow-float);
+
+  /* Inverse surface (snackbars): dark on light theme, light on dark. */
+  --color-inverse: var(--kv-inverse);
+  --color-inverse-ink: var(--kv-inverse-ink);
+  --color-inverse-ink-2: var(--kv-inverse-ink-2);
+  --color-inverse-brand: var(--kv-inverse-brand);
+  --color-inverse-good: var(--kv-inverse-good);
+  --color-inverse-bad: var(--kv-inverse-bad);
+  --color-inverse-warn: var(--kv-inverse-warn);
+  --color-inverse-info: var(--kv-inverse-info);
 }
 
 :root {
@@ -124,6 +167,15 @@
 
   --kv-shadow-pop: 0 18px 40px -12px rgb(19 20 23 / 0.22), 0 2px 6px rgb(19 20 23 / 0.08);
   --kv-shadow-float: 0 10px 30px -10px rgb(19 20 23 / 0.35);
+
+  --kv-inverse: #2a2c31;
+  --kv-inverse-ink: #f4f5f6;
+  --kv-inverse-ink-2: #c3c7ce;
+  --kv-inverse-brand: #ffb37a;
+  --kv-inverse-good: #4ade80;
+  --kv-inverse-bad: #fca5a5;
+  --kv-inverse-warn: #facc15;
+  --kv-inverse-info: #93c5fd;
 }
 
 .dark {
@@ -173,6 +225,15 @@
 
   --kv-shadow-pop: 0 18px 40px -12px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.06);
   --kv-shadow-float: 0 10px 30px -10px rgb(0 0 0 / 0.8);
+
+  --kv-inverse: #e6e8eb;
+  --kv-inverse-ink: #15171a;
+  --kv-inverse-ink-2: #474c54;
+  --kv-inverse-brand: #b34700;
+  --kv-inverse-good: #0e7a3c;
+  --kv-inverse-bad: #c0262d;
+  --kv-inverse-warn: #8a5a00;
+  --kv-inverse-info: #1d5fc2;
 }
 
 @layer base {
@@ -189,6 +250,125 @@
   .kv-app .tabular {
     font-variant-numeric: tabular-nums;
   }
+  .kv-app {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  /* No double-tap-to-zoom wait on controls. */
+  .kv-app :where(a, button, label, summary, select, [role="button"], [role="tab"], [role="radio"], [role="switch"], [role="menuitem"]) {
+    touch-action: manipulation;
+  }
+}
+
+/* App chrome measurements, shared by bars, sheets, snackbars and sticky action bars. */
+:root {
+  --kv-appbar-h: 3.5rem;
+  --kv-navbar-h: 4rem;
+}
+@media (min-width: 52.5rem) {
+  :root {
+    --kv-appbar-h: 4rem;
+  }
+}
+
+/* Material state layer: hover 8 %, focus 10 %, pressed 12 % of the content colour, over any
+   container colour. Draws on ::before, so it never needs a per-variant hover colour. */
+@utility state-layer {
+  position: relative;
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: currentColor;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 150ms ease;
+  }
+  @media (hover: hover) {
+    &:hover::before {
+      opacity: 0.08;
+    }
+  }
+  &:focus-visible::before {
+    opacity: 0.1;
+  }
+  &:active::before {
+    opacity: 0.12;
+  }
+  &:disabled::before,
+  &[aria-disabled="true"]::before {
+    opacity: 0;
+  }
+}
+
+/* Touch screens: at least 48 × 48 px to tap, whatever the control's visible size (on ::after). */
+@utility touch-target {
+  position: relative;
+  @media (pointer: coarse) {
+    &::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: max(100%, 48px);
+      height: max(100%, 48px);
+      transform: translate(-50%, -50%);
+    }
+  }
+}
+
+/* Navigation links: no long-press link preview or text selection, like native tabs. */
+@utility no-callout {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Sheets, dialogs and snackbars move in (reduced-motion users get the global override below). */
+@keyframes kv-sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+@keyframes kv-dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes kv-side-in {
+  from {
+    transform: translateX(100%);
+  }
+}
+@keyframes kv-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes kv-rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+dialog.kv-dialog[open] {
+  animation: kv-sheet-in 280ms var(--ease-enter);
+}
+dialog.kv-dialog[open]::backdrop {
+  animation: kv-fade-in 200ms ease-out;
+}
+@media (min-width: 52.5rem) {
+  dialog.kv-dialog[data-placement="center"][open] {
+    animation: kv-dialog-in 200ms var(--ease-enter);
+  }
+  dialog.kv-dialog[data-placement="side"][open] {
+    animation: kv-side-in 280ms var(--ease-enter);
+  }
+}
+.kv-toast {
+  animation: kv-rise-in 200ms var(--ease-enter);
 }
 
 html {

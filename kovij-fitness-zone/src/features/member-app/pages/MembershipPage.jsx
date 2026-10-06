@@ -100,16 +100,16 @@ function PlanPicker({ standing }) {
                 className={cn("flex h-full w-full flex-col rounded-tile border p-4 text-left transition-colors hover:border-brand", p.popular ? "border-brand bg-brand-soft/40" : "border-line-strong bg-surface")}
               >
                 <span className="flex items-start justify-between gap-2">
-                  <span className="text-[17px] font-bold">{p.name}</span>
+                  <span className="text-title-lg font-bold">{p.name}</span>
                   {p.isCurrent ? <Badge size="sm">Your plan</Badge> : p.popular ? <Badge size="sm" tone="brand">Popular</Badge> : null}
                 </span>
-                <span className="tabular mt-1 text-[24px] font-bold">{formatINR(p.price)}</span>
-                <span className="text-[13px] text-ink-3">
+                <span className="tabular mt-1 text-headline-sm font-bold">{formatINR(p.price)}</span>
+                <span className="text-body-sm text-ink-3">
                   {pluralize(p.durationDays, "day")}
                   {perMonth(p) && ` · ${perMonth(p)}`}
                 </span>
                 {p.features?.length > 0 && (
-                  <ul className="mt-3 flex flex-col gap-1 text-[13px] text-ink-2">
+                  <ul className="mt-3 flex flex-col gap-1 text-body-sm text-ink-2">
                     {p.features.slice(0, 4).map((f) => (
                       <li key={f} className="flex gap-1.5">
                         <Check className="mt-0.5 size-3.5 shrink-0 text-good" aria-hidden />
@@ -170,7 +170,7 @@ function ConfirmPlan({ plan, info, onClose }) {
       }
     >
       <FormError error={request.error} />
-      <dl className="flex flex-col gap-2 text-[15px]">
+      <dl className="flex flex-col gap-2 text-body-lg">
         <div className="flex justify-between">
           <dt>{plan.name}</dt>
           <dd className="tabular font-semibold">{formatINR(plan.price)}</dd>
@@ -181,7 +181,7 @@ function ConfirmPlan({ plan, info, onClose }) {
             <dd className="tabular font-semibold">{formatINR(fee)}</dd>
           </div>
         )}
-        <div className="flex justify-between border-t border-line pt-2 text-[17px] font-bold">
+        <div className="flex justify-between border-t border-line pt-2 text-title-lg font-bold">
           <dt>To pay</dt>
           <dd className="tabular">{formatINR(total)}</dd>
         </div>
@@ -214,7 +214,7 @@ function PlanHistory() {
                 {EVENT_TEXT[e.type] || e.type}
                 {e.planName && <span className="font-normal text-ink-2"> · {e.type === "upgrade" || e.type === "downgrade" ? `${e.fromPlanName} → ${e.planName}` : e.planName}</span>}
               </p>
-              <p className="text-[13px] text-ink-3">
+              <p className="text-body-sm text-ink-3">
                 {formatDate(e.at)}
                 {e.days ? ` · ${pluralize(e.days, "day")}` : ""}
                 {e.from && e.to && e.type !== "ended" ? ` · ${formatDate(e.from)} to ${formatDate(e.to)}` : ""}

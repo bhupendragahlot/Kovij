@@ -17,6 +17,7 @@ import { useOnlineStatus } from "../../shared/hooks/useOnlineStatus";
 import { useUnsavedChangesGuard } from "../../shared/hooks/useUnsavedChangesGuard";
 import { Button, Card, CardHeader, ErrorState, FormError, InlineAlert, PageHeader, SkeletonList, Switch, useToast } from "../../shared/ui";
 import { formatINR, formatPhone } from "../../shared/lib/format";
+import { stickyActionBarClasses } from "../../shared/ui/styles";
 
 function DuplicateNotice({ matches, onForce, forced }) {
   if (!matches?.length) return null;
@@ -206,7 +207,7 @@ export default function NewMemberPage() {
           </Card>
         </div>
 
-        <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur-md md:bottom-0 md:left-[76px] md:px-6 xl:left-[var(--kv-rail-w)]">
+        <div className={stickyActionBarClasses}>
           <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 xl:px-2">
             <p className="hidden text-sm text-ink-3 sm:block">{!online
                 ? "Reconnect to register."

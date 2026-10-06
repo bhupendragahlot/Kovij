@@ -145,7 +145,7 @@ export default function ExerciseLibraryPage() {
         <span className="text-ink-2">
           {MUSCLE_LABEL[e.primaryMuscle]}
           {e.secondaryMuscles?.length ? (
-            <span className="block text-[13px] text-ink-3">Also {e.secondaryMuscles.map((m) => MUSCLE_LABEL[m]).join(", ")}</span>
+            <span className="block text-body-sm text-ink-3">Also {e.secondaryMuscles.map((m) => MUSCLE_LABEL[m]).join(", ")}</span>
           ) : null}
         </span>
       ),
@@ -155,7 +155,7 @@ export default function ExerciseLibraryPage() {
       id: "how",
       header: "How to do it",
       hideBelow: "xl",
-      cell: (e) => <span className="line-clamp-2 max-w-md text-[13px] text-ink-3">{e.instructions || "—"}</span>,
+      cell: (e) => <span className="line-clamp-2 max-w-md text-body-sm text-ink-3">{e.instructions || "—"}</span>,
     },
     { id: "actions", header: <span className="sr-only">Actions</span>, align: "right", cell: rowMenu },
   ];
@@ -164,7 +164,7 @@ export default function ExerciseLibraryPage() {
     <div className="flex items-start gap-3 px-4 py-3">
       <button type="button" onClick={() => setEditing(e)} className="min-w-0 flex-1 text-left">
         <span className="block font-semibold text-ink">{e.name}</span>
-        <span className="block text-[13px] text-ink-3">
+        <span className="block text-body-sm text-ink-3">
           {MUSCLE_LABEL[e.primaryMuscle]}, {EQUIPMENT_LABEL[e.equipment]}
         </span>
         <ExerciseBadges e={e} />

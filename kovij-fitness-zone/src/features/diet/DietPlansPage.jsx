@@ -23,20 +23,20 @@ function PlanCard({ plan }) {
     >
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="truncate text-[15px] font-semibold text-ink group-hover:underline">{plan.name}</p>
-          <p className="text-[13px] text-ink-3">{DIET_GOAL[plan.goal] || "General fitness"}</p>
+          <p className="truncate text-body-lg font-semibold text-ink group-hover:underline">{plan.name}</p>
+          <p className="text-body-sm text-ink-3">{DIET_GOAL[plan.goal] || "General fitness"}</p>
         </div>
         <DietTypeBadge type={plan.dietType} />
       </div>
-      <p className="mt-3 text-2xl font-bold tracking-tight text-ink">
+      <p className="mt-3 text-headline-sm font-bold tracking-tight text-ink">
         {formatKcal(plan.totals.calories)}
         <span className="ml-1 text-sm font-medium text-ink-3">a day</span>
       </p>
-      <p className="tabular text-[13px] text-ink-3">
+      <p className="tabular text-body-sm text-ink-3">
         {formatNumber(plan.totals.proteinG)} g protein, {formatNumber(plan.totals.carbsG)} g carbs, {formatNumber(plan.totals.fatG)} g fat
       </p>
       {t.calories > 0 && (
-        <p className="mt-2 flex items-center gap-1.5 text-[13px] text-ink-2">
+        <p className="mt-2 flex items-center gap-1.5 text-body-sm text-ink-2">
           <Target className="size-3.5 text-ink-3" aria-hidden />
           Target {formatKcal(t.calories)}
           {t.proteinG > 0 && `, ${formatNumber(t.proteinG)} g protein`}

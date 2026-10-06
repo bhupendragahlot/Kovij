@@ -50,10 +50,10 @@ export function InstallAppCard({ appName, description, onDismiss, className }) {
   return (
     <Card className={className}>
       <div className="flex items-start gap-4">
-        <img src="/icons/icon-192.png" alt="" width="48" height="48" className="size-12 shrink-0 rounded-[12px]" />
+        <img src="/icons/icon-192.png" alt="" width="48" height="48" className="size-12 shrink-0 rounded-tile" />
         <div className="min-w-0 flex-1">
           <p className="font-bold text-ink">Install the {appName} app</p>
-          <p className="mt-0.5 text-[13px] text-ink-3">{description}</p>
+          <p className="mt-0.5 text-body-sm text-ink-3">{description}</p>
           <Button className="mt-3" variant="primary" size="sm" icon={Download} onClick={action.install}>
             Install
           </Button>

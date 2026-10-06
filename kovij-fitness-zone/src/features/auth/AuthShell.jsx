@@ -14,7 +14,7 @@ export function AuthShell({ title, description, children }) {
             <br />
             from one screen.
           </p>
-          <p className="mt-4 max-w-sm text-[15px] text-rail-ink-2">
+          <p className="mt-4 max-w-sm text-body-lg text-rail-ink-2">
             Check members in, collect dues, renew plans and follow up leads at Kovij Fitness Zone.
           </p>
         </div>
@@ -26,8 +26,8 @@ export function AuthShell({ title, description, children }) {
           <div className="mb-8 lg:hidden">
             <BrandMark tone="ink" />
           </div>
-          <h1 className="text-title font-bold">{title}</h1>
-          {description && <p className="mt-1 text-[15px] text-ink-3">{description}</p>}
+          <h1 className="text-headline-sm font-bold sm:text-headline">{title}</h1>
+          {description && <p className="mt-1 text-body-lg text-ink-3">{description}</p>}
           {children}
         </div>
       </main>

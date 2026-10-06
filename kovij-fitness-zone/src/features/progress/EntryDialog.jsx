@@ -121,7 +121,7 @@ export function EntryDialog({ open, onClose, memberId, entry, entries = [], defa
         </Field>
         <fieldset className="col-span-2 mt-2">
           <legend className="text-sm font-semibold text-ink">Tape measurements</legend>
-          <p className="mt-0.5 text-[13px] text-ink-3">In centimetres. Measure the same spot each time.</p>
+          <p className="mt-0.5 text-body-sm text-ink-3">In centimetres. Measure the same spot each time.</p>
           <div className="mt-3 grid grid-cols-2 gap-3">
             {TAPE_FIELDS.map((f) => (
               <Field key={f.key} label={f.label} error={errors[f.key]}>

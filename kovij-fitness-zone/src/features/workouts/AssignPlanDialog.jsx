@@ -19,7 +19,7 @@ function PlanChooser({ value, onChange, error }) {
   return (
     <div className="flex flex-col gap-2">
       <SearchInput value={q} onChange={setQ} label="Search plans" placeholder="Search plans" />
-      {error && <p className="text-[13px] font-medium text-bad">{error}</p>}
+      {error && <p className="text-body-sm font-medium text-bad">{error}</p>}
       {plans.isPending ? (
         <SkeletonList rows={3} />
       ) : plans.isError && !plans.data ? (
@@ -47,7 +47,7 @@ function PlanChooser({ value, onChange, error }) {
                   <span className={cn("size-4 shrink-0 rounded-full border-2", on ? "border-brand bg-brand" : "border-line-strong")} aria-hidden />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-semibold">{p.name}</span>
-                    <span className="block truncate text-[13px] text-ink-3">
+                    <span className="block truncate text-body-sm text-ink-3">
                       {empty ? "No exercises yet" : `${PLAN_GOAL_LABEL[p.goal]}, ${LEVEL_LABEL[p.level].toLowerCase()}, ${perWeek(p.daysPerWeek)}`}
                     </span>
                   </span>

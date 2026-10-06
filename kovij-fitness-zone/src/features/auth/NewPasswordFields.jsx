@@ -14,7 +14,7 @@ export function NewPasswordFields({ value, onChange, errors = {}, passwordLabel 
     <button
       type="button"
       onClick={() => setShown((v) => !v)}
-      className="inline-flex items-center gap-1 text-[13px] font-semibold text-ink-3 hover:text-ink"
+      className="touch-target inline-flex items-center gap-1 text-body-sm font-semibold text-ink-3 hover:text-ink"
       aria-pressed={shown}
     >
       {shown ? <EyeOff className="size-3.5" aria-hidden /> : <Eye className="size-3.5" aria-hidden />}

@@ -1,6 +1,6 @@
-import { ChevronDown } from "lucide-react";
+import { Check, ChevronDown } from "lucide-react";
 import { cn } from "../lib/cn";
-import { controlClasses } from "./styles";
+import { CONTROL_HEIGHT, controlClasses } from "./styles";
 
 /**
  * Text input. `icon` renders a leading icon, `prefix` leading text (e.g. "₹"),
@@ -8,19 +8,23 @@ import { controlClasses } from "./styles";
  */
 export function Input({ icon: Icon, prefix, suffix, className, ref, ...props }) {
   if (!Icon && !prefix && !suffix) {
-    return <input ref={ref} className={cn(controlClasses, "h-11 px-3 md:h-10", className)} {...props} />;
+    return <input ref={ref} className={cn(controlClasses, CONTROL_HEIGHT, "px-3", className)} {...props} />;
   }
   const leading = Icon || prefix;
   return (
     <div className="relative">
-      {Icon && <Icon className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-3" aria-hidden />}
+      {Icon && <Icon className="pointer-events-none absolute left-3 top-1/2 size-[18px] -translate-y-1/2 text-ink-3" aria-hidden />}
       {prefix && !Icon && (
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[15px] text-ink-3 md:text-sm" aria-hidden>
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-base text-ink-3 md:text-sm" aria-hidden>
           {prefix}
         </span>
       )}
-      <input ref={ref} className={cn(controlClasses, "h-11 md:h-10", leading ? "pl-8" : "pl-3", suffix ? "pr-12" : "pr-3", className)} {...props} />
-      {suffix && <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-ink-3">{suffix}</span>}
+      <input
+        ref={ref}
+        className={cn(controlClasses, CONTROL_HEIGHT, leading ? (Icon ? "pl-10" : "pl-8") : "pl-3", suffix ? "pr-12" : "pr-3", className)}
+        {...props}
+      />
+      {suffix && <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-body-sm text-ink-3">{suffix}</span>}
     </div>
   );
 }
@@ -33,7 +37,7 @@ export function Textarea({ className, rows = 3, ref, ...props }) {
 export function Select({ className, children, placeholder, ref, ...props }) {
   return (
     <div className="relative">
-      <select ref={ref} className={cn(controlClasses, "h-11 appearance-none pl-3 pr-9 md:h-10", className)} {...props}>
+      <select ref={ref} className={cn(controlClasses, CONTROL_HEIGHT, "appearance-none pl-3 pr-9", className)} {...props}>
         {placeholder && (
           <option value="" disabled>
             {placeholder}
@@ -41,18 +45,21 @@ export function Select({ className, children, placeholder, ref, ...props }) {
         )}
         {children}
       </select>
-      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-ink-3" aria-hidden />
+      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 size-[18px] -translate-y-1/2 text-ink-3" aria-hidden />
     </div>
   );
 }
 
-/** On/off setting. Renders a real switch role with the label as its accessible name. */
+/**
+ * On/off setting (Material 3 switch: 52 × 32 track; the thumb grows and shows a tick when on).
+ * The whole row is the label, so it taps comfortably; the switch role carries the state.
+ */
 export function Switch({ checked, onChange, label, description, disabled, id }) {
   return (
-    <label className={cn("flex cursor-pointer items-start justify-between gap-4", disabled && "cursor-not-allowed opacity-60")}>
-      <span className="min-w-0">
+    <label className={cn("flex min-h-12 cursor-pointer items-center justify-between gap-4", disabled && "cursor-not-allowed opacity-40")}>
+      <span className="min-w-0 py-1">
         <span className="block text-sm font-semibold text-ink">{label}</span>
-        {description && <span className="mt-0.5 block text-[13px] text-ink-3">{description}</span>}
+        {description && <span className="mt-0.5 block text-body-sm text-ink-3">{description}</span>}
       </span>
       <button
         id={id}
@@ -62,24 +69,27 @@ export function Switch({ checked, onChange, label, description, disabled, id }) 
         disabled={disabled}
         onClick={() => onChange(!checked)}
         className={cn(
-          "relative mt-0.5 inline-flex h-7 w-12 shrink-0 items-center rounded-full transition-colors duration-150",
-          checked ? "bg-brand" : "bg-surface-3"
+          "relative inline-flex h-8 w-[52px] shrink-0 items-center rounded-full border-2 transition-colors duration-200",
+          checked ? "border-brand bg-brand" : "border-control bg-surface-3"
         )}
       >
         <span
           className={cn(
-            "inline-block size-5 rounded-full bg-white shadow transition-transform duration-150 ease-[var(--ease-snap)]",
-            checked ? "translate-x-6" : "translate-x-1"
+            "absolute grid place-items-center rounded-full transition-all duration-200 ease-[var(--ease-snap)]",
+            checked ? "left-[22px] size-6 bg-white shadow-sm" : "left-[6px] size-4 bg-control"
           )}
-        />
+        >
+          {checked && <Check className="size-3.5 text-brand-ink" strokeWidth={3} aria-hidden />}
+        </span>
       </button>
     </label>
   );
 }
 
 /**
- * Pick one of a few options (payment mode, date range). Radio-group semantics, so arrow keys
- * move between options and screen readers announce "1 of 3".
+ * Pick one of a few options (payment mode, date range, sub-views). Material 3 segmented
+ * button: one outlined pill, the chosen segment filled with the soft brand colour.
+ * Radio-group semantics, so arrow keys move between options and screen readers announce "1 of 3".
  */
 export function SegmentedControl({ label, value, onChange, options, size = "md", className, block = false }) {
   const onKeyDown = (e) => {
@@ -96,9 +106,9 @@ export function SegmentedControl({ label, value, onChange, options, size = "md",
       role="radiogroup"
       aria-label={label}
       onKeyDown={onKeyDown}
-      className={cn("inline-flex gap-1 rounded-control bg-surface-2 p-1", block && "flex w-full", className)}
+      className={cn("inline-flex max-w-full rounded-full border border-control bg-surface", block && "flex w-full", className)}
     >
-      {options.map((o) => {
+      {options.map((o, i) => {
         const selected = o.value === value;
         const Icon = o.icon;
         return (
@@ -111,14 +121,18 @@ export function SegmentedControl({ label, value, onChange, options, size = "md",
             data-value={o.value}
             onClick={() => onChange(o.value)}
             className={cn(
-              "inline-flex items-center justify-center gap-1.5 rounded-[9px] font-semibold transition-colors duration-150",
-              size === "sm" ? "h-8 px-3 text-[13px]" : "h-10 px-3.5 text-sm md:h-9",
+              // Rounded ends instead of overflow-hidden on the group, so the 48 px touch area isn't clipped.
+              "state-layer touch-target inline-flex min-w-0 items-center justify-center gap-1.5 whitespace-nowrap font-semibold transition-colors duration-150",
+              size === "sm" ? "h-[30px] px-3 text-body-sm" : "h-[38px] px-4 text-sm",
+              i > 0 && "border-l border-control",
+              i === 0 && "rounded-l-full",
+              i === options.length - 1 && "rounded-r-full",
               block && "flex-1",
-              selected ? "bg-surface text-ink shadow-sm dark:bg-surface-3" : "text-ink-2 hover:text-ink"
+              selected ? "bg-brand-soft text-brand-ink" : "text-ink-2"
             )}
           >
-            {Icon && <Icon className="size-4" aria-hidden />}
-            {o.label}
+            {Icon ? <Icon className="size-4 shrink-0" aria-hidden /> : selected && options.length <= 3 && <Check className="size-4 shrink-0" aria-hidden />}
+            <span className="truncate">{o.label}</span>
           </button>
         );
       })}

@@ -101,7 +101,7 @@ function Composer({ memberId, canHealth }) {
             Add note
           </Button>
         </div>
-        {!online && <p className="text-[13px] text-warn">You&apos;re offline. Reconnect to add notes.</p>}
+        {!online && <p className="text-body-sm text-warn">You&apos;re offline. Reconnect to add notes.</p>}
       </form>
     </Card>
   );

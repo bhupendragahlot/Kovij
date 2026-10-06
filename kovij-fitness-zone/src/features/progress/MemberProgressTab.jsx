@@ -24,7 +24,7 @@ function Change({ value, unit, good, className }) {
   const dir = value === 0 ? null : value > 0 ? "up" : "down";
   const tone = !good || !dir ? "text-ink-3" : dir === good ? "text-good" : "text-bad";
   return (
-    <span className={cn("inline-flex items-center gap-0.5 text-[13px] font-semibold", tone, className)}>
+    <span className={cn("inline-flex items-center gap-0.5 text-body-sm font-semibold", tone, className)}>
       <Arrow className="size-3.5 shrink-0" aria-hidden strokeWidth={2.6} />
       {formatChange(value, unit)}
     </span>
@@ -36,7 +36,7 @@ function StatTile({ label, children, sub }) {
     <div className="flex min-w-0 flex-col rounded-card border border-transparent bg-surface p-4 dark:border-line">
       <p className="text-sm font-semibold text-ink-2">{label}</p>
       <div className="mt-1.5 min-w-0">{children}</div>
-      {sub && <div className="mt-1 text-[13px] text-ink-3">{sub}</div>}
+      {sub && <div className="mt-1 text-body-sm text-ink-3">{sub}</div>}
     </div>
   );
 }
@@ -63,7 +63,7 @@ function SummaryTiles({ summary, goal }) {
           )
         }
       >
-        <p className="text-2xl font-bold tracking-tight text-ink">{latest == null ? "–" : formatMeasure(latest, meta.unit)}</p>
+        <p className="text-headline-sm font-bold tracking-tight text-ink">{latest == null ? "–" : formatMeasure(latest, meta.unit)}</p>
       </StatTile>
     );
   };
@@ -76,7 +76,7 @@ function SummaryTiles({ summary, goal }) {
         sub={band ? `${band.label} range is ${band.range}. BMI can't tell muscle from fat.` : summary.heightCm ? "Add a weight to work it out" : "Needs height and weight"}
       >
         <div className="flex flex-wrap items-center gap-2">
-          <p className="text-2xl font-bold tracking-tight text-ink">{summary.bmi ?? "–"}</p>
+          <p className="text-headline-sm font-bold tracking-tight text-ink">{summary.bmi ?? "–"}</p>
           {band && (
             <Badge size="sm" tone={BMI_TONE[band.key]} icon={band.key === "healthy" ? CircleCheck : TriangleAlert}>
               {band.label}
@@ -205,7 +205,7 @@ export default function MemberProgressTab({ member, profile }) {
               </span>
             ))}
           </span>
-          {rest.length > 0 && <span className="mt-1 block text-[13px] text-ink-3">{rest.map((m) => `${m.label} ${formatMeasure(e[m.key], m.unit)}`).join(", ")}</span>}
+          {rest.length > 0 && <span className="mt-1 block text-body-sm text-ink-3">{rest.map((m) => `${m.label} ${formatMeasure(e[m.key], m.unit)}`).join(", ")}</span>}
         </span>
         {canManage && <ChevronRight className="mt-1 size-4 shrink-0 text-ink-3" aria-hidden />}
       </>
@@ -255,7 +255,7 @@ export default function MemberProgressTab({ member, profile }) {
           </Card>
           <Card padding="none" className="overflow-hidden">
             <div className="flex flex-wrap items-center justify-between gap-3 p-4 md:px-5">
-              <h2 className="text-[15px] font-semibold leading-6 text-ink">Measurements</h2>
+              <h2 className="text-body-lg font-semibold leading-6 text-ink">Measurements</h2>
               <SegmentedControl
                 label="Show change since"
                 size="sm"

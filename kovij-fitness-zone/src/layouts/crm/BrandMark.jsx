@@ -23,7 +23,7 @@ export function BrandMark({ tone = "rail", compact = false, logoUrl, className }
       {logoUrl ? <img src={logoUrl} alt="" className="size-9 shrink-0 rounded-[9px] bg-white object-contain p-0.5" /> : <KMark className="size-9 shrink-0" />}
       {!compact && (
         <span className="leading-tight">
-          <span className={cn("block text-[17px] font-extrabold tracking-[-0.02em]", tone === "rail" ? "text-rail-ink" : "text-ink")}>Kovij</span>
+          <span className={cn("block text-title-lg font-extrabold tracking-[-0.02em]", tone === "rail" ? "text-rail-ink" : "text-ink")}>Kovij</span>
           <span className={cn("block text-xs font-medium", tone === "rail" ? "text-rail-ink-2" : "text-ink-3")}>Front desk</span>
         </span>
       )}

@@ -203,15 +203,15 @@ export default function PlansPage() {
                 <Card className={cn("flex h-full flex-col", inactive && "opacity-70")}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="flex items-center gap-1.5 text-[15px] font-semibold">
+                      <p className="flex items-center gap-1.5 text-body-lg font-semibold">
                         {p.name}
                         {p.popular && <Star className="size-3.5 fill-current text-brand-ink" aria-label="Most popular" />}
                       </p>
-                      <p className="text-[13px] text-ink-3">{planLengthLabel(p)}</p>
+                      <p className="text-body-sm text-ink-3">{planLengthLabel(p)}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-2xl font-bold tracking-tight">{formatINR(p.price)}</p>
-                      {planDays(p) >= 60 && <p className="text-[13px] text-ink-3">{formatINR((Number(p.price) / planDays(p)) * 30)} a month</p>}
+                      <p className="text-headline-sm font-bold tracking-tight">{formatINR(p.price)}</p>
+                      {planDays(p) >= 60 && <p className="text-body-sm text-ink-3">{formatINR((Number(p.price) / planDays(p)) * 30)} a month</p>}
                     </div>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-1.5">

@@ -111,10 +111,10 @@ function MealRow({ meal, canLog, pending, onToggle }) {
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-baseline gap-x-2">
           <span className="font-semibold text-ink">{meal.name}</span>
-          {time && <span className="text-[13px] text-ink-3">{time}</span>}
-          <span className={cn("text-[13px] font-semibold", meal.eaten ? "text-good" : "text-ink-3")}>{meal.eaten ? "Eaten" : "Not yet"}</span>
+          {time && <span className="text-body-sm text-ink-3">{time}</span>}
+          <span className={cn("text-body-sm font-semibold", meal.eaten ? "text-good" : "text-ink-3")}>{meal.eaten ? "Eaten" : "Not yet"}</span>
         </span>
-        <span className="mt-0.5 block text-[13px] text-ink-3">{itemsLine(meal.items) || "No foods listed"}</span>
+        <span className="mt-0.5 block text-body-sm text-ink-3">{itemsLine(meal.items) || "No foods listed"}</span>
       </span>
       <span className="tabular shrink-0 text-sm font-semibold text-ink-2">{formatKcal(meal.totals.calories)}</span>
     </>
@@ -201,7 +201,7 @@ export function DayLog({ memberId, today: todayLog, canLog }) {
 
             {data.meals.length > 0 && (
               <div>
-                <p className="mb-1 text-[13px] font-semibold text-ink-3">
+                <p className="mb-1 text-body-sm font-semibold text-ink-3">
                   Planned meals, {data.mealsEaten} of {data.mealsPlanned} eaten
                 </p>
                 <ul className="-mx-2 divide-y divide-line">
@@ -221,7 +221,7 @@ export function DayLog({ memberId, today: todayLog, canLog }) {
 
             <div>
               <div className="mb-1 flex items-center justify-between gap-3">
-                <p className="text-[13px] font-semibold text-ink-3">Other food</p>
+                <p className="text-body-sm font-semibold text-ink-3">Other food</p>
                 {editable && (
                   <Button size="sm" variant="quiet" icon={Plus} onClick={() => setAdding(true)}>
                     Add food
@@ -262,22 +262,22 @@ export function DayLog({ memberId, today: todayLog, canLog }) {
                   <GlassWater className="size-4 text-info" aria-hidden />
                   Water
                 </p>
-                <p className="tabular text-[13px] text-ink-3" aria-live="polite">
+                <p className="tabular text-body-sm text-ink-3" aria-live="polite">
                   {formatNumber(glasses)} of {target} glasses{glasses >= target ? ", target reached" : ""}
                 </p>
               </div>
               {editable ? (
                 <div className="flex items-center gap-2">
                   <IconButton icon={Minus} label="One glass less" variant="secondary" disabled={glasses <= 0 || water.isPending} onClick={() => water.mutate({ day, glasses: glasses - 1 }, { onError: fail("update water") })} />
-                  <span className="tabular w-8 text-center text-lg font-bold">{glasses}</span>
+                  <span className="tabular w-8 text-center text-title-lg font-bold">{glasses}</span>
                   <IconButton icon={Plus} label="One glass more" variant="secondary" disabled={glasses >= 30 || water.isPending} onClick={() => water.mutate({ day, glasses: glasses + 1 }, { onError: fail("update water") })} />
                 </div>
               ) : (
-                <span className="tabular text-lg font-bold">{glasses}</span>
+                <span className="tabular text-title-lg font-bold">{glasses}</span>
               )}
             </div>
 
-            {canLog && !data.editable && <p className="text-[13px] text-ink-3">Only the last {DAYS_BACK} days can be changed.</p>}
+            {canLog && !data.editable && <p className="text-body-sm text-ink-3">Only the last {DAYS_BACK} days can be changed.</p>}
           </div>
         )
       )}

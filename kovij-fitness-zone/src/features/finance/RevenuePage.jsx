@@ -49,26 +49,26 @@ function MoneyInOut({ selected, month }) {
       <CardHeader id="in-out" title="Money in and out" description={monthLabel(month)} action={<ButtonLink to="/admin/expenses" size="sm" variant="ghost">Expenses<ArrowRight className="size-4" aria-hidden /></ButtonLink>} />
       <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <StatTile>
-          <dt className="text-[13px] text-ink-3">Collected</dt>
-          <dd className="tabular text-xl font-bold">{formatINR(selected.collected)}</dd>
-          <dd className="text-[13px] text-ink-3">{pluralize(selected.payments, "payment")}</dd>
+          <dt className="text-body-sm text-ink-3">Collected</dt>
+          <dd className="tabular text-title-lg font-bold">{formatINR(selected.collected)}</dd>
+          <dd className="text-body-sm text-ink-3">{pluralize(selected.payments, "payment")}</dd>
         </StatTile>
         <StatTile>
-          <dt className="text-[13px] text-ink-3">Spent</dt>
-          <dd className="tabular text-xl font-bold">{formatINR(selected.expenses)}</dd>
-          <dd className="text-[13px] text-ink-3">Rent, salaries, bills</dd>
+          <dt className="text-body-sm text-ink-3">Spent</dt>
+          <dd className="tabular text-title-lg font-bold">{formatINR(selected.expenses)}</dd>
+          <dd className="text-body-sm text-ink-3">Rent, salaries, bills</dd>
         </StatTile>
         <StatTile tone={profit ? "good" : "bad"}>
-          <dt className={cn("flex items-center gap-1.5 text-[13px] font-semibold", profit ? "text-good" : "text-bad")}>
+          <dt className={cn("flex items-center gap-1.5 text-body-sm font-semibold", profit ? "text-good" : "text-bad")}>
             <NetIcon className="size-4" aria-hidden />
             {profit ? "Left over" : "Loss"}
           </dt>
-          <dd className="tabular text-xl font-bold">{formatINR(Math.abs(selected.net))}</dd>
-          <dd className="text-[13px] text-ink-3">Collected minus spent</dd>
+          <dd className="tabular text-title-lg font-bold">{formatINR(Math.abs(selected.net))}</dd>
+          <dd className="text-body-sm text-ink-3">Collected minus spent</dd>
         </StatTile>
       </dl>
       {selected.refunds.count > 0 && (
-        <p className="mt-3 flex items-center gap-1.5 text-[13px] text-ink-3">
+        <p className="mt-3 flex items-center gap-1.5 text-body-sm text-ink-3">
           <Undo2 className="size-3.5" aria-hidden />
           {formatINR(selected.refunds.amount)} refunded this month ({pluralize(selected.refunds.count, "payment")}), already left out of the figures above.
         </p>
@@ -90,12 +90,12 @@ function Outstanding({ outstanding }) {
       <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         {outstanding.ageing.map((b, i) => (
           <StatTile key={b.key} tone={i === 2 && b.amount > 0 ? "warn" : "neutral"}>
-            <dt className="flex items-center gap-1.5 text-[13px] text-ink-3">
+            <dt className="flex items-center gap-1.5 text-body-sm text-ink-3">
               <CalendarDays className="size-3.5" aria-hidden />
               {b.label} old
             </dt>
-            <dd className="tabular text-xl font-bold">{formatINR(b.amount)}</dd>
-            <dd className="text-[13px] text-ink-3">{pluralize(b.count, "bill")}</dd>
+            <dd className="tabular text-title-lg font-bold">{formatINR(b.amount)}</dd>
+            <dd className="text-body-sm text-ink-3">{pluralize(b.count, "bill")}</dd>
           </StatTile>
         ))}
       </dl>
@@ -145,7 +145,7 @@ export default function RevenuePage() {
           </div>
 
           <div className="mt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-lg font-bold">Month details</h2>
+            <h2 className="text-title-lg font-bold">Month details</h2>
             <MonthPicker value={month} onChange={(m) => setFilters({ month: m })} />
           </div>
 
@@ -156,7 +156,7 @@ export default function RevenuePage() {
               <DailyRevenue data={d.daily} title={`Collected per day, ${monthLabel(month)}`} />
             ) : (
               <div className="py-6 text-center">
-                <p className="text-[15px] font-semibold">No money collected in {monthLabel(month)}</p>
+                <p className="text-body-lg font-semibold">No money collected in {monthLabel(month)}</p>
                 <p className="mt-1 text-sm text-ink-3">Payments recorded at the desk or paid online show up here by the day they came in.</p>
                 {month !== currentMonth() && (
                   <Button className="mt-4" onClick={() => setFilters({ month: currentMonth() })}>

@@ -14,7 +14,7 @@ const EVERY_OPTIONS = [1, 2, 3, 5, 7, 10, 14];
 function Section({ icon: Icon, title, children }) {
   return (
     <section className="flex flex-col gap-4 border-t border-line pt-5 first:border-t-0 first:pt-0">
-      <h3 className="flex items-center gap-2 text-[15px] font-semibold text-ink">
+      <h3 className="flex items-center gap-2 text-body-lg font-semibold text-ink">
         <Icon className="size-4 text-ink-3" aria-hidden />
         {title}
       </h3>
@@ -145,7 +145,7 @@ export default function ReminderSettings({ settings, readOnly }) {
             See who gets what today
             <ArrowRight className="size-4" aria-hidden />
           </ButtonLink>
-          {!online && dirty && <p className="text-[13px] font-medium text-warn">You're offline. Save when the connection is back.</p>}
+          {!online && dirty && <p className="text-body-sm font-medium text-warn">You're offline. Save when the connection is back.</p>}
           {!locked && dirty && (
             <Button variant="ghost" onClick={() => setForm(initial)}>
               Undo changes

@@ -183,12 +183,12 @@ function DueSummary({ payment, who }) {
   return (
     <div className="rounded-tile bg-surface-2 p-4">
       <p className="text-sm text-ink-3">{who || "Amount due"}</p>
-      <p className="tabular mt-0.5 text-[28px] font-bold leading-9">{formatINR(payment.amount)}</p>
+      <p className="tabular mt-0.5 text-headline font-bold leading-9">{formatINR(payment.amount)}</p>
       <p className="text-sm text-ink-2">
         {forLabel(payment)}, bill {payment.invoiceNo}
       </p>
       {paidSoFar > 0 && (
-        <p className="mt-1 text-[13px] text-ink-3">
+        <p className="mt-1 text-body-sm text-ink-3">
           {formatINR(paidSoFar)} of {formatINR(payment.originalAmount)} already paid
         </p>
       )}
@@ -385,7 +385,7 @@ export function VerifyPaymentDialog({ payment, onClose }) {
           <DueSummary payment={payment} who={memberNameOf(payment)} />
           <dl className="grid grid-cols-[max-content_1fr] gap-x-4 gap-y-2 text-sm">
             <dt className="text-ink-3">UPI reference</dt>
-            <dd className="tabular select-all break-all text-[17px] font-bold tracking-wide">{v.utr}</dd>
+            <dd className="tabular select-all break-all text-title-lg font-bold tracking-wide">{v.utr}</dd>
             <dt className="text-ink-3">Sent</dt>
             <dd>{formatDateTime(v.submittedAt)}</dd>
             {v.amount != null && v.amount !== payment.amount && (
@@ -463,7 +463,7 @@ export function RefundDialog({ payment, onClose }) {
         <form id="refund-payment" onSubmit={submit} className="flex flex-col gap-4" noValidate>
           <div className="rounded-tile bg-surface-2 p-4">
             <p className="text-sm text-ink-3">{memberNameOf(payment) || "Payment"}</p>
-            <p className="tabular mt-0.5 text-[28px] font-bold leading-9">{formatINR(payment.amount)}</p>
+            <p className="tabular mt-0.5 text-headline font-bold leading-9">{formatINR(payment.amount)}</p>
             <p className="text-sm text-ink-2">
               {forLabel(payment)}, {MODE_LABEL[payment.mode] || "paid"} on {formatDate(payment.paidAt)}, receipt {payment.invoiceNo}
             </p>

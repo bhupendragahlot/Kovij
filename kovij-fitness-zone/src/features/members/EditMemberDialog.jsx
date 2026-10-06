@@ -74,7 +74,7 @@ export function EditMemberDialog({ open, onClose, member, profile }) {
           <ContactFields value={form.details} onChange={(details) => setForm({ ...form, details })} errors={fieldErrorsFor(update.error, "details")} />
         </section>
         <section aria-label="Joining">
-          <h3 className="mb-3 text-[15px] font-semibold">Joining</h3>
+          <h3 className="mb-3 text-body-lg font-semibold">Joining</h3>
           <JoiningFields value={form.details} onChange={(details) => setForm({ ...form, details })} errors={fieldErrorsFor(update.error, "details")} excludeId={member?._id} />
         </section>
         <section aria-label="Address and notes">
@@ -82,7 +82,7 @@ export function EditMemberDialog({ open, onClose, member, profile }) {
         </section>
         {canSeeHealth && (
           <section aria-label="Health">
-            <h3 className="mb-3 text-[15px] font-semibold">Health</h3>
+            <h3 className="mb-3 text-body-lg font-semibold">Health</h3>
             <HealthFields value={form.health} onChange={(health) => setForm({ ...form, health })} errors={fieldErrorsFor(update.error, "health")} />
           </section>
         )}

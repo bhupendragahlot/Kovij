@@ -39,7 +39,10 @@ export function DataTable({
       {mobileRow && (
         <ul className="divide-y divide-line md:hidden">
           {rows.map((row) => (
-            <li key={getRowId(row)}>{mobileRow(row)}</li>
+            // Pressed feedback when the row's own link is tapped (Material list item state).
+            <li key={getRowId(row)} className="transition-colors has-[a:active]:bg-surface-2">
+              {mobileRow(row)}
+            </li>
           ))}
         </ul>
       )}
@@ -53,7 +56,7 @@ export function DataTable({
                   key={c.id}
                   scope="col"
                   className={cn(
-                    "whitespace-nowrap px-4 py-3 text-left text-[13px] font-semibold text-ink-3 first:pl-5 last:pr-5",
+                    "whitespace-nowrap px-4 py-3 text-left text-body-sm font-semibold text-ink-3 first:pl-5 last:pr-5",
                     c.align === "right" && "text-right",
                     c.hideBelow && HIDE[c.hideBelow],
                     c.headerClassName

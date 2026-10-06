@@ -5,6 +5,7 @@ import { Check, Download, LogOut, Monitor, Moon, Search, Sun, UserCog, UserPlus 
 import { ButtonLink, IosInstallDialog, Menu } from "../../shared/ui";
 import { useInstallAction } from "../../shared/hooks/useInstallAction";
 import { cn } from "../../shared/lib/cn";
+import { useScrolled } from "../../shared/hooks/useScrolled";
 import { initials } from "../../shared/lib/format";
 import { commandPaletteSet } from "../../app/uiSlice";
 import { useThemeControls } from "../../app/theme";
@@ -45,7 +46,7 @@ function AccountMenu() {
             {...props}
             type="button"
             aria-label="Account and theme"
-            className="grid size-10 place-items-center rounded-full bg-ink text-[13px] font-bold text-canvas hover:opacity-90"
+            className="state-layer touch-target grid size-9 place-items-center rounded-full bg-ink text-label font-bold text-canvas"
           >
             {initials(user?.name || user?.username || "")}
           </button>
@@ -76,39 +77,46 @@ export function Topbar() {
   useDocumentTitle();
   const openSearch = () => dispatch(commandPaletteSet(true));
   const isMac = typeof navigator !== "undefined" && /Mac|iPhone|iPad/.test(navigator.platform || "");
+  const scrolled = useScrolled();
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line/70 bg-canvas/85 backdrop-blur-md supports-[backdrop-filter]:bg-canvas/75">
-      <div className="flex h-16 items-center gap-3 px-4 md:px-6 xl:px-8">
-        {/* Phones: brand only. Each page already shows its title large, right below. */}
-        <BrandMark tone="ink" logoUrl={logoUrl} className="flex-1 md:hidden" />
+    // Top app bar: 56 px on phones, 64 px from 840 px; flat at rest, tinted with a hairline once content scrolls under it.
+    <header
+      className={cn(
+        "sticky top-0 z-30 border-b pt-[env(safe-area-inset-top)] transition-colors duration-200",
+        scrolled ? "border-line bg-surface/95 backdrop-blur-md" : "border-transparent bg-canvas"
+      )}
+    >
+      <div className="flex h-14 items-center gap-2 px-4 sm:gap-3 sm:px-6 md:h-16 xl:px-8">
+        {/* Phones: brand only. Each page shows its title right below. */}
+        <BrandMark tone="ink" logoUrl={logoUrl} className="flex-1 sm:hidden" />
 
         <button
           type="button"
           onClick={openSearch}
           className={cn(
-            "hidden h-10 w-full max-w-md items-center gap-2.5 rounded-full border border-line-strong bg-surface px-4 text-left text-sm text-ink-3",
-            "transition-colors hover:border-ink-3 md:flex"
+            "hidden h-10 w-full max-w-md min-w-0 items-center gap-2.5 rounded-full border border-line-strong bg-surface px-4 text-left text-sm text-ink-3",
+            "transition-colors hover:border-ink-3 sm:flex"
           )}
         >
-          <Search className="size-4" aria-hidden />
-          <span className="flex-1">Search members by name, phone or code</span>
-          <kbd className="rounded-[6px] border border-line bg-surface-2 px-1.5 py-0.5 font-ui text-[11px] font-semibold text-ink-3">
+          <Search className="size-[18px] shrink-0" aria-hidden />
+          <span className="flex-1 truncate">Search members by name, phone or code</span>
+          <kbd className="hidden rounded-[6px] border border-line bg-surface-2 px-1.5 py-0.5 font-ui text-label-sm font-semibold text-ink-3 md:inline">
             {isMac ? "⌘" : "Ctrl"} K
           </kbd>
         </button>
-        <div className="hidden flex-1 md:block" />
+        <div className="hidden flex-1 sm:block" />
 
         <button
           type="button"
           onClick={openSearch}
           aria-label="Search members"
-          className="grid size-10 place-items-center rounded-full text-ink-2 hover:bg-surface md:hidden"
+          className="state-layer touch-target grid size-10 place-items-center rounded-full text-ink-2 sm:hidden"
         >
-          <Search className="size-5" aria-hidden />
+          <Search className="size-6" aria-hidden />
         </button>
         {canAddMember && pathname !== "/admin/members/new" && (
-          <ButtonLink to="/admin/members/new" variant="primary" icon={UserPlus} className="max-md:hidden">
+          <ButtonLink to="/admin/members/new" variant="primary" icon={UserPlus} className="max-sm:hidden">
             New member
           </ButtonLink>
         )}

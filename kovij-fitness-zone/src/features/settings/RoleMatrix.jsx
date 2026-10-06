@@ -30,11 +30,11 @@ export function RoleMatrix() {
           <caption className="sr-only">Permissions by role</caption>
           <thead>
             <tr className="border-b border-line">
-              <th scope="col" className="px-2 py-2 text-left text-[13px] font-semibold text-ink-3">
+              <th scope="col" className="px-2 py-2 text-left text-body-sm font-semibold text-ink-3">
                 Can…
               </th>
               {STAFF_ROLES.map((role) => (
-                <th key={role} scope="col" className="w-[3.4rem] px-0.5 py-2 text-center text-[12px] font-semibold text-ink-3 sm:w-20 sm:text-[13px]">
+                <th key={role} scope="col" className="w-[3.4rem] px-0.5 py-2 text-center text-label font-semibold text-ink-3 sm:w-20 sm:text-body-sm">
                   <abbr title={ROLE_LABEL[role]} className="no-underline">
                     {SHORT[role]}
                   </abbr>

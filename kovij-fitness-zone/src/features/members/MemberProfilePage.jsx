@@ -52,6 +52,7 @@ import {
   StatusBadge,
   TabPanel,
   Tabs,
+  buttonClasses,
   useConfirm,
   useToast,
 } from "../../shared/ui";
@@ -67,7 +68,7 @@ function DetailList({ items }) {
         .filter((i) => i.value)
         .map((i) => (
           <div key={i.label} className="min-w-0">
-            <dt className="text-[13px] text-ink-3">{i.label}</dt>
+            <dt className="text-body-sm text-ink-3">{i.label}</dt>
             <dd className="mt-0.5 break-words text-sm font-medium text-ink">{i.value}</dd>
           </div>
         ))}
@@ -93,8 +94,8 @@ function PlanTile({ member, memberships, onUnfreeze }) {
     return (
       <Card>
         <p className="text-sm font-semibold text-ink-2">Plan</p>
-        <p className="mt-2 text-lg font-bold">No plan yet</p>
-        <p className="mt-1 text-[13px] text-ink-3">Add a plan to let them train.</p>
+        <p className="mt-2 text-title-lg font-bold">No plan yet</p>
+        <p className="mt-1 text-body-sm text-ink-3">Add a plan to let them train.</p>
       </Card>
     );
   }
@@ -108,11 +109,11 @@ function PlanTile({ member, memberships, onUnfreeze }) {
         <p className="text-sm font-semibold text-ink-2">Plan</p>
         <MemberStateBadge status={member.state} size="sm" />
       </div>
-      <p className="mt-2 truncate text-lg font-bold">{c.planName}</p>
-      <p className="mt-0.5 text-[13px] text-ink-3">{planSubline(member, c)}</p>
+      <p className="mt-2 truncate text-title-lg font-bold">{c.planName}</p>
+      <p className="mt-0.5 text-body-sm text-ink-3">{planSubline(member, c)}</p>
       {showMeter && <Meter className="mt-3" value={total - Math.max(0, left)} max={total} label="Plan days used" />}
       {booked && (
-        <p className="mt-3 flex items-center gap-1.5 text-[13px] font-semibold text-info">
+        <p className="mt-3 flex items-center gap-1.5 text-body-sm font-semibold text-info">
           <PauseCircle className="size-3.5" aria-hidden />
           Freeze booked from {formatDate(c.freeze.startDate)} for {dayCount(c.freeze.days)}
         </p>
@@ -123,7 +124,7 @@ function PlanTile({ member, memberships, onUnfreeze }) {
         </Button>
       )}
       {next && member.state !== "upcoming" && (
-        <p className="mt-3 text-[13px] font-semibold text-info">
+        <p className="mt-3 text-body-sm font-semibold text-info">
           Then {next.planName} from {formatDate(next.startDate)}
         </p>
       )}
@@ -222,7 +223,7 @@ export default function MemberProfilePage() {
     <div className="flex items-center gap-3 px-4 py-3">
       <div className="min-w-0 flex-1">
         <p className="font-semibold">{formatINR(p.amount)}</p>
-        <p className="text-[13px] text-ink-3">
+        <p className="text-body-sm text-ink-3">
           {PAYMENT_TYPE_LABEL[p.type]}, {formatDate(p.paidAt || p.createdAt)}
         </p>
       </div>
@@ -268,25 +269,25 @@ export default function MemberProfilePage() {
               )}
             </div>
             <div className="min-w-0">
-              <p className="text-[13px] font-semibold text-ink-3">
+              <p className="text-body-sm font-semibold text-ink-3">
                 {member.memberCode || "No member code"}, joined {formatDate(joinedOn)}
                 {member.source && member.source !== "desk" ? ` (${member.source === "google" ? "online" : LEAD_SOURCE_LABEL[member.source] || member.source})` : ""}
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {tel && (
-                  <a href={tel} className="inline-flex h-11 items-center gap-1.5 rounded-full bg-surface-2 px-3.5 text-sm font-semibold hover:bg-surface-3 md:h-9">
+                  <a href={tel} className={buttonClasses({ variant: "quiet", size: "sm", className: "h-9" })}>
                     <Phone className="size-4" aria-hidden />
                     <span className="tabular">{formatPhone(member.phone)}</span>
                   </a>
                 )}
                 {whatsapp && (
-                  <a href={whatsapp} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center gap-1.5 rounded-full bg-surface-2 px-3.5 text-sm font-semibold hover:bg-surface-3 md:h-9">
+                  <a href={whatsapp} target="_blank" rel="noreferrer" className={buttonClasses({ variant: "quiet", size: "sm", className: "h-9" })}>
                     <MessageCircle className="size-4" aria-hidden />
                     WhatsApp
                   </a>
                 )}
                 {member.email && (
-                  <a href={`mailto:${member.email}`} className="inline-flex h-11 max-w-full items-center gap-1.5 rounded-full bg-surface-2 px-3.5 text-sm font-semibold hover:bg-surface-3 md:h-9">
+                  <a href={`mailto:${member.email}`} className={buttonClasses({ variant: "quiet", size: "sm", className: "h-9 max-w-full shrink" })}>
                     <Mail className="size-4 shrink-0" aria-hidden />
                     <span className="truncate">{member.email}</span>
                   </a>
@@ -338,14 +339,14 @@ export default function MemberProfilePage() {
         {canSeePayments && (
           <Card>
             <p className="text-sm font-semibold text-ink-2">Dues</p>
-            <p className={`mt-2 text-lg font-bold ${member.dues > 0 ? "text-warn" : ""}`}>{member.dues > 0 ? formatINR(member.dues) : "Nothing due"}</p>
-            <p className="mt-0.5 text-[13px] text-ink-3">{dues.length ? `${dues.length} unpaid ${dues.length === 1 ? "bill" : "bills"}` : "All bills paid"}</p>
+            <p className={`mt-2 text-title-lg font-bold ${member.dues > 0 ? "text-warn" : ""}`}>{member.dues > 0 ? formatINR(member.dues) : "Nothing due"}</p>
+            <p className="mt-0.5 text-body-sm text-ink-3">{dues.length ? `${dues.length} unpaid ${dues.length === 1 ? "bill" : "bills"}` : "All bills paid"}</p>
           </Card>
         )}
         <Card>
           <p className="text-sm font-semibold text-ink-2">Visits</p>
-          <p className="mt-2 text-lg font-bold">{attendance.last30Days} in the last 30 days</p>
-          <p className="mt-0.5 text-[13px] text-ink-3">{attendance.lastCheckInAt ? `Last in ${formatRelativeTime(attendance.lastCheckInAt)}` : "Hasn't checked in yet"}</p>
+          <p className="mt-2 text-title-lg font-bold">{attendance.last30Days} in the last 30 days</p>
+          <p className="mt-0.5 text-body-sm text-ink-3">{attendance.lastCheckInAt ? `Last in ${formatRelativeTime(attendance.lastCheckInAt)}` : "Hasn't checked in yet"}</p>
         </Card>
       </div>
 
@@ -400,7 +401,7 @@ export default function MemberProfilePage() {
             />
             {member.notes && (
               <div className="mt-4 rounded-tile bg-surface-2 p-3.5">
-                <p className="text-[13px] font-semibold text-ink-3">Notes for staff</p>
+                <p className="text-body-sm font-semibold text-ink-3">Notes for staff</p>
                 <p className="mt-1 whitespace-pre-wrap text-sm">{member.notes}</p>
               </div>
             )}
@@ -462,12 +463,12 @@ export default function MemberProfilePage() {
                   <li key={m._id} className="flex flex-wrap items-center gap-3 px-4 py-3.5 md:px-5">
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold">{m.planName || "Plan"}</p>
-                      <p className="text-[13px] text-ink-3">
+                      <p className="text-body-sm text-ink-3">
                         {formatDate(m.startDate)} to {formatDate(m.endDate)}
                         {m.price != null ? `, ${formatINR(m.price)}` : ""}
                       </p>
                       {(m.frozenDays > 0 || m.bonusDays > 0) && (
-                        <p className="text-[13px] text-ink-3">
+                        <p className="text-body-sm text-ink-3">
                           {[m.frozenDays > 0 && `Frozen ${dayCount(m.frozenDays)}`, m.bonusDays > 0 && `${dayCount(m.bonusDays)} added`].filter(Boolean).join(", ")}
                         </p>
                       )}
@@ -499,7 +500,7 @@ export default function MemberProfilePage() {
             />
           </Card>
           {member.email && payments.some((p) => p.status === "paid") && (
-            <p className="mt-3 text-[13px] text-ink-3">
+            <p className="mt-3 text-body-sm text-ink-3">
               Need to resend a receipt?{" "}
               <button
                 type="button"

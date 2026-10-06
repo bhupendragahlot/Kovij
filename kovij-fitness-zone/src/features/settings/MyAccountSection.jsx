@@ -26,15 +26,15 @@ export function MyAccountSection() {
         <CardHeader title="Your account" description="Ask the gym owner if your name, email or role needs to change." />
         <dl className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-3">
           <div>
-            <dt className="text-[13px] text-ink-3">Name</dt>
+            <dt className="text-body-sm text-ink-3">Name</dt>
             <dd className="mt-0.5 font-semibold">{me?.name}</dd>
           </div>
           <div className="min-w-0">
-            <dt className="text-[13px] text-ink-3">Email</dt>
+            <dt className="text-body-sm text-ink-3">Email</dt>
             <dd className="mt-0.5 truncate font-semibold">{me?.email}</dd>
           </div>
           <div>
-            <dt className="text-[13px] text-ink-3">Role</dt>
+            <dt className="text-body-sm text-ink-3">Role</dt>
             <dd className="mt-0.5 font-semibold">{ROLE_LABEL[me?.role] || me?.role}</dd>
           </div>
         </dl>
@@ -109,7 +109,7 @@ function SignInsCard() {
                     {e.device}
                     {e.ip && <span className="text-ink-3"> · {e.ip}</span>}
                   </span>
-                  <time dateTime={e.at} title={formatDateTime(e.at)} className="tabular text-[13px] text-ink-3">
+                  <time dateTime={e.at} title={formatDateTime(e.at)} className="tabular text-body-sm text-ink-3">
                     {formatRelativeTime(e.at)}
                   </time>
                 </li>

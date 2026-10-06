@@ -2,7 +2,8 @@ import { useState } from "react";
 import { cn } from "../lib/cn";
 import { initials } from "../lib/format";
 
-const SIZES = { sm: "size-8 text-[11px]", md: "size-10 text-[13px]", lg: "size-14 text-lg", xl: "size-20 text-2xl" };
+/** 32 / 40 / 56 / 80 px. */
+const SIZES = { sm: "size-8 text-label-sm", md: "size-10 text-body-sm", lg: "size-14 text-title-lg", xl: "size-20 text-headline-sm" };
 
 /** Photo when available (and loadable), otherwise initials. Decorative: the name is always shown beside it. */
 export function Avatar({ name, src, size = "md", className }) {

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { cardState } from "./cardState";
 import { formatDate, formatINR, pluralize } from "../../shared/lib/format";
 import { cn } from "../../shared/lib/cn";
+import { buttonClasses } from "../../shared/ui";
 
 const DAY_MS = 86_400_000;
 
@@ -26,7 +27,7 @@ function Ring({ used, tone }) {
   );
 }
 
-const ctaClass = "mt-5 inline-flex h-11 items-center justify-center rounded-full bg-brand px-5 text-[15px] font-bold text-on-brand hover:opacity-90";
+const ctaClass = buttonClasses({ variant: "primary", className: "mt-4" });
 
 /** The one question every member has: "am I good to train?" */
 export function MembershipCard({ standing, className }) {
@@ -75,14 +76,14 @@ export function MembershipCard({ standing, className }) {
     <section aria-label="Your membership" className={cn("rounded-hero bg-hero p-5 text-hero-ink shadow-pop sm:p-6", className)}>
       <div className="flex items-start gap-4">
         <div className="min-w-0 flex-1">
-          <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[13px] font-bold", BADGE[st.tone])}>
+          <span className={cn("inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-body-sm font-bold", BADGE[st.tone])}>
             <st.icon className="size-3.5" aria-hidden />
             {st.badge}
           </span>
-          <p className="mt-3 text-[30px] font-bold leading-tight tracking-[-0.02em]">{big}</p>
-          <p className="mt-1 text-[15px] text-hero-ink-2">{sub}</p>
+          <p className="mt-3 text-headline font-bold leading-tight tracking-[-0.02em]">{big}</p>
+          <p className="mt-1 text-body-lg text-hero-ink-2">{sub}</p>
           {s.next && (st.key === "active" || st.key === "ending") && (
-            <p className="mt-2 text-[13px] text-hero-ink-2">
+            <p className="mt-2 text-body-sm text-hero-ink-2">
               {s.next.status === "pending"
                 ? `Next: ${s.next.planName}, starts right after this one once it’s paid`
                 : `Next: ${s.next.planName} from ${formatDate(s.next.startDate)}`}

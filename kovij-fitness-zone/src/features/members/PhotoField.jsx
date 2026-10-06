@@ -139,11 +139,11 @@ export function PhotoPicker({ name, currentUrl, file, onChange, onRemoveCurrent,
           )}
         </div>
         {error ? (
-          <p role="alert" className="mt-2 text-[13px] font-medium text-bad">
+          <p role="alert" className="mt-2 text-body-sm font-medium text-bad">
             {error}
           </p>
         ) : (
-          <p className="mt-2 text-[13px] text-ink-3">{file ? "New photo ready. It's saved with the member." : "Helps the desk recognise members at check-in."}</p>
+          <p className="mt-2 text-body-sm text-ink-3">{file ? "New photo ready. It's saved with the member." : "Helps the desk recognise members at check-in."}</p>
         )}
       </div>
       <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/*" className="sr-only" tabIndex={-1} aria-hidden onChange={onPick} />

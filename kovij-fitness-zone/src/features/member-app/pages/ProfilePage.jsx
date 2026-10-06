@@ -7,7 +7,7 @@ import { MEMBER_NAV } from "../nav";
 import { useChangePassword, useGym, useMyProfile, useNotificationPrefs, useUpdatePrefs, useUpdateProfile } from "../queries";
 import { DAY_NAMES, WEEK_ORDER, formatClock, normaliseWeek } from "../../settings/hours";
 import { useThemeControls } from "../../../app/theme";
-import { Avatar, Button, Card, CardHeader, Dialog, ErrorState, Field, FormError, Input, InstallAppCard, PageHeader, SegmentedControl, Select, SkeletonList, Switch, useConfirm, useToast } from "../../../shared/ui";
+import { Avatar, Button, Card, CardHeader, Dialog, ErrorState, Field, FormError, Input, InstallAppCard, PageHeader, SegmentedControl, Select, SkeletonList, Switch, buttonClasses, useConfirm, useToast } from "../../../shared/ui";
 import { formatDate, formatPhone, gymDayKey, phoneHref } from "../../../shared/lib/format";
 import { PASS_STORAGE_KEY } from "./PassPage";
 
@@ -57,12 +57,12 @@ export default function ProfilePage() {
           <Card className="flex flex-wrap items-center gap-4">
             <Avatar name={m.name} src={m.profilePhoto} size="lg" />
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[19px] font-bold">{m.name}</p>
-              <p className="text-[13px] text-ink-3">
+              <p className="truncate text-title-lg font-bold">{m.name}</p>
+              <p className="text-body-sm text-ink-3">
                 {m.memberCode && <span className="tabular font-semibold tracking-wide">{m.memberCode}</span>}
                 {m.joinedAt && ` · member since ${formatDate(m.joinedAt)}`}
               </p>
-              <p className="truncate text-[13px] text-ink-3">{[formatPhone(m.phone), m.email].filter(Boolean).join(" · ")}</p>
+              <p className="truncate text-body-sm text-ink-3">{[formatPhone(m.phone), m.email].filter(Boolean).join(" · ")}</p>
             </div>
             <Button variant="secondary" icon={Pencil} onClick={() => setEditing(true)}>
               Edit
@@ -126,7 +126,7 @@ function EditDetails({ member, onClose }) {
             <option value="other">Other</option>
           </Select>
         </Field>
-        <p className="text-[13px] text-ink-3">To change your phone number or email, ask at the desk.</p>
+        <p className="text-body-sm text-ink-3">To change your phone number or email, ask at the desk.</p>
       </form>
     </Dialog>
   );
@@ -280,7 +280,7 @@ function GymDetails() {
   return (
     <Card>
       <CardHeader title="Gym details" description={gym.gymName} />
-      <div className="flex flex-col gap-4 text-[15px]">
+      <div className="flex flex-col gap-4 text-body-lg">
         {gym.address && (
           <p className="flex gap-2">
             <MapPin className="mt-0.5 size-4 shrink-0 text-ink-3" aria-hidden />
@@ -289,20 +289,20 @@ function GymDetails() {
         )}
         <div className="flex flex-wrap gap-2">
           {tel && (
-            <a href={tel} className="inline-flex h-11 items-center gap-2 rounded-full border border-line-strong px-4 text-sm font-semibold hover:bg-surface-2">
+            <a href={tel} className={buttonClasses({ variant: "secondary" })}>
               <Phone className="size-4" aria-hidden />
               Call {formatPhone(gym.phone)}
             </a>
           )}
           {wa && (
-            <a href={wa} target="_blank" rel="noreferrer" className="inline-flex h-11 items-center gap-2 rounded-full border border-line-strong px-4 text-sm font-semibold hover:bg-surface-2">
+            <a href={wa} target="_blank" rel="noreferrer" className={buttonClasses({ variant: "secondary" })}>
               <MessageCircle className="size-4" aria-hidden />
               WhatsApp
             </a>
           )}
         </div>
         <div>
-          <h3 className="mb-2 text-[13px] font-bold text-ink-3">Opening hours</h3>
+          <h3 className="mb-2 text-body-sm font-bold text-ink-3">Opening hours</h3>
           <dl className="grid grid-cols-[6rem_1fr] gap-y-1 text-sm">
             {WEEK_ORDER.map((d) => (
               <div key={d} className="contents">
@@ -314,7 +314,7 @@ function GymDetails() {
         </div>
         {holidays.length > 0 && (
           <div>
-            <h3 className="mb-2 text-[13px] font-bold text-ink-3">Coming holidays</h3>
+            <h3 className="mb-2 text-body-sm font-bold text-ink-3">Coming holidays</h3>
             <ul className="text-sm">
               {holidays.map((h) => (
                 <li key={h.date}>
@@ -342,7 +342,7 @@ export function MorePage() {
           <Avatar name={member?.name || ""} src={member?.profilePhoto} />
           <span className="min-w-0 flex-1">
             <span className="block truncate font-bold">{member?.name}</span>
-            <span className="block text-[13px] text-ink-3">Profile and settings</span>
+            <span className="block text-body-sm text-ink-3">Profile and settings</span>
           </span>
           <ChevronRight className="size-5 text-ink-3" aria-hidden />
         </Link>

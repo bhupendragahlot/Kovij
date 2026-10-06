@@ -30,7 +30,7 @@ export default function MemberSignInSettings({ settings, readOnly }) {
           <KeyRound className="mt-0.5 size-5 shrink-0 text-ink-3" aria-hidden />
           <div className="min-w-0 flex-1">
             <p className="font-semibold text-ink">Mobile number, email or member ID with a password</p>
-            <p className="text-[13px] text-ink-3">
+            <p className="text-body-sm text-ink-3">
               Always on, and shown first. Members registered at the desk start with their date of birth (DDMMYYYY) as the password.
             </p>
           </div>

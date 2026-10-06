@@ -64,7 +64,7 @@ function MemberCell({ member, sub }) {
       <Avatar name={member.name} src={member.profilePhoto} />
       <span className="min-w-0">
         <span className="block truncate font-semibold text-ink hover:underline">{member.name}</span>
-        <span className="block truncate text-[13px] text-ink-3">{sub || member.memberCode || formatPhone(member.phone)}</span>
+        <span className="block truncate text-body-sm text-ink-3">{sub || member.memberCode || formatPhone(member.phone)}</span>
       </span>
     </Link>
   );
@@ -111,7 +111,7 @@ function EndingSoon({ filters, setFilters, onRenew, canSell, canSeeMoney, gymNam
       cell: (r) => (
         <span className="whitespace-nowrap">
           <span className="text-ink">{formatDate(r.membership.endDate)}</span>
-          <span className={`block text-[13px] ${r.daysLeft <= 2 ? "font-semibold text-warn" : "text-ink-3"}`}>{daysLeftLabel(r.daysLeft)}</span>
+          <span className={`block text-body-sm ${r.daysLeft <= 2 ? "font-semibold text-warn" : "text-ink-3"}`}>{daysLeftLabel(r.daysLeft)}</span>
         </span>
       ),
     },
@@ -196,7 +196,7 @@ function Lapsed({ filters, setFilters, onRenew, canSell, canSeeMoney, gymName })
       cell: (r) => (
         <span className="whitespace-nowrap">
           <span className="text-ink">{formatDate(r.membership.endDate)}</span>
-          <span className="block text-[13px] text-ink-3">{endedLabel(r)}</span>
+          <span className="block text-body-sm text-ink-3">{endedLabel(r)}</span>
         </span>
       ),
     },
@@ -277,7 +277,7 @@ function RenewalHistory({ filters, setFilters, canSeeMoney }) {
       <div className="flex items-start gap-3 px-4 py-3">
         <div className="min-w-0 flex-1">
           <MemberCell member={r.member} sub={`${c.badge}: ${c.text}`} />
-          <p className="mt-1.5 pl-[52px] text-[13px] text-ink-3">
+          <p className="mt-1.5 pl-[52px] text-body-sm text-ink-3">
             {formatDate(r.at)}
             {r.by ? `, by ${r.by}` : ""}
           </p>

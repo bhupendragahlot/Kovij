@@ -77,7 +77,7 @@ function LogoCard({ settings, readOnly }) {
                 </Button>
               )}
             </div>
-            <p className="text-[13px] text-ink-3">PNG, JPEG or WebP. A square or wide logo on a plain background works best.</p>
+            <p className="text-body-sm text-ink-3">PNG, JPEG or WebP. A square or wide logo on a plain background works best.</p>
             <input ref={inputRef} type="file" accept="image/png,image/jpeg,image/webp" className="sr-only" onChange={choose} tabIndex={-1} aria-hidden />
           </div>
         )}
@@ -234,13 +234,13 @@ function HoursCard({ settings, readOnly }) {
                             <button
                               type="button"
                               onClick={() => setDay(d.day, { slots: d.slots.filter((_, j) => j !== i) })}
-                              className="mt-1 inline-flex min-h-8 items-center gap-1 text-[13px] font-semibold text-ink-3 hover:text-ink sm:hidden"
+                              className="mt-1 inline-flex min-h-8 items-center gap-1 text-body-sm font-semibold text-ink-3 hover:text-ink sm:hidden"
                             >
                               <X className="size-3.5" aria-hidden />
                               Remove {i === 0 ? "morning" : "evening"} session
                             </button>
                           )}
-                          {slotProblem && <p className="mt-1 text-[13px] text-bad">{slotProblem}</p>}
+                          {slotProblem && <p className="mt-1 text-body-sm text-bad">{slotProblem}</p>}
                         </div>
                       );
                     })
@@ -253,13 +253,13 @@ function HoursCard({ settings, readOnly }) {
                           slots: [...d.slots, d.slots.length ? { open: "16:00", close: "21:00" } : { open: "06:00", close: "10:00" }],
                         })
                       }
-                      className="inline-flex w-fit items-center gap-1 text-[13px] font-semibold text-brand-ink hover:underline"
+                      className="inline-flex w-fit items-center gap-1 text-body-sm font-semibold text-brand-ink hover:underline"
                     >
                       <Plus className="size-3.5" aria-hidden />
                       {d.slots.length ? "Add evening session" : "Add a session"}
                     </button>
                   )}
-                  {dayProblem && <p className="text-[13px] text-bad">{dayProblem}</p>}
+                  {dayProblem && <p className="text-body-sm text-bad">{dayProblem}</p>}
                 </div>
                 <div className="hidden sm:block sm:pt-1.5">
                   <Switch
@@ -359,7 +359,7 @@ function HolidaysCard({ settings, readOnly }) {
       )}
       {past.length > 0 && (
         <details className="mt-4">
-          <summary className="cursor-pointer text-[13px] font-semibold text-ink-3">Past holidays ({past.length})</summary>
+          <summary className="cursor-pointer text-body-sm font-semibold text-ink-3">Past holidays ({past.length})</summary>
           <ul className="-mx-2 mt-2 flex flex-col">
             {past.map((h) => (
               <HolidayRow

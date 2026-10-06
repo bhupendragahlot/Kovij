@@ -514,7 +514,7 @@ export default function MemberAuthPanel({ title, subtitle }) {
       <div ref={recaptchaHost} />
 
       <p className="mt-8 text-center text-xs text-neutral-500">
-        <Link to="/" className="text-red-500 hover:underline">
+        <Link to="/" className="touch-target text-red-500 hover:underline">
           Back to home
         </Link>
       </p>
@@ -577,7 +577,7 @@ function PasswordField({ value, onChange, autoComplete, hint, extra }) {
             type="button"
             onClick={() => setShown((s) => !s)}
             aria-label={shown ? "Hide password" : "Show password"}
-            className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-neutral-400 hover:text-white"
+            className="absolute inset-y-0 right-0 flex w-12 items-center justify-center text-neutral-400 hover:text-white"
           >
             {shown ? <EyeOff className="h-4 w-4" aria-hidden /> : <Eye className="h-4 w-4" aria-hidden />}
           </button>
@@ -594,7 +594,7 @@ function TabButton({ active, onClick, icon: Icon, children }) {
       role="tab"
       aria-selected={active}
       onClick={onClick}
-      className={`flex h-10 items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
+      className={`touch-target flex h-10 items-center justify-center gap-2 rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
         active ? "bg-neutral-800 text-white shadow" : "text-neutral-400 hover:text-white"
       }`}
     >
@@ -610,7 +610,7 @@ function PrimaryButton({ busy, children, type = "submit", onClick }) {
       type={type}
       onClick={onClick}
       disabled={busy}
-      className="flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-bold text-white hover:bg-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 disabled:opacity-70"
+      className="flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-red-600 px-4 text-sm font-bold text-white hover:bg-red-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950 disabled:opacity-70"
     >
       {busy && <Loader2 className="h-4 w-4 animate-spin" aria-hidden />}
       {children}
@@ -620,7 +620,7 @@ function PrimaryButton({ busy, children, type = "submit", onClick }) {
 
 function TextButton({ onClick, disabled, children }) {
   return (
-    <button type="button" onClick={onClick} disabled={disabled} className="text-sm font-semibold text-red-500 hover:underline disabled:opacity-60">
+    <button type="button" onClick={onClick} disabled={disabled} className="touch-target text-sm font-semibold text-red-500 hover:underline disabled:opacity-60">
       {children}
     </button>
   );
@@ -628,7 +628,7 @@ function TextButton({ onClick, disabled, children }) {
 
 function BackLink({ onClick, children }) {
   return (
-    <button type="button" onClick={onClick} className="inline-flex items-center gap-1 text-sm text-neutral-400 hover:text-white">
+    <button type="button" onClick={onClick} className="touch-target inline-flex items-center gap-1 text-sm text-neutral-400 hover:text-white">
       <ArrowLeft className="h-4 w-4" aria-hidden />
       {children}
     </button>

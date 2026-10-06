@@ -87,7 +87,7 @@ export function MonthPicker({ value, onChange }) {
   return (
     <div className="flex items-center gap-1">
       <IconButton icon={ChevronLeft} label="Previous month" variant="secondary" onClick={() => onChange(shiftMonth(value, -1))} />
-      <p className="min-w-[9.5rem] text-center text-[15px] font-semibold text-ink" aria-live="polite">
+      <p className="min-w-[9.5rem] text-center text-body-lg font-semibold text-ink" aria-live="polite">
         {formatMonthLong(value)}
       </p>
       <IconButton icon={ChevronRight} label="Next month" variant="secondary" disabled={value >= current} onClick={() => onChange(shiftMonth(value, 1))} />
@@ -171,7 +171,7 @@ function MonthGrid({ days, renderDay, label }) {
     <div role="group" aria-label={label}>
       <div className="mb-1 grid grid-cols-7 gap-1 sm:gap-1.5" aria-hidden>
         {WEEKDAYS.map((w) => (
-          <span key={w} className="text-center text-[12px] font-semibold text-ink-3">
+          <span key={w} className="text-center text-label font-semibold text-ink-3">
             {w}
           </span>
         ))}
@@ -230,15 +230,15 @@ export function MonthHeatmap({ days, onSelectDay }) {
                 d.date === today && "ring-2 ring-ink"
               )}
             >
-              <span className="text-[11px] font-semibold leading-none opacity-80">{dayOfMonth(d.date)}</span>
+              <span className="text-label-sm font-semibold leading-none opacity-80">{dayOfMonth(d.date)}</span>
               {!d.future && (
-                <span className="tabular w-full text-right text-[13px] font-bold leading-none sm:text-[15px]">{closed ? "–" : formatNumber(d.visits)}</span>
+                <span className="tabular w-full text-right text-body-sm font-bold leading-none sm:text-body-lg">{closed ? "–" : formatNumber(d.visits)}</span>
               )}
             </button>
           );
         }}
       />
-      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-[13px] text-ink-3">
+      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-body-sm text-ink-3">
         <span className="inline-flex items-center gap-1.5">
           Fewer
           {HEAT.map((cls, i) => (
@@ -275,7 +275,7 @@ export function MemberMonthCalendar({ days }) {
               aria-label={description}
               title={description}
               className={cn(
-                "flex aspect-square min-h-10 w-full flex-col items-center justify-center gap-0.5 rounded-[10px] text-[13px] font-semibold",
+                "flex aspect-square min-h-10 w-full flex-col items-center justify-center gap-0.5 rounded-[10px] text-body-sm font-semibold",
                 v ? "bg-brand text-on-brand" : closed ? "border border-dashed border-line-strong text-ink-3" : d.future ? "text-ink-3 opacity-50" : "bg-surface-2 text-ink-2",
                 d.date === today && "ring-2 ring-ink"
               )}
@@ -286,7 +286,7 @@ export function MemberMonthCalendar({ days }) {
           );
         }}
       />
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-[13px] text-ink-3">
+      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-body-sm text-ink-3">
         <span className="inline-flex items-center gap-1.5">
           <span aria-hidden className="grid size-3.5 place-items-center rounded-[4px] bg-brand text-on-brand">
             <Check className="size-2.5" strokeWidth={3} />

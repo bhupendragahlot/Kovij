@@ -49,7 +49,7 @@ export function TodayHero({ today, className }) {
           <h2 id="today-hero" className="text-sm font-semibold text-hero-ink-2">
             Checked in today
           </h2>
-          <p className="mt-1 text-display font-bold tracking-[-0.04em]">{formatNumber(today.checkIns)}</p>
+          <p className="tabular mt-1 text-[2.75rem] font-bold leading-none tracking-[-0.04em] sm:text-[3.5rem]">{formatNumber(today.checkIns)}</p>
           <p className="mt-3 text-sm leading-relaxed text-hero-ink-2">{comparisonSentence(today)}</p>
           <div className="mt-auto pt-5">
             <ButtonLink to="/admin/check-in" variant="primary" icon={ScanLine}>
@@ -81,9 +81,9 @@ function ActionRow({ to, icon: Icon, tone, title, detail, count }) {
         </span>
         <span className="min-w-0 flex-1">
           <span className="block text-sm font-semibold text-ink">{title}</span>
-          <span className="block truncate text-[13px] text-ink-3">{idle ? "Nothing right now" : detail}</span>
+          <span className="block truncate text-body-sm text-ink-3">{idle ? "Nothing right now" : detail}</span>
         </span>
-        <span className="tabular text-lg font-bold text-ink">{formatNumber(count || 0)}</span>
+        <span className="tabular text-title-lg font-bold text-ink">{formatNumber(count || 0)}</span>
         <ChevronRight className="size-4 text-ink-3 transition-transform group-hover:translate-x-0.5" aria-hidden />
       </Link>
     </li>
@@ -157,7 +157,7 @@ export function EndingSoon({ expiring, className }) {
         description={`Plans that end in the next ${expiring.windowDays} days`}
         action={
           expiring.count > 0 && (
-            <Link to="/admin/members?state=expiring" className="text-sm font-semibold text-brand-ink hover:underline">
+            <Link to="/admin/members?state=expiring" className="touch-target text-sm font-semibold text-brand-ink hover:underline">
               See all {formatNumber(expiring.count)}
             </Link>
           )
@@ -168,11 +168,11 @@ export function EndingSoon({ expiring, className }) {
       ) : (
         <ul className="-mx-2 flex flex-col">
           {expiring.items.map((m) => (
-            <li key={m.membershipId} className="flex items-center gap-3 rounded-tile px-2 py-2 hover:bg-surface-2">
+            <li key={m.membershipId} className="flex items-center gap-3 rounded-tile px-2 py-2 hover:bg-surface-2 has-[a:active]:bg-surface-2">
               <Avatar name={m.name} src={m.photo} size="md" />
-              <Link to={`/admin/members/${m.memberId}`} className="min-w-0 flex-1">
+              <Link to={`/admin/members/${m.memberId}`} className="touch-target min-w-0 flex-1">
                 <span className="block truncate text-sm font-semibold text-ink">{m.name}</span>
-                <span className="block truncate text-[13px] text-ink-3">
+                <span className="block truncate text-body-sm text-ink-3">
                   {m.planName}, ends {formatShortDate(m.endDate)} ({formatRelativeDay(m.endDate)})
                 </span>
               </Link>
@@ -215,7 +215,7 @@ export function RecentActivity({ items, className }) {
                     {a.memberName}
                   </Link>{" "}
                   {meta.text(a)}
-                  <span className="block text-[13px] text-ink-3">{formatRelativeTime(a.at)}</span>
+                  <span className="block text-body-sm text-ink-3">{formatRelativeTime(a.at)}</span>
                 </p>
               </li>
             );

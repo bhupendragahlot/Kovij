@@ -43,7 +43,7 @@ export function MemberMultiPicker({ value, onChange, error, max = 50, label = "M
         </ul>
       )}
       <SearchInput value={q} onChange={setQ} label={`Search ${label.toLowerCase()}`} placeholder="Name, phone or member code" />
-      {error && <p className="text-[13px] font-medium text-bad">{error}</p>}
+      {error && <p className="text-body-sm font-medium text-bad">{error}</p>}
       {term.length >= 2 && (
         <ul className="flex flex-col gap-0.5 rounded-tile border border-line p-1" aria-label="Search results">
           {results.isPending && <li className="px-3 py-2 text-sm text-ink-3">Searching…</li>}

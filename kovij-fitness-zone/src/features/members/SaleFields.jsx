@@ -36,7 +36,7 @@ export function PlanChoice({ plans, value, onChange, error }) {
                   {p.name}
                   {p.popular && <Star className="size-3.5 fill-current text-brand-ink" aria-label="Popular" />}
                 </span>
-                <span className="block text-[13px] text-ink-3">{planDuration(p)}</span>
+                <span className="block text-body-sm text-ink-3">{planDuration(p)}</span>
               </span>
               <span className="text-right">
                 <span className="block font-bold text-ink">{formatINR(p.price)}</span>
@@ -46,7 +46,7 @@ export function PlanChoice({ plans, value, onChange, error }) {
           );
         })}
       </div>
-      {error && <p className="mt-1.5 text-[13px] font-medium text-bad">{error}</p>}
+      {error && <p className="mt-1.5 text-body-sm font-medium text-bad">{error}</p>}
     </div>
   );
 }
@@ -65,7 +65,7 @@ export function SaleFields({ plans, sale, onChange, errors = {}, activeEndDate, 
       <PlanChoice plans={plans} value={sale.planId} onChange={(planId) => set({ planId, priceOverride: "" })} error={errors.planId} />
 
       {activeEndDate && !canStartToday && (
-        <p className="text-[13px] text-ink-3">The current plan is frozen, so the new plan starts after {formatDate(activeEndDate)}. Unfreeze it first to switch plans today.</p>
+        <p className="text-body-sm text-ink-3">The current plan is frozen, so the new plan starts after {formatDate(activeEndDate)}. Unfreeze it first to switch plans today.</p>
       )}
       {activeEndDate && canStartToday && (
         <Field label="Starts" hint={sale.start === "today" ? "The current plan ends today and the new one starts now." : undefined}>
@@ -103,7 +103,7 @@ export function SaleFields({ plans, sale, onChange, errors = {}, activeEndDate, 
       {sale.collect === "now" ? (
         <PaymentModeFields mode={sale.mode} txnRef={sale.txnRef} onChange={set} errors={errors} />
       ) : (
-        <p className="-mt-2 text-[13px] text-ink-3">The amount is added to the member&apos;s dues and shows up under Payments until collected.</p>
+        <p className="-mt-2 text-body-sm text-ink-3">The amount is added to the member&apos;s dues and shows up under Payments until collected.</p>
       )}
 
       {plan && (
@@ -114,7 +114,7 @@ export function SaleFields({ plans, sale, onChange, errors = {}, activeEndDate, 
               <dd className="tabular font-semibold">{formatINR(l.amount)}</dd>
             </div>
           ))}
-          <div className="mt-2 flex justify-between border-t border-line pt-2 text-[15px]">
+          <div className="mt-2 flex justify-between border-t border-line pt-2 text-body-lg">
             <dt className="font-semibold">{sale.collect === "now" ? "Collect now" : "Added to dues"}</dt>
             <dd className="tabular font-bold">{formatINR(total)}</dd>
           </div>

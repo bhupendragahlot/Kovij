@@ -31,6 +31,7 @@ import {
 } from "../../shared/ui";
 import { cn } from "../../shared/lib/cn";
 import { formatDate, formatNumber } from "../../shared/lib/format";
+import { stickyActionBarClasses } from "../../shared/ui/styles";
 
 // ── Form state ──────────────────────────────────────────────────────────────
 
@@ -201,7 +202,7 @@ function MealEditor({ meal, index, count, errors, onChange, onRemove, onMove }) 
         ) : (
           <p className="text-sm text-ink-3">No foods in this meal yet.</p>
         )}
-        {errors[`${path}.items`] && <p className="mt-2 text-[13px] font-medium text-bad">{errors[`${path}.items`]}</p>}
+        {errors[`${path}.items`] && <p className="mt-2 text-body-sm font-medium text-bad">{errors[`${path}.items`]}</p>}
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
           <Button size="sm" variant="quiet" icon={Plus} onClick={() => onChange({ ...meal, items: [...meal.items, emptyItem()] })}>
             Add food
@@ -539,7 +540,7 @@ export default function DietPlanPage() {
               </div>
               <fieldset className="mt-5">
                 <legend className="text-sm font-semibold text-ink">Daily targets</legend>
-                <p className="mt-0.5 text-[13px] text-ink-3">Optional. The member sees how close each day gets.</p>
+                <p className="mt-0.5 text-body-sm text-ink-3">Optional. The member sees how close each day gets.</p>
                 <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
                   <Field label="Calories" error={errors["targets.calories"]}>
                     <Input type="number" inputMode="numeric" min="0" value={form.targets.calories} onChange={(e) => setTarget({ calories: e.target.value })} suffix="kcal" />
@@ -560,14 +561,14 @@ export default function DietPlanPage() {
             <section aria-labelledby="meals-heading" className="flex flex-col gap-3">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 id="meals-heading" className="text-[15px] font-semibold text-ink">
+                  <h2 id="meals-heading" className="text-body-lg font-semibold text-ink">
                     Meals
                   </h2>
-                  <p className="text-[13px] text-ink-3">Leave calories empty to work them out from protein, carbs and fat.</p>
+                  <p className="text-body-sm text-ink-3">Leave calories empty to work them out from protein, carbs and fat.</p>
                 </div>
                 {form.meals.length > 0 && <AddMealMenu used={form.meals.map((m) => m.name.trim().toLowerCase())} onAdd={addMeal} />}
               </div>
-              {errors.meals && <p className="text-[13px] font-medium text-bad">{errors.meals}</p>}
+              {errors.meals && <p className="text-body-sm font-medium text-bad">{errors.meals}</p>}
               {form.meals.length === 0 ? (
                 <Card>
                   <EmptyState
@@ -627,13 +628,13 @@ export default function DietPlanPage() {
           </aside>
         </div>
 
-        <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-30 border-t border-line bg-surface/95 px-4 py-3 backdrop-blur-md md:bottom-0 md:left-[76px] md:px-6 xl:left-[var(--kv-rail-w)]">
+        <div className={stickyActionBarClasses}>
           <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-3 xl:px-2">
             <div className="min-w-0 text-sm">
               <p className="tabular font-semibold text-ink">
                 {formatKcal(totals.calories)} a day, {formatNumber(totals.proteinG)} g protein
               </p>
-              <p className="truncate text-[13px] text-ink-3">
+              <p className="truncate text-body-sm text-ink-3">
                 {!online ? "You're offline. Reconnect to save." : dirty ? "Unsaved changes" : isNew ? "Not saved yet" : "All changes saved"}
               </p>
             </div>

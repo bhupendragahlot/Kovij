@@ -31,8 +31,8 @@ function PlanMeals({ meals }) {
     <details className="group mt-4 rounded-tile border border-line">
       <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-3.5 text-sm font-semibold text-ink [&::-webkit-details-marker]:hidden">
         See all {meals.length} meals
-        <span className="text-[13px] font-medium text-ink-3 group-open:hidden">Show</span>
-        <span className="hidden text-[13px] font-medium text-ink-3 group-open:inline">Hide</span>
+        <span className="text-body-sm font-medium text-ink-3 group-open:hidden">Show</span>
+        <span className="hidden text-body-sm font-medium text-ink-3 group-open:inline">Hide</span>
       </summary>
       <ol className="divide-y divide-line border-t border-line">
         {meals.map((m) => (
@@ -40,11 +40,11 @@ function PlanMeals({ meals }) {
             <p className="flex flex-wrap items-baseline justify-between gap-x-3">
               <span className="font-semibold">
                 {m.name}
-                {m.time && <span className="ml-2 text-[13px] font-medium text-ink-3">{formatMealTime(m.time)}</span>}
+                {m.time && <span className="ml-2 text-body-sm font-medium text-ink-3">{formatMealTime(m.time)}</span>}
               </span>
               <span className="tabular text-sm font-semibold text-ink-2">{formatKcal(m.totals.calories)}</span>
             </p>
-            <p className="mt-0.5 text-[13px] text-ink-3">{itemsLine(m.items) || "No foods listed"}</p>
+            <p className="mt-0.5 text-body-sm text-ink-3">{itemsLine(m.items) || "No foods listed"}</p>
           </li>
         ))}
       </ol>
@@ -79,8 +79,8 @@ function CurrentPlanCard({ current, upcoming, canManage, onAssign, onStop, stopp
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <p className="text-sm font-semibold text-ink-2">{startsLater ? "Next diet plan" : "Diet plan"}</p>
-          <p className="mt-1 text-lg font-bold leading-6 text-ink">{shown.name}</p>
-          <p className="mt-0.5 text-[13px] text-ink-3">
+          <p className="mt-1 text-title-lg font-bold leading-6 text-ink">{shown.name}</p>
+          <p className="mt-0.5 text-body-sm text-ink-3">
             {startsLater ? `Starts ${formatDate(shown.startDate)}` : `Since ${formatDate(shown.startDate)}`}
             {shown.assignedByName ? `, assigned by ${shown.assignedByName}` : ""}
           </p>
@@ -142,7 +142,7 @@ function HistoryCard({ memberId }) {
       ) : (
         <>
           <NutritionChart history={history.data} />
-          <p className="mt-3 text-[13px] text-ink-3">
+          <p className="mt-3 text-body-sm text-ink-3">
             {history.data.summary.daysLogged
               ? `Logged ${history.data.summary.daysLogged} of 14 days, about ${formatKcal(history.data.summary.avgCalories)} and ${history.data.summary.avgWaterGlasses} glasses of water a day.`
               : "No food logged in the last 14 days."}
@@ -163,7 +163,7 @@ function PastPlans({ past }) {
           <li key={p._id} className="flex flex-wrap items-center justify-between gap-2 py-2.5">
             <span className="min-w-0">
               <span className="block truncate text-sm font-semibold">{p.name}</span>
-              <span className="block text-[13px] text-ink-3">
+              <span className="block text-body-sm text-ink-3">
                 {formatDate(p.startDate)}
                 {p.endedAt ? ` to ${formatDate(p.endedAt)}` : ""}
               </span>

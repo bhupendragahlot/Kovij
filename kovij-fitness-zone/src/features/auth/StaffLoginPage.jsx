@@ -75,7 +75,7 @@ export default function StaffLoginPage() {
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
-              className="inline-flex items-center gap-1 text-[13px] font-semibold text-ink-3 hover:text-ink"
+              className="touch-target inline-flex items-center gap-1 text-body-sm font-semibold text-ink-3 hover:text-ink"
               aria-pressed={showPassword}
             >
               {showPassword ? <EyeOff className="size-3.5" aria-hidden /> : <Eye className="size-3.5" aria-hidden />}
@@ -99,7 +99,7 @@ export default function StaffLoginPage() {
       <p className="mt-6 text-sm">
         <Link
           to={`/admin/forgot-password${form.email ? `?email=${encodeURIComponent(form.email)}` : ""}`}
-          className="font-semibold text-brand-ink hover:underline"
+          className="touch-target font-semibold text-brand-ink hover:underline"
         >
           Forgot your password?
         </Link>

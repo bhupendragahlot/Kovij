@@ -126,18 +126,18 @@ function TicketRow({ ticket, selected, onOpen }) {
         <span className="min-w-0 flex-1">
           <span className="flex items-baseline justify-between gap-2">
             <span className={cn("truncate", ticket.unread ? "font-bold" : "font-semibold")}>{ticket.member?.name || "Member"}</span>
-            <time dateTime={ticket.lastMessageAt} className="shrink-0 text-[12px] text-ink-3">
+            <time dateTime={ticket.lastMessageAt} className="shrink-0 text-label text-ink-3">
               {formatRelativeTime(ticket.lastMessageAt)}
             </time>
           </span>
           <span className={cn("block truncate text-sm", ticket.unread ? "text-ink" : "text-ink-2")}>{ticket.subject}</span>
-          <span className="block truncate text-[13px] text-ink-3">
+          <span className="block truncate text-body-sm text-ink-3">
             {ticket.lastMessageBy === "staff" ? "You: " : ""}
             {ticket.preview}
           </span>
           <span className="mt-1.5 flex flex-wrap gap-1.5">
             <StatusPill status={ticket.status} />
-            <span className="text-[12px] text-ink-3">
+            <span className="text-label text-ink-3">
               {ticket.reference} · {SUPPORT_CATEGORY[ticket.category]}
             </span>
           </span>
@@ -203,10 +203,10 @@ function Conversation({ id, onBack }) {
           <ArrowLeft className="size-5" aria-hidden />
         </button>
         <div className="min-w-0 flex-1 basis-56">
-          <p className="text-[13px] text-ink-3">
+          <p className="text-body-sm text-ink-3">
             {t.reference} · {SUPPORT_CATEGORY[t.category]} · opened {formatRelativeTime(t.createdAt)}
           </p>
-          <h2 className="text-lg font-bold leading-snug">{t.subject}</h2>
+          <h2 className="text-title-lg font-bold leading-snug">{t.subject}</h2>
           {t.member && (
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <Link to={`/admin/members/${t.member.id}`} className="inline-flex items-center gap-2 font-semibold hover:underline">
@@ -214,7 +214,7 @@ function Conversation({ id, onBack }) {
                 {t.member.name}
               </Link>
               <StatusBadge kind="member" status={t.member.state} size="sm" />
-              {t.member.planName && <span className="text-[13px] text-ink-3">{t.member.planName}</span>}
+              {t.member.planName && <span className="text-body-sm text-ink-3">{t.member.planName}</span>}
             </div>
           )}
         </div>
@@ -232,7 +232,7 @@ function Conversation({ id, onBack }) {
         </div>
         <div className="flex w-full flex-wrap items-center gap-2">
           <StatusPill status={t.status} />
-          <span className="text-[13px] text-ink-3">{t.assignedTo ? `Handled by ${t.assignedTo.id === me?.id ? "you" : t.assignedTo.name}` : "Not assigned"}</span>
+          <span className="text-body-sm text-ink-3">{t.assignedTo ? `Handled by ${t.assignedTo.id === me?.id ? "you" : t.assignedTo.name}` : "Not assigned"}</span>
           {t.assignedTo?.id !== me?.id && (
             <Button size="sm" variant="ghost" icon={UserCheck} onClick={assignToMe} loading={update.isPending && update.variables?.assignedTo}>
               Assign to me
@@ -256,8 +256,8 @@ function Conversation({ id, onBack }) {
       <ol className="flex max-h-[55vh] min-h-64 flex-col gap-3 overflow-y-auto bg-surface-2/40 p-4 md:p-5" aria-label="Messages">
         {t.messages.map((m) => (
           <li key={m.id} className={cn("flex max-w-[85%] flex-col", m.by === "staff" ? "self-end items-end" : "self-start items-start")}>
-            <div className={cn("whitespace-pre-wrap rounded-[16px] px-3.5 py-2.5 text-[15px] leading-relaxed", m.by === "staff" ? "rounded-br-[6px] bg-brand-soft text-ink" : "rounded-bl-[6px] bg-surface text-ink shadow-sm")}>{m.text}</div>
-            <p className="mt-1 text-[12px] text-ink-3">
+            <div className={cn("whitespace-pre-wrap rounded-[16px] px-3.5 py-2.5 text-body-lg leading-relaxed", m.by === "staff" ? "rounded-br-[6px] bg-brand-soft text-ink" : "rounded-bl-[6px] bg-surface text-ink shadow-sm")}>{m.text}</div>
+            <p className="mt-1 text-label text-ink-3">
               {m.author} · <time dateTime={m.at} title={formatDateTime(m.at)}>{formatRelativeTime(m.at)}</time>
             </p>
           </li>
@@ -280,7 +280,7 @@ function Conversation({ id, onBack }) {
             {!online && <InlineAlert tone="warn">You’re offline. Reconnect to send your reply; what you’ve typed stays here.</InlineAlert>}
             <div className="flex flex-wrap gap-1.5" aria-label="Quick replies">
               {QUICK_REPLIES.map((q) => (
-                <button key={q.label} type="button" onClick={() => setText(q.text)} className="rounded-full border border-line-strong px-3 py-1 text-[13px] font-semibold text-ink-2 hover:bg-surface-2">
+                <button key={q.label} type="button" onClick={() => setText(q.text)} className="rounded-full border border-line-strong px-3 py-1 text-body-sm font-semibold text-ink-2 hover:bg-surface-2">
                   {q.label}
                 </button>
               ))}

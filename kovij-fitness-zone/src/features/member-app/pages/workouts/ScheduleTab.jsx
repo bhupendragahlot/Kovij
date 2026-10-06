@@ -39,8 +39,8 @@ function ExerciseItem({ a, todayKey, onOpen, onToggle, pending, showDay }) {
     <li className="flex items-center gap-3 rounded-card border border-line bg-surface p-3">
       <button type="button" onClick={() => onOpen(a)} className="min-w-0 flex-1 text-left">
         <span className={cn("block font-semibold", done && "text-ink-2 line-through decoration-ink-3/60")}>{a.exercise.name}</span>
-        <span className="block text-[13px] text-ink-3">{[showDay && dayLabel(a.dayKey, todayKey), prescription(a)].filter(Boolean).join(" · ")}</span>
-        {a.notes && <span className="mt-0.5 block text-[13px] text-ink-2">Trainer: {a.notes}</span>}
+        <span className="block text-body-sm text-ink-3">{[showDay && dayLabel(a.dayKey, todayKey), prescription(a)].filter(Boolean).join(" · ")}</span>
+        {a.notes && <span className="mt-0.5 block text-body-sm text-ink-2">Trainer: {a.notes}</span>}
         {done && a.completedAt && <span className="mt-0.5 block text-xs text-good">Done {formatDateTime(a.completedAt)}</span>}
       </button>
       <DoneToggle a={a} todayKey={todayKey} onToggle={onToggle} pending={pending} />
@@ -123,8 +123,8 @@ function ExerciseSheet({ a, todayKey, onClose, onToggle, pending }) {
       {a && (
         <div className="flex flex-col gap-3">
           <div className="rounded-tile bg-brand-soft p-3">
-            <p className="text-[13px] font-semibold text-brand-ink">{dayLabel(a.dayKey, todayKey, { long: true })}</p>
-            <p className="mt-0.5 text-lg font-bold text-ink">{prescription(a) || "As your trainer showed you"}</p>
+            <p className="text-body-sm font-semibold text-brand-ink">{dayLabel(a.dayKey, todayKey, { long: true })}</p>
+            <p className="mt-0.5 text-title-lg font-bold text-ink">{prescription(a) || "As your trainer showed you"}</p>
             {a.notes && <p className="mt-1 text-sm text-ink-2">Trainer: {a.notes}</p>}
             {done && (
               <Badge className="mt-2" tone="good" icon={CheckCircle2}>

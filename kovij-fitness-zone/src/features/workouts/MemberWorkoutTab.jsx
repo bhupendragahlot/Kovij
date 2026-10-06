@@ -79,7 +79,7 @@ function TrainerCard({ member }) {
               <Avatar name={trainer.name} src={trainer.image} />
               <div className="min-w-0">
                 <p className="truncate font-semibold">{trainer.name}</p>
-                <p className="truncate text-[13px] text-ink-3">{trainer.scheduleText || trainer.role}</p>
+                <p className="truncate text-body-sm text-ink-3">{trainer.scheduleText || trainer.role}</p>
               </div>
             </div>
           ) : (
@@ -129,7 +129,7 @@ function PlanDays({ days, highlight }) {
           <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-3.5 py-2.5 [&::-webkit-details-marker]:hidden">
             <span className="min-w-0">
               <span className="block truncate text-sm font-semibold">{d.name}</span>
-              <span className="block text-[13px] text-ink-3">
+              <span className="block text-body-sm text-ink-3">
                 {d.exercises.length} {d.exercises.length === 1 ? "exercise" : "exercises"}
               </span>
             </span>
@@ -143,10 +143,10 @@ function PlanDays({ days, highlight }) {
             {d.exercises.map((e, j) => (
               <li key={j} className="px-3.5 py-2.5">
                 <p className="text-sm font-semibold">{e.name}</p>
-                <p className="text-[13px] text-ink-2">
+                <p className="text-body-sm text-ink-2">
                   {formatPrescription(e)}, rest {formatRest(e.restSec).toLowerCase()}
                 </p>
-                {e.notes && <p className="mt-0.5 text-[13px] text-ink-3">{e.notes}</p>}
+                {e.notes && <p className="mt-0.5 text-body-sm text-ink-3">{e.notes}</p>}
               </li>
             ))}
           </ol>
@@ -194,11 +194,11 @@ function Sessions({ memberId, memberName }) {
                   <p className="text-sm font-semibold">
                     {l.dayName} <span className="font-normal text-ink-3">· {formatDate(dayKeyDate(l.dayKey))}</span>
                   </p>
-                  <p className="text-[13px] text-ink-2">
+                  <p className="text-body-sm text-ink-2">
                     {l.setsDone} {l.setsDone === 1 ? "set" : "sets"}
                     {l.volumeKg ? `, ${formatKg(l.volumeKg)} lifted` : ""}, {l.entries.map((e) => e.name).join(", ")}
                   </p>
-                  <p className="text-[13px] text-ink-3">
+                  <p className="text-body-sm text-ink-3">
                     {l.loggedBy === "member" ? "Logged in the app" : `Logged by ${l.loggedByName || "staff"}`}
                     {l.notes ? `. “${l.notes}”` : ""}
                   </p>
@@ -263,14 +263,14 @@ function Progress({ memberId }) {
           {row && (
             <div className="grid grid-cols-2 gap-3">
               <Tile>
-                <p className="text-[13px] font-semibold text-ink-3">Best</p>
+                <p className="text-body-sm font-semibold text-ink-3">Best</p>
                 <p className="mt-1 font-bold">{row.best.weightKg ? `${row.best.reps} × ${formatKg(row.best.weightKg)}` : `${row.best.reps} reps`}</p>
-                <p className="text-[13px] text-ink-3">{formatShortDate(dayKeyDate(row.best.dayKey))}</p>
+                <p className="text-body-sm text-ink-3">{formatShortDate(dayKeyDate(row.best.dayKey))}</p>
               </Tile>
               <Tile>
-                <p className="text-[13px] font-semibold text-ink-3">Last time</p>
+                <p className="text-body-sm font-semibold text-ink-3">Last time</p>
                 <p className="mt-1 font-bold">{row.last.weightKg ? `${row.last.reps} × ${formatKg(row.last.weightKg)}` : `${row.last.reps} reps`}</p>
-                <p className="text-[13px] text-ink-3">{formatRelativeDay(dayKeyDate(row.lastDayKey))}</p>
+                <p className="text-body-sm text-ink-3">{formatRelativeDay(dayKeyDate(row.lastDayKey))}</p>
               </Tile>
             </div>
           )}
@@ -354,9 +354,9 @@ export default function MemberWorkoutTab({ member }) {
             <>
               <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
-                  <p className="text-[13px] font-semibold text-ink-3">Workout plan</p>
-                  <h2 className="text-lg font-bold">{current.name}</h2>
-                  <p className="text-[13px] text-ink-3">
+                  <p className="text-body-sm font-semibold text-ink-3">Workout plan</p>
+                  <h2 className="text-title-lg font-bold">{current.name}</h2>
+                  <p className="text-body-sm text-ink-3">
                     {[PLAN_GOAL_LABEL[current.goal], LEVEL_LABEL[current.level], perWeek(current.daysPerWeek)].filter(Boolean).join(", ")}. Since{" "}
                     {formatDate(dayKeyDate(current.startDay))}.
                   </p>
@@ -414,12 +414,12 @@ export default function MemberWorkoutTab({ member }) {
           <CardHeader title="Last 30 days" />
           <div className="grid grid-cols-2 gap-3">
             <Tile>
-              <p className="text-[13px] font-semibold text-ink-3">Sessions logged</p>
-              <p className="mt-1 text-xl font-bold">{stats.sessions30}</p>
+              <p className="text-body-sm font-semibold text-ink-3">Sessions logged</p>
+              <p className="mt-1 text-title-lg font-bold">{stats.sessions30}</p>
             </Tile>
             <Tile>
-              <p className="text-[13px] font-semibold text-ink-3">All time</p>
-              <p className="mt-1 text-xl font-bold">{stats.totalSessions}</p>
+              <p className="text-body-sm font-semibold text-ink-3">All time</p>
+              <p className="mt-1 text-title-lg font-bold">{stats.totalSessions}</p>
             </Tile>
           </div>
         </Card>
@@ -430,7 +430,7 @@ export default function MemberWorkoutTab({ member }) {
               {history.map((h) => (
                 <li key={h._id}>
                   <p className="text-sm font-semibold">{h.name}</p>
-                  <p className="text-[13px] text-ink-3">
+                  <p className="text-body-sm text-ink-3">
                     {formatShortDate(dayKeyDate(h.startDay))} to {h.endDay ? formatShortDate(dayKeyDate(h.endDay)) : "—"}
                     {h.endReason === "replaced" ? ", replaced" : h.endNote ? `, ${h.endNote}` : ""}
                   </p>

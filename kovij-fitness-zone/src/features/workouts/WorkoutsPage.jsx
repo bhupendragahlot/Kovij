@@ -115,7 +115,7 @@ function MembersTab({ filters, setFilters, myTrainer }) {
           <Avatar name={m.name} src={m.profilePhoto} />
           <span className="min-w-0">
             <span className="block truncate font-semibold text-ink group-hover:underline">{m.name}</span>
-            <span className="block text-[13px] text-ink-3">{m.memberCode || formatPhone(m.phone)}</span>
+            <span className="block text-body-sm text-ink-3">{m.memberCode || formatPhone(m.phone)}</span>
           </span>
         </Link>
       ),
@@ -134,7 +134,7 @@ function MembersTab({ filters, setFilters, myTrainer }) {
         <Avatar name={m.name} src={m.profilePhoto} />
         <span className="min-w-0 flex-1">
           <span className="block truncate font-semibold text-ink">{m.name}</span>
-          <span className="block truncate text-[13px] text-ink-2">{m.workout ? m.workout.name : "No workout plan"}</span>
+          <span className="block truncate text-body-sm text-ink-2">{m.workout ? m.workout.name : "No workout plan"}</span>
           <span className="mt-1.5 flex flex-wrap items-center gap-1.5">
             <StatusBadge kind="member" status={m.state} size="sm" />
             {!m.workout && (
@@ -262,8 +262,8 @@ function PlanCard({ plan, onGive }) {
     <Card className="flex h-full flex-col">
       <div className="flex items-start gap-2">
         <Link to={`/admin/workouts/${plan._id}`} className="min-w-0 flex-1">
-          <p className="truncate text-[15px] font-semibold hover:underline">{plan.name}</p>
-          <p className="text-[13px] text-ink-3">Updated {formatRelativeTime(plan.updatedAt)}</p>
+          <p className="truncate text-body-lg font-semibold hover:underline">{plan.name}</p>
+          <p className="text-body-sm text-ink-3">Updated {formatRelativeTime(plan.updatedAt)}</p>
         </Link>
         <Menu
           label={`Actions for ${plan.name}`}
@@ -287,7 +287,7 @@ function PlanCard({ plan, onGive }) {
       <p className="mt-3 line-clamp-2 text-sm text-ink-2">
         {plan.dayCount} {plan.dayCount === 1 ? "day" : "days"}: {plan.dayNames.join(", ")}
       </p>
-      <p className="mt-1 text-[13px] text-ink-3">
+      <p className="mt-1 text-body-sm text-ink-3">
         {plan.exerciseCount} {plan.exerciseCount === 1 ? "exercise" : "exercises"}
         {plan.activeMembers ? `, ${plan.activeMembers} ${plan.activeMembers === 1 ? "member" : "members"} on it` : ""}
       </p>

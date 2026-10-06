@@ -3,8 +3,7 @@ import { useSaveExercise } from "./api";
 import { CATEGORY_LABEL, EQUIPMENT_LABEL, MUSCLE_LABEL } from "./labels";
 import { useIdempotencyKey } from "../../shared/hooks/useIdempotencyKey";
 import { useOnlineStatus } from "../../shared/hooks/useOnlineStatus";
-import { Button, Dialog, Field, FormError, InlineAlert, Input, Select, Textarea, useToast } from "../../shared/ui";
-import { cn } from "../../shared/lib/cn";
+import { Button, Dialog, Field, FormError, InlineAlert, Input, Select, Textarea, chipClasses, useToast } from "../../shared/ui";
 
 const EMPTY = { name: "", primaryMuscle: "", secondaryMuscles: [], equipment: "", category: "strength", instructions: "", videoUrl: "" };
 
@@ -132,10 +131,7 @@ export function ExerciseFormDialog({ open, exercise, initialName = "", onClose, 
                     type="button"
                     aria-pressed={on}
                     onClick={() => toggleSecondary(v)}
-                    className={cn(
-                      "inline-flex h-11 items-center rounded-full border px-3.5 text-sm font-semibold transition-colors md:h-9",
-                      on ? "border-ink bg-ink text-canvas" : "border-line-strong bg-surface text-ink-2 hover:text-ink"
-                    )}
+                    className={chipClasses(on)}
                   >
                     {l}
                   </button>

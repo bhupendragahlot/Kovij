@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { meKeys, useDues, useEmailReceipt, usePaymentHistory, useSubmitUtr, useUpiIntent } from "../queries";
 import { mapi, memberHttp } from "../http";
 import { useIdempotencyKey } from "../../../shared/hooks/useIdempotencyKey";
-import { Badge, Button, Card, CardHeader, Dialog, EmptyState, ErrorState, Field, FormError, Input, PageHeader, Pagination, SkeletonList, useToast } from "../../../shared/ui";
+import { Badge, Button, Card, CardHeader, Dialog, EmptyState, ErrorState, Field, FormError, Input, PageHeader, Pagination, SkeletonList, buttonClasses, chipClasses, useToast } from "../../../shared/ui";
 import { formatDate, formatINR, pluralize } from "../../../shared/lib/format";
 
 const isPhone = () => /Android|iPhone|iPad/i.test(navigator.userAgent || "");
@@ -34,7 +34,7 @@ export default function PaymentsPage() {
                   <li key={d.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0 last:pb-0">
                     <div className="min-w-0 flex-1 basis-48">
                       <p className="font-semibold">{d.forLabel}</p>
-                      <p className="text-[13px] text-ink-3">
+                      <p className="text-body-sm text-ink-3">
                         Bill {d.invoiceNo} · raised {formatDate(d.raisedAt)}
                       </p>
                       {checking && (
@@ -43,13 +43,13 @@ export default function PaymentsPage() {
                         </Badge>
                       )}
                       {d.verification?.state === "rejected" && (
-                        <p className="mt-1.5 text-[13px] text-bad">
+                        <p className="mt-1.5 text-body-sm text-bad">
                           The gym couldn’t match UPI reference {d.verification.utr}
                           {d.verification.reason ? `: ${d.verification.reason}` : ""}. Check it and try again, or pay at the desk.
                         </p>
                       )}
                     </div>
-                    <p className="tabular text-[20px] font-bold">{formatINR(d.amount)}</p>
+                    <p className="tabular text-title-lg font-bold">{formatINR(d.amount)}</p>
                     {!checking && (
                       <Button variant="primary" onClick={() => setPaying(d)} className="max-sm:w-full">
                         Pay
@@ -81,7 +81,7 @@ function PayDialog({ due, options, onClose }) {
       </div>
       {method === "upi" && <UpiPay due={due} onDone={onClose} />}
       {method === "online" && <OnlinePay due={due} onDone={onClose} />}
-      {method === "desk" && <p className="text-[15px]">Pay {formatINR(due.amount)} by cash, UPI or card at the front desk on your next visit. Show your check-in pass so they can find your bill.</p>}
+      {method === "desk" && <p className="text-body-lg">Pay {formatINR(due.amount)} by cash, UPI or card at the front desk on your next visit. Show your check-in pass so they can find your bill.</p>}
     </Dialog>
   );
 }
@@ -93,7 +93,7 @@ function MethodButton({ active, onClick, icon: Icon, label }) {
       role="radio"
       aria-checked={active}
       onClick={onClick}
-      className={`inline-flex h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold ${active ? "border-ink bg-ink text-canvas" : "border-line-strong text-ink-2 hover:bg-surface-2"}`}
+      className={chipClasses(active, "h-9")}
     >
       <Icon className="size-4" aria-hidden />
       {label}
@@ -143,11 +143,11 @@ function UpiPay({ due, onDone }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <ol className="flex flex-col gap-4 text-[15px]">
+      <ol className="flex flex-col gap-4 text-body-lg">
         <li>
           <p className="font-semibold">1. Pay {formatINR(upi.amount)} to {upi.payeeName}</p>
           {isPhone() ? (
-            <a href={upi.link} className="mt-2 inline-flex h-11 items-center gap-2 rounded-full bg-brand px-5 font-bold text-on-brand">
+            <a href={upi.link} className={buttonClasses({ variant: "primary", size: "lg", className: "mt-2" })}>
               <Smartphone className="size-4" aria-hidden />
               Open my UPI app
             </a>
@@ -238,7 +238,7 @@ function OnlinePay({ due, onDone }) {
   return (
     <div className="flex flex-col gap-3">
       <FormError error={error} />
-      <p className="text-[15px]">Pay securely with a card, net banking or UPI. The bill is marked paid as soon as your bank confirms.</p>
+      <p className="text-body-lg">Pay securely with a card, net banking or UPI. The bill is marked paid as soon as your bank confirms.</p>
       <Button variant="primary" icon={CreditCard} onClick={start} loading={busy}>
         Pay {formatINR(due.amount)} online
       </Button>
@@ -283,7 +283,7 @@ function ReceiptHistory() {
               <li key={p.id} className="flex flex-wrap items-center gap-3 py-3 first:pt-0">
                 <div className="min-w-0 flex-1 basis-48">
                   <p className="font-semibold">{p.forLabel}</p>
-                  <p className="text-[13px] text-ink-3">
+                  <p className="text-body-sm text-ink-3">
                     {p.paidAt ? formatDate(p.paidAt) : "Not paid"} · {p.modeLabel || "—"} · {p.invoiceNo}
                     {p.status === "refunded" && " · Refunded"}
                   </p>
@@ -305,7 +305,7 @@ function ReceiptHistory() {
           <Pagination page={page} limit={20} total={data.total} onPage={setPage} />
         </>
       )}
-      <p className="mt-3 text-[13px] text-ink-3">{pluralize(data?.total || 0, "payment")} on record.</p>
+      <p className="mt-3 text-body-sm text-ink-3">{pluralize(data?.total || 0, "payment")} on record.</p>
     </Card>
   );
 }

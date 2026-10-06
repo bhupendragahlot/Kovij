@@ -82,13 +82,13 @@ function StatusCard({ overview }) {
             {on ? <BellRing className="size-5" aria-hidden /> : <BellOff className="size-5" aria-hidden />}
           </div>
           <div className="min-w-0">
-            <h2 className="text-[17px] font-bold text-ink">{on ? "Automatic reminders are on" : "Automatic reminders are off"}</h2>
+            <h2 className="text-title-lg font-bold text-ink">{on ? "Automatic reminders are on" : "Automatic reminders are off"}</h2>
             <p className="mt-0.5 text-sm text-ink-2">
               {on ? (o.doneToday ? `Today's reminders have gone out. Next: ${next}.` : `Next: ${next}.`) : "Members aren't reminded about renewals or dues until you turn them on."}
             </p>
-            {on && <p className="mt-1 text-[13px] text-ink-3">{scheduleSummary(o.settings)}</p>}
+            {on && <p className="mt-1 text-body-sm text-ink-3">{scheduleSummary(o.settings)}</p>}
             {last && (
-              <p className="mt-1 text-[13px] text-ink-3">
+              <p className="mt-1 text-body-sm text-ink-3">
                 Last run {formatRelativeTime(last.finishedAt || last.startedAt)} ({last.trigger === "manual" ? `sent by ${last.triggeredBy?.name || "staff"}` : "automatic"}):{" "}
                 {last.status === "failed"
                   ? "stopped with an error, it will try again."
@@ -138,9 +138,9 @@ function PreviewRow({ item }) {
         <Link to={`/admin/members/${item.member._id}`} className="font-semibold text-ink hover:underline">
           {item.member.name}
         </Link>
-        {item.member.memberCode && <span className="ml-1.5 text-[13px] text-ink-3">{item.member.memberCode}</span>}
+        {item.member.memberCode && <span className="ml-1.5 text-body-sm text-ink-3">{item.member.memberCode}</span>}
         <p className="text-sm text-ink-2">{item.title}</p>
-        <p className="text-[13px] text-ink-3">
+        <p className="text-body-sm text-ink-3">
           {detail ? `${detail}. ` : ""}
           {channelsLine(item)}.
         </p>
@@ -213,7 +213,7 @@ function PreviewCard() {
             >
               Send now
             </Button>
-            {!online && <p className="text-[13px] font-medium text-warn">You're offline. Sending works when the connection is back.</p>}
+            {!online && <p className="text-body-sm font-medium text-warn">You're offline. Sending works when the connection is back.</p>}
           </div>
         )}
       </div>
@@ -246,7 +246,7 @@ function PreviewCard() {
               <section key={g.kind} aria-label={NOTIFICATION_KIND[g.kind].label}>
                 <div className="flex items-center gap-2 border-b border-line pb-2">
                   <KindBadge kind={g.kind} size="md" />
-                  <span className="tabular text-[13px] text-ink-3">{formatNumber(g.items.length)}</span>
+                  <span className="tabular text-body-sm text-ink-3">{formatNumber(g.items.length)}</span>
                 </div>
                 <ul className="divide-y divide-line">
                   {g.items.map((item) => (
@@ -290,7 +290,7 @@ function Stats() {
   const byKind = Object.fromEntries((stats.data?.kinds || []).map((k) => [k.kind, k]));
   return (
     <section aria-label="Reminders in the last 30 days">
-      <h2 className="mb-3 text-[15px] font-semibold text-ink">Last 30 days</h2>
+      <h2 className="mb-3 text-body-lg font-semibold text-ink">Last 30 days</h2>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {REMINDER_KINDS.map((kind) => {
           const k = byKind[kind];

@@ -5,7 +5,7 @@ import { useExerciseSchedule, useLogWorkout, useWorkout, useWorkoutLogs } from "
 import { ExploreTab } from "./workouts/ExploreTab";
 import { ScheduleTab } from "./workouts/ScheduleTab";
 import { useIdempotencyKey } from "../../../shared/hooks/useIdempotencyKey";
-import { Badge, Button, Card, CardHeader, EmptyState, ErrorState, FormError, Input, PageHeader, SkeletonList, TabPanel, Tabs, useToast } from "../../../shared/ui";
+import { Badge, Button, Card, CardHeader, EmptyState, ErrorState, FormError, Input, PageHeader, SkeletonList, TabPanel, Tabs, buttonClasses, useToast } from "../../../shared/ui";
 import { formatDate, pluralize } from "../../../shared/lib/format";
 import { cn } from "../../../shared/lib/cn";
 
@@ -64,7 +64,7 @@ function PlanTab({ w }) {
           icon={Dumbbell}
           title="No workout plan yet"
           body="Your trainer adds a plan for you here. Ask at the desk or send the gym a message."
-          action={<Link to="/member/support/new" className="inline-flex h-11 items-center rounded-full bg-brand px-5 font-bold text-on-brand">Ask for a plan</Link>}
+          action={<Link to="/member/support/new" className={buttonClasses({ variant: "primary" })}>Ask for a plan</Link>}
         />
       </Card>
     );
@@ -74,8 +74,8 @@ function PlanTab({ w }) {
   return (
     <>
       <div className="mb-4">
-        <h2 className="text-lg font-bold">{plan.name}</h2>
-        <p className="text-[13px] text-ink-3">{[GOAL[plan.goal], plan.level && `${plan.level[0].toUpperCase()}${plan.level.slice(1)}`, plan.daysPerWeek && `${plan.daysPerWeek} days a week`].filter(Boolean).join(" · ")}</p>
+        <h2 className="text-title-lg font-bold">{plan.name}</h2>
+        <p className="text-body-sm text-ink-3">{[GOAL[plan.goal], plan.level && `${plan.level[0].toUpperCase()}${plan.level.slice(1)}`, plan.daysPerWeek && `${plan.daysPerWeek} days a week`].filter(Boolean).join(" · ")}</p>
       </div>
       <div className="flex flex-col gap-4">
         {plan.days.length > 1 && (
@@ -110,10 +110,10 @@ function ExerciseRow({ exercise: e, n }) {
   return (
     <li className="py-3 first:pt-0 last:pb-0">
       <button type="button" onClick={() => setOpen((v) => !v)} aria-expanded={open} className="flex w-full items-center gap-3 text-left">
-        <span className="tabular grid size-8 shrink-0 place-items-center rounded-full bg-surface-2 text-[13px] font-bold">{n}</span>
+        <span className="tabular grid size-8 shrink-0 place-items-center rounded-full bg-surface-2 text-body-sm font-bold">{n}</span>
         <span className="min-w-0 flex-1">
           <span className="block font-semibold">{e.name}</span>
-          <span className="block text-[13px] text-ink-3">
+          <span className="block text-body-sm text-ink-3">
             {e.sets} × {e.reps}
             {e.weightKg ? ` · ${e.weightKg} kg` : ""}
             {e.restSec ? ` · rest ${e.restSec >= 60 ? `${Math.round(e.restSec / 60 * 10) / 10} min` : `${e.restSec} s`}` : ""}
@@ -182,7 +182,7 @@ function LogSession({ day, dayIndex, done }) {
             <div className="flex flex-col gap-2">
               {e.sets.map((s, si) => (
                 <div key={si} className="grid grid-cols-[2.5rem_1fr_1fr_auto] items-center gap-2">
-                  <span className="text-[13px] font-semibold text-ink-3">Set {si + 1}</span>
+                  <span className="text-body-sm font-semibold text-ink-3">Set {si + 1}</span>
                   <Input type="number" inputMode="numeric" min="0" aria-label={`${e.name} set ${si + 1} reps`} suffix="reps" value={s.reps} onChange={(ev) => setSet(ei, si, { reps: ev.target.value })} />
                   <Input type="number" inputMode="decimal" min="0" step="0.5" aria-label={`${e.name} set ${si + 1} weight`} suffix="kg" value={s.weightKg} onChange={(ev) => setSet(ei, si, { weightKg: ev.target.value })} />
                   <button
@@ -225,9 +225,9 @@ function RecentSessions() {
           <li key={l._id || l.id} className="flex items-center justify-between gap-3 py-2.5 first:pt-0 last:pb-0">
             <span>
               <span className="block font-semibold">{l.dayName || `Day ${(l.dayIndex ?? 0) + 1}`}</span>
-              <span className="block text-[13px] text-ink-3">{formatDate(l.dayKey ? `${l.dayKey}T12:00:00+05:30` : l.performedAt)}</span>
+              <span className="block text-body-sm text-ink-3">{formatDate(l.dayKey ? `${l.dayKey}T12:00:00+05:30` : l.performedAt)}</span>
             </span>
-            <span className="tabular text-[13px] text-ink-3">
+            <span className="tabular text-body-sm text-ink-3">
               {l.setsDone != null ? pluralize(l.setsDone, "set") : ""}
               {l.volumeKg ? ` · ${Math.round(l.volumeKg).toLocaleString("en-IN")} kg lifted` : ""}
             </span>

@@ -68,7 +68,7 @@ function PeriodPicker({ filters, setFilters, from, to }) {
   return (
     <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end">
       <label className="flex flex-col gap-1.5 lg:hidden">
-        <span className="text-[13px] font-semibold text-ink-3">Period</span>
+        <span className="text-body-sm font-semibold text-ink-3">Period</span>
         <Select value={filters.range} onChange={(e) => setFilters({ range: e.target.value })}>
           {PERIODS.map((p) => (
             <option key={p.value} value={p.value}>
@@ -138,7 +138,7 @@ function OutcomeBar({ summary }) {
             <span className="mt-1.5 size-2.5 shrink-0 rounded-[3px]" style={{ background: o.color }} aria-hidden />
             <span>
               <span className="tabular block font-bold">{formatNumber(summary[o.key])}</span>
-              <span className="text-[13px] text-ink-3">{o.label}</span>
+              <span className="text-body-sm text-ink-3">{o.label}</span>
             </span>
           </li>
         ))}
@@ -180,7 +180,7 @@ function RenewalsCard({ renewals, period }) {
             <table className="w-full text-sm">
               <caption className="sr-only">Renewals by plan</caption>
               <thead>
-                <tr className="border-b border-line text-[13px] text-ink-3">
+                <tr className="border-b border-line text-body-sm text-ink-3">
                   <th scope="col" className="py-1.5 text-left font-semibold">
                     Plan
                   </th>
@@ -241,11 +241,11 @@ function JoinsCard({ members }) {
       <JoinsChart data={members.joinsByMonth} />
       <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div>
-          <h3 className="mb-3 text-[13px] font-bold text-ink-3">How they heard about us</h3>
+          <h3 className="mb-3 text-body-sm font-bold text-ink-3">How they heard about us</h3>
           <BreakdownList items={channels} total={members.joined} emptyText="No new members in this period." />
         </div>
         <div>
-          <h3 className="mb-3 text-[13px] font-bold text-ink-3">How they signed up</h3>
+          <h3 className="mb-3 text-body-sm font-bold text-ink-3">How they signed up</h3>
           <BreakdownList items={sources} total={members.joined} emptyText="No new members in this period." />
         </div>
       </div>
@@ -321,7 +321,7 @@ function NotComingInCard({ filters, setFilters }) {
         <EmptyState compact icon={CalendarCheck} title="Everyone’s coming in" body={`Every member on a current plan has visited in the last ${filters.days} days.`} />
       ) : (
         <>
-          <p className="px-5 pb-2 text-[13px] font-semibold text-ink-3 md:px-6">{pluralize(data.total, "member")}</p>
+          <p className="px-5 pb-2 text-body-sm font-semibold text-ink-3 md:px-6">{pluralize(data.total, "member")}</p>
           <ul className="divide-y divide-line border-t border-line">
             {data.items.map((m) => (
               <li key={m.memberId} className="flex items-center gap-3 px-5 py-3 md:px-6">
@@ -330,7 +330,7 @@ function NotComingInCard({ filters, setFilters }) {
                   <Link to={`/admin/members/${m.memberId}`} className="block truncate font-semibold hover:underline">
                     {m.name}
                   </Link>
-                  <p className="truncate text-[13px] text-ink-3">
+                  <p className="truncate text-body-sm text-ink-3">
                     {m.lastVisit ? `Last came ${pluralize(m.daysAway, "day")} ago` : "Hasn’t come since the plan started"} · {m.planName}
                     {m.trainer && ` · ${m.trainer}`}
                   </p>
@@ -374,12 +374,12 @@ function PlansCard({ plans }) {
       <CardHeader title="Plans" description="Which plans sell, and what members are on now." />
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div>
-          <h3 className="mb-3 text-[13px] font-bold text-ink-3">Sold in this period</h3>
+          <h3 className="mb-3 text-body-sm font-bold text-ink-3">Sold in this period</h3>
           <BreakdownList items={plans.sold.map((p) => ({ key: p.planName, label: p.planName, count: p.sold, extra: formatINR(p.amount) }))} total={Math.max(...plans.sold.map((p) => p.sold), 1)} emptyText="No plans paid for in this period." />
-          {totalSold > 0 && <p className="mt-3 text-[13px] text-ink-3">{formatINR(totalSold)} collected for plans</p>}
+          {totalSold > 0 && <p className="mt-3 text-body-sm text-ink-3">{formatINR(totalSold)} collected for plans</p>}
         </div>
         <div>
-          <h3 className="mb-3 text-[13px] font-bold text-ink-3">Members on each plan now</h3>
+          <h3 className="mb-3 text-body-sm font-bold text-ink-3">Members on each plan now</h3>
           <BreakdownList items={plans.current.map((p) => ({ key: p.planName, label: p.planName, count: p.members }))} total={totalMembers} emptyText="No one is on a plan right now." />
         </div>
       </div>
@@ -394,14 +394,14 @@ function EnquiriesCard({ enquiries }) {
         title="Enquiries"
         description={enquiries.total ? `${pluralize(enquiries.total, "enquiry", "enquiries")}, ${formatNumber(enquiries.won)} joined so far. Likely spam left out.` : "No enquiries in this period."}
         action={
-          <Link to="/admin/leads" className="text-[13px] font-semibold text-brand-ink hover:underline">
+          <Link to="/admin/leads" className="text-body-sm font-semibold text-brand-ink hover:underline">
             Open enquiries
           </Link>
         }
       />
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <div>
-          <h3 className="mb-3 text-[13px] font-bold text-ink-3">Where they came from</h3>
+          <h3 className="mb-3 text-body-sm font-bold text-ink-3">Where they came from</h3>
           <BreakdownList
             items={enquiries.bySource.map((s) => ({ key: s.source, label: LEAD_SOURCE_LABEL[s.source] || s.source, count: s.count, extra: s.won ? `${s.won} joined` : "" }))}
             total={enquiries.total}
@@ -409,7 +409,7 @@ function EnquiriesCard({ enquiries }) {
           />
         </div>
         <div>
-          <h3 className="mb-3 text-[13px] font-bold text-ink-3">Where they are now</h3>
+          <h3 className="mb-3 text-body-sm font-bold text-ink-3">Where they are now</h3>
           <BreakdownList
             items={Object.entries(LEAD_STATUS)
               .map(([k, s]) => ({ key: k, label: s.label, count: enquiries.byStatus[k] || 0 }))
@@ -419,7 +419,7 @@ function EnquiriesCard({ enquiries }) {
           />
           {enquiries.lostReasons.length > 0 && (
             <>
-              <h3 className="mb-2 mt-5 text-[13px] font-bold text-ink-3">Why people didn’t join</h3>
+              <h3 className="mb-2 mt-5 text-body-sm font-bold text-ink-3">Why people didn’t join</h3>
               <ul className="flex flex-col gap-1 text-sm">
                 {enquiries.lostReasons.map((r) => (
                   <li key={r.reason} className="flex justify-between gap-3">

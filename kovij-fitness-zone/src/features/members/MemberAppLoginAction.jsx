@@ -76,19 +76,19 @@ export default function MemberAppLoginAction({ member }) {
               ) : pw.isDefault ? (
                 <span>
                   <span className="tabular font-bold">{dobPassword(dob)}</span>
-                  <span className="block text-[13px] text-ink-3">Their date of birth (DDMMYYYY). They should change it in the app.</span>
+                  <span className="block text-body-sm text-ink-3">Their date of birth (DDMMYYYY). They should change it in the app.</span>
                 </span>
               ) : (
                 <span>
                   <Badge tone="good">Chosen by the member</Badge>
-                  <span className="block text-[13px] text-ink-3">Since {formatDate(pw.setAt)}</span>
+                  <span className="block text-body-sm text-ink-3">Since {formatDate(pw.setAt)}</span>
                 </span>
               )}
             </dd>
           </dl>
           {pw && !pw.set && !dob && <InlineAlert tone="info">Add a date of birth to the profile. It becomes their first app password.</InlineAlert>}
           {pw && !pw.set && dob && <InlineAlert tone="info">Reset to give them their date of birth as a password.</InlineAlert>}
-          <p className="text-[13px] text-ink-3">Members can also sign in with a code sent to their mobile number. Forgot the password? Reset it here.</p>
+          <p className="text-body-sm text-ink-3">Members can also sign in with a code sent to their mobile number. Forgot the password? Reset it here.</p>
         </div>
       </Dialog>
     </>

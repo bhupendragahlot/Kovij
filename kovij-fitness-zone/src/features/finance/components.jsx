@@ -18,7 +18,7 @@ export function MonthPicker({ value, onChange, className }) {
   return (
     <div className={cn("flex items-center gap-1", className)}>
       <IconButton icon={ChevronLeft} label="Previous month" variant="secondary" onClick={() => onChange(shiftMonth(value, -1))} />
-      <p className="min-w-40 text-center text-[15px] font-semibold" aria-live="polite">
+      <p className="min-w-40 text-center text-body-lg font-semibold" aria-live="polite">
         {monthLabel(value)}
       </p>
       <IconButton icon={ChevronRight} label="Next month" variant="secondary" disabled={atLatest} onClick={() => onChange(shiftMonth(value, 1))} />

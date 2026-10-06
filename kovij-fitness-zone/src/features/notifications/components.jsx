@@ -24,7 +24,7 @@ const TONES = {
 /** Like Badge, but long reasons wrap instead of overflowing a phone screen. */
 function Pill({ tone = "neutral", icon: Icon, children }) {
   return (
-    <span className={cn("inline-flex max-w-full items-start gap-1 rounded-[10px] px-2 py-0.5 text-[11px] font-semibold leading-4", TONES[tone])}>
+    <span className={cn("inline-flex max-w-full items-start gap-1 rounded-[10px] px-2 py-0.5 text-label-sm font-semibold leading-4", TONES[tone])}>
       {Icon && <Icon className="mt-0.5 size-3 shrink-0" aria-hidden strokeWidth={2.4} />}
       <span className="min-w-0">{children}</span>
     </span>

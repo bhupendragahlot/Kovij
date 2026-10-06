@@ -46,8 +46,8 @@ export function SupportListPage() {
               <li key={t.id}>
                 <Link to={`/member/support/${t.id}`} className={cn("block p-4 hover:bg-surface-2", t.unread && "bg-brand-soft/30")}>
                   <span className="flex items-start justify-between gap-2">
-                    <span className={cn("text-[15px]", t.unread ? "font-bold" : "font-semibold")}>{t.subject}</span>
-                    <span className="shrink-0 text-[12px] text-ink-3">{formatRelativeTime(t.lastMessageAt)}</span>
+                    <span className={cn("text-body-lg", t.unread ? "font-bold" : "font-semibold")}>{t.subject}</span>
+                    <span className="shrink-0 text-label text-ink-3">{formatRelativeTime(t.lastMessageAt)}</span>
                   </span>
                   <span className="mt-0.5 line-clamp-2 block text-sm text-ink-2">
                     {t.lastAuthor && t.lastAuthor !== "You" ? `${t.lastAuthor}: ` : ""}
@@ -55,7 +55,7 @@ export function SupportListPage() {
                   </span>
                   <span className="mt-2 flex flex-wrap items-center gap-2">
                     <StatusPill status={t.status} />
-                    <span className="text-[12px] text-ink-3">{t.reference}</span>
+                    <span className="text-label text-ink-3">{t.reference}</span>
                   </span>
                 </Link>
               </li>
@@ -162,8 +162,8 @@ export function SupportThreadPage() {
         <ol className="flex flex-col gap-3 bg-surface-2/40 p-4" aria-label="Messages">
           {t.messages.map((m) => (
             <li key={m.id} className={cn("flex max-w-[85%] flex-col", m.by === "member" ? "items-end self-end" : "items-start self-start")}>
-              <div className={cn("whitespace-pre-wrap rounded-[16px] px-3.5 py-2.5 text-[15px] leading-relaxed", m.by === "member" ? "rounded-br-[6px] bg-brand-soft" : "rounded-bl-[6px] bg-surface shadow-sm")}>{m.text}</div>
-              <p className="mt-1 text-[12px] text-ink-3">
+              <div className={cn("whitespace-pre-wrap rounded-[16px] px-3.5 py-2.5 text-body-lg leading-relaxed", m.by === "member" ? "rounded-br-[6px] bg-brand-soft" : "rounded-bl-[6px] bg-surface shadow-sm")}>{m.text}</div>
+              <p className="mt-1 text-label text-ink-3">
                 {m.by === "member" ? "You" : `${m.author} from the gym`} · <time dateTime={m.at} title={formatDateTime(m.at)}>{formatRelativeTime(m.at)}</time>
               </p>
             </li>

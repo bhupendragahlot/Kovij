@@ -204,7 +204,7 @@ function Compare({ photos, days, weightByDay }) {
   const side = (day, label) => (
     <figure className="m-0 min-w-0">
       {find(day) ? <PrivatePhoto photo={find(day)} alt={`${label}: ${POSE_LABEL[pose].toLowerCase()} photo from ${formatDate(dayToDate(day))}`} /> : <EmptySlot pose={pose} />}
-      <figcaption className="mt-1.5 text-[13px]">
+      <figcaption className="mt-1.5 text-body-sm">
         <span className="font-semibold text-ink">{label}</span>
         <span className="block text-ink-3">
           {formatDate(dayToDate(day))}

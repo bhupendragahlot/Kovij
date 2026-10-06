@@ -137,7 +137,7 @@ export function TrainerDialog({ open, trainer, onClose }) {
               {photo || form.image ? "Change photo" : "Add photo"}
             </Button>
             <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="sr-only" tabIndex={-1} aria-hidden onChange={pickPhoto} />
-            <p className="text-[13px] text-ink-3">{photoError ? <span className="font-medium text-bad">{photoError}</span> : "Shown on the website and in the member app."}</p>
+            <p className="text-body-sm text-ink-3">{photoError ? <span className="font-medium text-bad">{photoError}</span> : "Shown on the website and in the member app."}</p>
           </div>
         </div>
         <Field label="Name" error={errors.name} required>
@@ -177,7 +177,7 @@ export function TrainerDialog({ open, trainer, onClose }) {
         </Field>
         <fieldset className="sm:col-span-2">
           <legend className="mb-1.5 text-sm font-semibold text-ink">Weekly schedule</legend>
-          <p className="mb-3 text-[13px] text-ink-3">When they're on the floor. Members see this for their own trainer.</p>
+          <p className="mb-3 text-body-sm text-ink-3">When they're on the floor. Members see this for their own trainer.</p>
           <ScheduleEditor value={form.schedule} onChange={(schedule) => set({ schedule })} errors={errors} />
           {!form.schedule.length && (
             <Field label="Or describe it" optional error={errors.shift} className="mt-3" hint="Used only when no weekly schedule is set.">

@@ -74,7 +74,7 @@ function DeliveryLine({ a, onShowLog }) {
   if (d.state === "pending" || d.state === "running") {
     return (
       <div className="flex flex-col gap-1.5" aria-live="polite">
-        <p className="text-[13px] font-semibold text-ink-2">
+        <p className="text-body-sm font-semibold text-ink-2">
           Sending… {formatNumber(d.processed)} of {formatNumber(d.audienceCount)} members
         </p>
         <Meter value={d.processed || 0} max={Math.max(1, d.audienceCount || 0)} label="Delivery progress" />
@@ -84,7 +84,7 @@ function DeliveryLine({ a, onShowLog }) {
   if (!d.state || d.state === "none") return null;
   const s = a.stats;
   return (
-    <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-ink-3">
+    <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-body-sm text-ink-3">
       <span>
         Sent to <span className="font-semibold text-ink-2">{pluralize(s.notified, "member")}</span>, {formatNumber(s.read)} read
       </span>
@@ -194,12 +194,12 @@ function AnnouncementCard({ a, onEdit, onShowLog }) {
       </div>
       <div className="flex gap-3">
         <div className="min-w-0 flex-1">
-          <h3 className="text-[15px] font-semibold text-ink">{a.title}</h3>
+          <h3 className="text-body-lg font-semibold text-ink">{a.title}</h3>
           <p className="mt-1 line-clamp-3 whitespace-pre-line text-sm text-ink-2">{a.body}</p>
         </div>
         {a.imageUrl && <img src={a.imageUrl} alt="" loading="lazy" className="size-16 shrink-0 rounded-tile object-cover sm:size-20" />}
       </div>
-      <p className="flex flex-wrap items-center gap-x-2 text-[13px] text-ink-3">
+      <p className="flex flex-wrap items-center gap-x-2 text-body-sm text-ink-3">
         <Users className="size-3.5" aria-hidden />
         <span>{AUDIENCE_LABEL[a.audience]}</span>
         <span aria-hidden>·</span>

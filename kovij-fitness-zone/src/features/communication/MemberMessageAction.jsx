@@ -181,9 +181,9 @@ export default function MemberMessageAction({ member }) {
                   <li key={n._id} className="py-2.5">
                     <div className="flex items-start justify-between gap-3">
                       <p className="min-w-0 font-semibold text-ink">{n.title}</p>
-                      <span className="shrink-0 text-[13px] text-ink-3">{formatRelativeTime(n.createdAt)}</span>
+                      <span className="shrink-0 text-body-sm text-ink-3">{formatRelativeTime(n.createdAt)}</span>
                     </div>
-                    <p className="text-[13px] text-ink-3">{n.sentBy ? `By ${n.sentBy}` : "Automatic"}</p>
+                    <p className="text-body-sm text-ink-3">{n.sentBy ? `By ${n.sentBy}` : "Automatic"}</p>
                     <DeliveryBadges notification={n} className="mt-1.5 flex flex-wrap gap-1.5" />
                   </li>
                 ))}

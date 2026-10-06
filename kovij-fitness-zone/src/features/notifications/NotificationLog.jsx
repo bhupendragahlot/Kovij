@@ -74,7 +74,7 @@ export default function NotificationLog({ source = "all", title = "Sent log", de
         <div className="min-w-0 max-w-sm">
           <KindBadge kind={n.kind} />
           <p className="mt-1 font-semibold text-ink">{n.title}</p>
-          {n.body && <p className="line-clamp-1 text-[13px] text-ink-3">{n.body}</p>}
+          {n.body && <p className="line-clamp-1 text-body-sm text-ink-3">{n.body}</p>}
         </div>
       ),
     },
@@ -86,9 +86,9 @@ export default function NotificationLog({ source = "all", title = "Sent log", de
     <div className="px-4 py-3">
       <div className="flex items-start justify-between gap-3">
         <p className="min-w-0 font-semibold text-ink">{n.title}</p>
-        <span className="shrink-0 text-[13px] text-ink-3">{formatRelativeTime(n.createdAt)}</span>
+        <span className="shrink-0 text-body-sm text-ink-3">{formatRelativeTime(n.createdAt)}</span>
       </div>
-      <p className="mt-0.5 text-[13px] text-ink-3">
+      <p className="mt-0.5 text-body-sm text-ink-3">
         <MemberLink member={n.member} />, {NOTIFICATION_KIND[n.kind]?.label.toLowerCase() || n.kind}
         {n.sentBy ? `, by ${n.sentBy}` : ""}
       </p>

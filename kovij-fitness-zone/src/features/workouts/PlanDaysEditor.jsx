@@ -20,7 +20,7 @@ function ExerciseRow({ exercise: e, index, count, dayIndex, errors, onChange, on
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold leading-6 text-ink">{e.name}</p>
-          <p className="text-[13px] text-ink-3">
+          <p className="text-body-sm text-ink-3">
             {[MUSCLE_LABEL[e.primaryMuscle], EQUIPMENT_LABEL[e.equipment]].filter(Boolean).join(", ")}
             {e.archived && (
               <Badge size="sm" icon={Archive} className="ml-2 align-middle">
@@ -28,7 +28,7 @@ function ExerciseRow({ exercise: e, index, count, dayIndex, errors, onChange, on
               </Badge>
             )}
           </p>
-          {err("exerciseId") && <p className="mt-1 text-[13px] font-medium text-bad">{err("exerciseId")}</p>}
+          {err("exerciseId") && <p className="mt-1 text-body-sm font-medium text-bad">{err("exerciseId")}</p>}
         </div>
       </div>
       <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">

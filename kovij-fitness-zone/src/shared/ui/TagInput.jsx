@@ -20,9 +20,9 @@ export function TagInput({ value = [], onChange, placeholder = "Type and press E
   return (
     <div className={cn(controlClasses, "flex min-h-11 flex-wrap items-center gap-1.5 px-2 py-1.5 focus-within:border-focus focus-within:ring-2 focus-within:ring-focus/25 md:min-h-10")}>
       {value.map((tag) => (
-        <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-surface-2 py-1 pl-2.5 pr-1 text-[13px] font-semibold">
+        <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-surface-2 py-1 pl-2.5 pr-1 text-body-sm font-semibold">
           {tag}
-          <button type="button" onClick={() => onChange(value.filter((t) => t !== tag))} aria-label={`Remove ${tag}`} className="grid size-5 place-items-center rounded-full text-ink-3 hover:bg-surface-3 hover:text-ink">
+          <button type="button" onClick={() => onChange(value.filter((t) => t !== tag))} aria-label={`Remove ${tag}`} className="touch-target grid size-5 place-items-center rounded-full text-ink-3 hover:bg-surface-3 hover:text-ink">
             <X className="size-3" aria-hidden />
           </button>
         </span>
@@ -42,7 +42,7 @@ export function TagInput({ value = [], onChange, placeholder = "Type and press E
         }}
         onBlur={add}
         placeholder={value.length ? "" : placeholder}
-        className="min-w-32 flex-1 bg-transparent px-1 text-[15px] outline-none placeholder:text-ink-3 md:text-sm"
+        className="min-w-32 flex-1 bg-transparent px-1 text-base outline-none placeholder:text-ink-3 md:text-sm"
       />
     </div>
   );

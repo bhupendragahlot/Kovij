@@ -92,8 +92,8 @@ export default function AssignedExercisesPage() {
       cell: (a) => (
         <button type="button" onClick={() => setOpen(a)} className="text-left">
           <span className="block font-semibold text-ink hover:underline">{a.exercise.name}</span>
-          <span className="block text-[13px] text-ink-3">{prescription(a) || "No sets or time given"}</span>
-          {a.memberNote && <span className="block text-[13px] text-ink-2">“{a.memberNote}”</span>}
+          <span className="block text-body-sm text-ink-3">{prescription(a) || "No sets or time given"}</span>
+          {a.memberNote && <span className="block text-body-sm text-ink-2">“{a.memberNote}”</span>}
         </button>
       ),
     },
@@ -111,7 +111,7 @@ export default function AssignedExercisesPage() {
     <div className="flex items-start gap-3 px-4 py-3">
       <button type="button" onClick={() => setOpen(a)} className="min-w-0 flex-1 text-left">
         <span className="block font-semibold text-ink">{a.exercise.name}</span>
-        <span className="block text-[13px] text-ink-3">
+        <span className="block text-body-sm text-ink-3">
           {[a.member?.name, dayLabel(a.dayKey, todayKey), prescription(a, { rest: false })].filter(Boolean).join(" · ")}
         </span>
       </button>
@@ -188,14 +188,14 @@ export default function AssignedExercisesPage() {
                 {data.byTrainer.map((r) => (
                   <li key={r.trainer?._id || "none"} className="flex flex-wrap items-center gap-x-4 gap-y-1 py-2.5 first:pt-0 last:pb-0">
                     <span className="min-w-40 flex-1 font-semibold">{r.trainer?.name || "No trainer"}</span>
-                    <span className="tabular text-[13px] text-ink-3">
+                    <span className="tabular text-body-sm text-ink-3">
                       {r.members} {r.members === 1 ? "member" : "members"}
                     </span>
-                    <span className="tabular text-[13px] text-ink-3">
+                    <span className="tabular text-body-sm text-ink-3">
                       {r.done} of {r.total} done
                     </span>
                     {r.missed > 0 && (
-                      <span className="tabular inline-flex items-center gap-1 text-[13px] font-semibold text-warn">
+                      <span className="tabular inline-flex items-center gap-1 text-body-sm font-semibold text-warn">
                         <TriangleAlert className="size-3.5" aria-hidden />
                         {r.missed} missed
                       </span>

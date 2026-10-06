@@ -23,7 +23,7 @@ export function DietTypeBadge({ type, size = "sm" }) {
 export function MacroLine({ totals, className }) {
   if (!totals) return null;
   return (
-    <p className={cn("tabular text-[13px] text-ink-3", className)}>
+    <p className={cn("tabular text-body-sm text-ink-3", className)}>
       <span className="font-semibold text-ink-2">{formatKcal(totals.calories)}</span>, {formatNumber(totals.proteinG)} g protein, {formatNumber(totals.carbsG)} g carbs,{" "}
       {formatNumber(totals.fatG)} g fat
     </p>
@@ -61,7 +61,7 @@ export function TargetBar({ label, value, target, unit = "kcal", className }) {
         </div>
       )}
       {over && (
-        <p className="mt-1 flex items-center gap-1 text-[13px] font-semibold text-warn">
+        <p className="mt-1 flex items-center gap-1 text-body-sm font-semibold text-warn">
           <TriangleAlert className="size-3.5" aria-hidden />
           Over by {fmt(value - target)}
         </p>

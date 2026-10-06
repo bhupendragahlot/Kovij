@@ -101,7 +101,7 @@ function StaffDialog({ open, staff, onClose }) {
               : "At least 8 characters. Ask them to change it in Settings, My account after signing in."
           }
           labelAction={
-            <button type="button" onClick={() => set({ password: randomPassword() })} className="text-[13px] font-semibold text-brand-ink hover:underline">
+            <button type="button" onClick={() => set({ password: randomPassword() })} className="text-body-sm font-semibold text-brand-ink hover:underline">
               Generate
             </button>
           }
@@ -172,7 +172,7 @@ export function StaffSection() {
                   <p className="font-semibold">
                     {s.name} {s.id === me?.id && <span className="font-normal text-ink-3">(you)</span>}
                   </p>
-                  <p className="truncate text-[13px] text-ink-3">
+                  <p className="truncate text-body-sm text-ink-3">
                     {s.email} · {s.lastLoginAt ? `last signed in ${formatRelativeTime(s.lastLoginAt)}` : "never signed in"}
                   </p>
                   <div className="mt-1.5 flex flex-wrap gap-1.5">

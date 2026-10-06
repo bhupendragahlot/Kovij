@@ -110,7 +110,7 @@ function DeskLog({ events }) {
               const meta = EVENT_META[e.type] || EVENT_META.check_in;
               return (
                 <li key={e._id} className="flex items-start gap-3 py-2.5">
-                  <span className="tabular w-16 shrink-0 pt-0.5 text-[13px] font-semibold text-ink-3">{formatTime(e.at)}</span>
+                  <span className="tabular w-16 shrink-0 pt-0.5 text-body-sm font-semibold text-ink-3">{formatTime(e.at)}</span>
                   <div className="min-w-0 flex-1">
                     <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
                       <Badge tone={meta.tone} icon={meta.icon} size="sm">
@@ -124,7 +124,7 @@ function DeskLog({ events }) {
                         <span className="text-ink-3">Removed member</span>
                       )}
                     </p>
-                    <p className="mt-0.5 text-[13px] text-ink-3">
+                    <p className="mt-0.5 text-body-sm text-ink-3">
                       {recordedByLine(e.method, e.byName)}
                       {e.reason ? `. ${e.type === "refused" ? "Reason" : "Note"}: ${e.reason}` : ""}
                       {e.type === "undo_check_in" && e.details?.checkedInAt ? `. Had checked in at ${formatTime(e.details.checkedInAt)}` : ""}
@@ -170,7 +170,7 @@ function DayView({ date, onDate, filters, setFilters }) {
           <Avatar name={v.memberId.name} src={v.memberId.profilePhoto} size="sm" />
           <span className="min-w-0">
             <span className="block truncate font-semibold hover:underline">{v.memberId.name}</span>
-            <span className="block text-[13px] text-ink-3">{v.memberId.memberCode}</span>
+            <span className="block text-body-sm text-ink-3">{v.memberId.memberCode}</span>
           </span>
         </Link>
       ),
@@ -189,7 +189,7 @@ function DayView({ date, onDate, filters, setFilters }) {
       cell: (v) => (
         <span className="text-ink-2">
           {recordedByLine(v.method, v.recordedBy)}
-          {v.entries > 1 && <span className="block text-[13px] text-ink-3">Came in {v.entries} times</span>}
+          {v.entries > 1 && <span className="block text-body-sm text-ink-3">Came in {v.entries} times</span>}
         </span>
       ),
     },
@@ -213,7 +213,7 @@ function DayView({ date, onDate, filters, setFilters }) {
         <Avatar name={v.memberId.name} src={v.memberId.profilePhoto} />
         <span className="min-w-0 flex-1">
           <span className="block truncate font-semibold">{v.memberId.name}</span>
-          <span className="tabular block text-[13px] text-ink-3">
+          <span className="tabular block text-body-sm text-ink-3">
             {formatTime(v.checkedInAt)}
             {v.checkedOutAt ? ` – ${formatTime(v.checkedOutAt)}, ${formatDuration(v.durationMinutes)}` : ""} · {METHOD_LABEL[v.method] || v.method}
           </span>
@@ -372,7 +372,7 @@ function MonthView({ month, onMonth, onOpenDay, filters, setFilters }) {
           <Avatar name={r.member.name} src={r.member.profilePhoto} size="sm" />
           <span className="min-w-0">
             <span className="block truncate font-semibold hover:underline">{r.member.name}</span>
-            <span className="block text-[13px] text-ink-3">{r.member.memberCode}</span>
+            <span className="block text-body-sm text-ink-3">{r.member.memberCode}</span>
           </span>
         </Link>
       ),
@@ -386,11 +386,11 @@ function MonthView({ month, onMonth, onOpenDay, filters, setFilters }) {
       <Avatar name={r.member.name} src={r.member.profilePhoto} />
       <span className="min-w-0 flex-1">
         <span className="block truncate font-semibold">{r.member.name}</span>
-        <span className="block text-[13px] text-ink-3">Last in {formatRelativeTime(r.lastVisitAt)}</span>
+        <span className="block text-body-sm text-ink-3">Last in {formatRelativeTime(r.lastVisitAt)}</span>
       </span>
       <span className="text-right">
         <span className="block font-bold">{formatNumber(r.visits)}</span>
-        <span className="block text-[12px] text-ink-3">{r.visits === 1 ? "visit" : "visits"}</span>
+        <span className="block text-label text-ink-3">{r.visits === 1 ? "visit" : "visits"}</span>
       </span>
     </Link>
   );

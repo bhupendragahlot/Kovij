@@ -80,7 +80,7 @@ function StaffAndPeriod({ filters, setFilters, staff = [], staffLabel = "Staff m
   return (
     <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:max-w-2xl">
       <label className="flex flex-col gap-1.5">
-        <span className="text-[13px] font-semibold text-ink-3">{staffLabel}</span>
+        <span className="text-body-sm font-semibold text-ink-3">{staffLabel}</span>
         <Select value={filters[staffKey] || ""} onChange={(e) => setFilters({ [staffKey]: e.target.value })}>
           <option value="">Everyone</option>
           {staff.map((s) => (
@@ -92,7 +92,7 @@ function StaffAndPeriod({ filters, setFilters, staff = [], staffLabel = "Staff m
         </Select>
       </label>
       <label className="flex flex-col gap-1.5">
-        <span className="text-[13px] font-semibold text-ink-3">When</span>
+        <span className="text-body-sm font-semibold text-ink-3">When</span>
         <Select value={filters.period} onChange={(e) => setFilters({ period: e.target.value })}>
           {PERIODS.map((p) => (
             <option key={p.value} value={p.value}>
@@ -140,7 +140,7 @@ function ChangesTab({ filters, setFilters }) {
           <div className={cn("transition-opacity duration-200", query.isFetching && query.isPlaceholderData && "opacity-60")}>
             {groups.map((g) => (
               <section key={g.key} aria-label={dayHeading(g.key)}>
-                <h2 className="border-b border-line bg-surface-2/60 px-4 py-2 text-[13px] font-bold text-ink-3 md:px-5">{dayHeading(g.key)}</h2>
+                <h2 className="border-b border-line bg-surface-2/60 px-4 py-2 text-body-sm font-bold text-ink-3 md:px-5">{dayHeading(g.key)}</h2>
                 <ul className="divide-y divide-line">
                   {g.items.map((item) => (
                     <ActivityRow key={item.id} item={item} />
@@ -159,12 +159,12 @@ function ChangesTab({ filters, setFilters }) {
 function ActivityRow({ item }) {
   return (
     <li className="flex gap-3 px-4 py-3 md:px-5">
-      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-surface-2 text-[12px] font-bold text-ink-2" aria-hidden>
+      <span className="grid size-9 shrink-0 place-items-center rounded-full bg-surface-2 text-label font-bold text-ink-2" aria-hidden>
         {initials(item.actor.name)}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[15px] leading-snug">{item.summary}</p>
-        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[13px] text-ink-3">
+        <p className="text-body-lg leading-snug">{item.summary}</p>
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-body-sm text-ink-3">
           <time dateTime={item.at} title={formatDateTime(item.at)} className="tabular">
             {formatTime(item.at)}
           </time>
@@ -228,12 +228,12 @@ function SignInsTab({ filters, setFilters }) {
                   </Badge>
                   <div className="min-w-0 flex-1 basis-48">
                     <p className="truncate font-semibold">{e.user?.name || e.email}</p>
-                    <p className="truncate text-[13px] text-ink-3">
+                    <p className="truncate text-body-sm text-ink-3">
                       {e.user ? e.email : "No staff account with this email"} · {e.device}
                       {e.ip && ` · ${e.ip}`}
                     </p>
                   </div>
-                  <time dateTime={e.at} className="tabular text-[13px] text-ink-3">
+                  <time dateTime={e.at} className="tabular text-body-sm text-ink-3">
                     {formatDateTime(e.at)}
                   </time>
                 </li>

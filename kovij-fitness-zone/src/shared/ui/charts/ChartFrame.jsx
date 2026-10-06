@@ -15,8 +15,8 @@ export function ChartFrame({ title, legend, table, children, onHero = false, cla
     <figure className={cn("m-0", className)}>
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-          {title && <figcaption className={cn("text-[15px] font-semibold", onHero ? "text-hero-ink" : "text-ink")}>{title}</figcaption>}
-          {legend && <ul className={cn("flex flex-wrap items-center gap-x-4 gap-y-1 text-[13px]", ink2)}>{legend}</ul>}
+          {title && <figcaption className={cn("text-body-lg font-semibold", onHero ? "text-hero-ink" : "text-ink")}>{title}</figcaption>}
+          {legend && <ul className={cn("flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm", ink2)}>{legend}</ul>}
         </div>
         <div className="flex items-center gap-1">
           {actions}
@@ -25,8 +25,8 @@ export function ChartFrame({ title, legend, table, children, onHero = false, cla
             onClick={() => setAsTable((v) => !v)}
             aria-pressed={asTable}
             className={cn(
-              "inline-flex h-8 items-center gap-1.5 rounded-[9px] px-2 text-[13px] font-semibold",
-              onHero ? "text-hero-ink-2 hover:bg-white/10 hover:text-hero-ink" : "text-ink-3 hover:bg-surface-2 hover:text-ink"
+              "state-layer touch-target inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-body-sm font-semibold",
+              onHero ? "text-hero-ink-2 hover:text-hero-ink" : "text-ink-3 hover:text-ink"
             )}
           >
             {asTable ? <ChartColumn className="size-4" aria-hidden /> : <Table2 className="size-4" aria-hidden />}
@@ -85,7 +85,7 @@ export function LegendItem({ color, shape = "rect", children }) {
 export function ChartTooltip({ active, payload, label, labelFormatter, valueFormatter = (v) => v, onHero }) {
   if (!active || !payload?.length) return null;
   return (
-    <div className={cn("kv-app min-w-36 rounded-[10px] border px-3 py-2 font-ui text-[13px] shadow-pop", onHero ? "border-hero-line bg-hero text-hero-ink" : "border-line bg-surface text-ink")}>
+    <div className={cn("kv-app min-w-36 rounded-[10px] border px-3 py-2 font-ui text-body-sm shadow-pop", onHero ? "border-hero-line bg-hero text-hero-ink" : "border-line bg-surface text-ink")}>
       <p className={cn("mb-1 font-semibold", onHero ? "text-hero-ink-2" : "text-ink-3")}>{labelFormatter ? labelFormatter(label) : label}</p>
       {payload.map((p) => (
         <p key={p.dataKey} className="flex items-center gap-2">

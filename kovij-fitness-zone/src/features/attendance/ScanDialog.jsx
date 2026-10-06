@@ -196,7 +196,7 @@ export function ScanDialog({ open, onClose }) {
           {["denied", "unavailable", "error"].includes(scanner.status) && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-5 text-center">
               <Camera className="size-8 text-ink-3" aria-hidden />
-              <p className="text-[15px] font-semibold text-ink">
+              <p className="text-body-lg font-semibold text-ink">
                 {scanner.status === "denied" ? "Camera access is blocked" : scanner.status === "unavailable" ? "No camera on this device" : "The camera didn't start"}
               </p>
               <p className="max-w-xs text-sm text-ink-3">
@@ -228,12 +228,12 @@ export function ScanDialog({ open, onClose }) {
                   <tone.Icon className={cn("mt-0.5 size-6 shrink-0", tone.icon)} aria-hidden />
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="flex items-center gap-1.5 text-[15px] font-bold text-ink">
+                  <p className="flex items-center gap-1.5 text-body-lg font-bold text-ink">
                     {view.member && <tone.Icon className={cn("size-4 shrink-0", tone.icon)} aria-hidden />}
                     {view.title}
                   </p>
                   <p className="mt-0.5 text-sm text-ink-2">{view.line}</p>
-                  {view.member?.memberCode && <p className="mt-0.5 text-[13px] text-ink-3">{view.member.memberCode}</p>}
+                  {view.member?.memberCode && <p className="mt-0.5 text-body-sm text-ink-3">{view.member.memberCode}</p>}
                 </div>
               </div>
 

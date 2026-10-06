@@ -44,11 +44,11 @@ export function AssignmentRow({ a, todayKey, canManage, actions, onEdit, onOpen,
     <li className="flex items-start gap-3 py-3 first:pt-0 last:pb-0">
       <button type="button" onClick={() => onOpen(a)} className="min-w-0 flex-1 text-left">
         <span className="block font-semibold text-ink hover:underline">{a.exercise.name}</span>
-        <span className="block text-[13px] text-ink-3">
+        <span className="block text-body-sm text-ink-3">
           {[showDay && dayLabel(a.dayKey, todayKey), prescription(a)].filter(Boolean).join(" · ") || "No sets or time given"}
         </span>
-        {a.notes && <span className="block text-[13px] text-ink-2">Note: {a.notes}</span>}
-        {a.memberNote && <span className="block text-[13px] text-ink-2">Member: “{a.memberNote}”</span>}
+        {a.notes && <span className="block text-body-sm text-ink-2">Note: {a.notes}</span>}
+        {a.memberNote && <span className="block text-body-sm text-ink-2">Member: “{a.memberNote}”</span>}
         {a.completedAt && (
           <span className="block text-xs text-ink-3">
             Done {formatDateTime(a.completedAt)}

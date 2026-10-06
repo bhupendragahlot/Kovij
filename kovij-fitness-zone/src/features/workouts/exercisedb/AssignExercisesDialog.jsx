@@ -68,7 +68,7 @@ function MemberChooser({ value, onChange, error }) {
         placeholder={role === "trainer" ? "Search your members" : "Name, phone or member code"}
         onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
       />
-      {error && <p className="text-[13px] font-medium text-bad">{error}</p>}
+      {error && <p className="text-body-sm font-medium text-bad">{error}</p>}
       <ul className="flex max-h-60 flex-col gap-0.5 overflow-y-auto rounded-tile border border-line p-1" aria-label="Members">
         {roster.isPending && <li className="px-3 py-2 text-sm text-ink-3">Loading members…</li>}
         {roster.isError && <li className="px-3 py-2 text-sm text-bad">{roster.error?.message || "Members didn't load."}</li>}
@@ -250,7 +250,7 @@ export function AssignExercisesDialog({ open, onClose, member: fixedMember, exer
           <h3 id="assign-ex-chosen" className="mb-2 text-sm font-semibold text-ink">
             Exercises {items.length > 0 && <span className="font-normal text-ink-3">({items.length})</span>}
           </h3>
-          {errors.items && <p className="mb-2 text-[13px] font-medium text-bad">{errors.items}</p>}
+          {errors.items && <p className="mb-2 text-body-sm font-medium text-bad">{errors.items}</p>}
           {items.length === 0 ? (
             <EmptyState
               compact
@@ -273,7 +273,7 @@ export function AssignExercisesDialog({ open, onClose, member: fixedMember, exer
                       <span className="block truncate font-semibold">
                         {i + 1}. {it.exercise.name}
                       </span>
-                      <span className="block truncate text-[13px] text-ink-3">{exerciseFacts(it.exercise)}</span>
+                      <span className="block truncate text-body-sm text-ink-3">{exerciseFacts(it.exercise)}</span>
                     </span>
                     <IconButton icon={Trash2} label={`Remove ${it.exercise.name}`} size="sm" onClick={() => toggle(it.exercise)} />
                   </div>

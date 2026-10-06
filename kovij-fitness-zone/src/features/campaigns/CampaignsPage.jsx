@@ -127,13 +127,13 @@ function Composer({ open, onClose }) {
               </span>
             }
           >
-            <Textarea value={form.bodyHtml} onChange={(e) => set({ bodyHtml: e.target.value })} rows={12} className="font-mono text-[13px]" />
+            <Textarea value={form.bodyHtml} onChange={(e) => set({ bodyHtml: e.target.value })} rows={12} className="font-mono text-body-sm" />
           </Field>
         </div>
         <div className="flex min-h-80 flex-col">
           <p className="mb-1.5 text-sm font-semibold">Preview</p>
           <div className="flex-1 overflow-hidden rounded-tile border border-line bg-white">
-            <p className="border-b border-line bg-surface-2 px-3 py-2 text-[13px] text-ink-2">
+            <p className="border-b border-line bg-surface-2 px-3 py-2 text-body-sm text-ink-2">
               <span className="font-semibold text-ink">Subject:</span> {fillPreview(form.subject) || "No subject yet"}
             </p>
             {/* sandbox="" disables scripts, forms and navigation inside the preview */}
@@ -239,11 +239,11 @@ export default function CampaignsPage() {
                       </Badge>
                       <Badge size="sm">{TYPES[c.type]}</Badge>
                     </div>
-                    <p className="mt-0.5 truncate text-[13px] text-ink-3">
+                    <p className="mt-0.5 truncate text-body-sm text-ink-3">
                       {AUDIENCES[c.audienceFilter]}, created {formatDate(c.createdAt)}
                     </p>
                     {c.status !== "draft" && (
-                      <p className="mt-1 text-[13px] text-ink-2">
+                      <p className="mt-1 text-body-sm text-ink-2">
                         {formatNumber(c.stats.sent)} delivered
                         {c.stats.failed ? `, ${formatNumber(c.stats.failed)} failed` : ""}
                         {c.stats.queued ? `, ${formatNumber(c.stats.queued)} waiting` : ""}

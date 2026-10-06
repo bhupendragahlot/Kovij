@@ -74,7 +74,7 @@ export function ScheduleEditor({ value = [], onChange, errors = {} }) {
                         />
                         <IconButton icon={X} label={`Remove ${WEEKDAYS[day]} shift ${k + 1}`} onClick={() => setDay(day, entry.shifts.filter((_, j) => j !== k))} />
                       </div>
-                      {(startErr || endErr) && <p className="mt-1 text-[13px] font-medium text-bad">{startErr || endErr}</p>}
+                      {(startErr || endErr) && <p className="mt-1 text-body-sm font-medium text-bad">{startErr || endErr}</p>}
                     </div>
                   );
                 })}

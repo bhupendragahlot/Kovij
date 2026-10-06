@@ -84,9 +84,9 @@ function SearchPanel({ visitsToday }) {
         autoFocus
         label="Find a member to check in"
         placeholder="Name, phone or member code"
-        className="[&_input]:h-14 [&_input]:text-[17px]"
+        className="[&_input]:h-14 [&_input]:text-title-lg"
       />
-      <p className="mt-2 text-[13px] text-ink-3">When only one member matches, press Enter to check them in.</p>
+      <p className="mt-2 text-body-sm text-ink-3">When only one member matches, press Enter to check them in.</p>
 
       <div className="mt-4" aria-live="polite">
         {term.length < 2 ? (
@@ -116,8 +116,8 @@ function SearchPanel({ visitsToday }) {
                 <li key={m._id} className="flex items-center gap-3 rounded-tile px-2 py-2.5 hover:bg-surface-2">
                   <Avatar name={m.name} src={m.profilePhoto} size="lg" />
                   <Link to={`/admin/members/${m._id}`} className="min-w-0 flex-1">
-                    <span className="block truncate text-[15px] font-semibold text-ink">{m.name}</span>
-                    <span className="block truncate text-[13px] text-ink-3">{[m.memberCode, formatPhone(m.phone)].filter(Boolean).join(", ")}</span>
+                    <span className="block truncate text-body-lg font-semibold text-ink">{m.name}</span>
+                    <span className="block truncate text-body-sm text-ink-3">{[m.memberCode, formatPhone(m.phone)].filter(Boolean).join(", ")}</span>
                     <span className="mt-1 flex flex-wrap items-center gap-1.5">
                       <StatusBadge kind="member" status={m.state} size="sm" />
                       {m.current?.endDate && ["active", "expiring"].includes(m.state) && (
@@ -191,14 +191,14 @@ function TodayList({ attendance }) {
         <ol className="-mx-2 flex flex-col">
           {items.map((a) => (
             <li key={a._id} className="flex items-center gap-3 rounded-tile px-2 py-2">
-              <span className="tabular w-16 shrink-0 text-[13px] font-semibold text-ink-3">{formatTime(a.checkedInAt)}</span>
+              <span className="tabular w-16 shrink-0 text-body-sm font-semibold text-ink-3">{formatTime(a.checkedInAt)}</span>
               <Avatar name={a.memberId.name} src={a.memberId.profilePhoto} size="sm" />
               <span className="min-w-0 flex-1">
                 <Link to={`/admin/members/${a.memberId._id}`} className="block truncate text-sm font-semibold text-ink hover:underline">
                   {a.memberId.name}
                 </Link>
                 {a.checkedOutAt && (
-                  <span className="block truncate text-[12px] text-ink-3">
+                  <span className="block truncate text-label text-ink-3">
                     Left {formatTime(a.checkedOutAt)} · {formatDuration(a.durationMinutes)}
                   </span>
                 )}

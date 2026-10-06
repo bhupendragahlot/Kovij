@@ -86,11 +86,11 @@ export function MembershipTimeline({ memberId }) {
                 <p className="font-semibold text-ink">{title}</p>
                 {SALES.includes(e.type) && e.status && e.status !== "active" && e.status !== "expired" && <PlanStatusBadge status={e.status} size="sm" />}
               </div>
-              <p className="mt-0.5 text-[13px] text-ink-3">
+              <p className="mt-0.5 text-body-sm text-ink-3">
                 <time dateTime={new Date(e.at).toISOString()}>{formatDate(e.at)}</time>
                 {detailLine(e) && ` · ${detailLine(e)}`}
               </p>
-              {e.note && <p className="mt-1.5 rounded-tile bg-surface-2 px-3 py-2 text-[13px] text-ink-2">{e.note}</p>}
+              {e.note && <p className="mt-1.5 rounded-tile bg-surface-2 px-3 py-2 text-body-sm text-ink-2">{e.note}</p>}
             </div>
           </li>
         );

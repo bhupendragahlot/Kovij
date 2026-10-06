@@ -117,7 +117,7 @@ export function TrainerMembersDialog({ open, trainer, onClose }) {
                   Assign {adding.length} {adding.length === 1 ? "member" : "members"}
                 </Button>
               )}
-              <p className="mt-2 text-[13px] text-ink-3">Members who already have a trainer move to {trainer?.name}.</p>
+              <p className="mt-2 text-body-sm text-ink-3">Members who already have a trainer move to {trainer?.name}.</p>
             </>
           )}
         </section>
@@ -139,7 +139,7 @@ export function TrainerMembersDialog({ open, trainer, onClose }) {
                   <Avatar name={m.name} src={m.profilePhoto} />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-semibold hover:underline">{m.name}</span>
-                    <span className="block truncate text-[13px] text-ink-3">
+                    <span className="block truncate text-body-sm text-ink-3">
                       {m.workout ? m.workout.name : "No workout plan"}
                       {m.lastSessionDay ? `, trained ${formatRelativeDay(dayKeyDate(m.lastSessionDay))}` : ""}
                     </span>

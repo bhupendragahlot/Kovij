@@ -9,8 +9,8 @@ const PROVIDER = { smtp: "SMTP", brevo: "Brevo (HTTPS)" };
 function Count({ label, value, tone }) {
   return (
     <Tile>
-      <p className="text-[13px] font-semibold text-ink-3">{label}</p>
-      <p className={`mt-1 text-xl font-bold ${tone || ""}`}>{formatNumber(value)}</p>
+      <p className="text-body-sm font-semibold text-ink-3">{label}</p>
+      <p className={`mt-1 text-title-lg font-bold ${tone || ""}`}>{formatNumber(value)}</p>
     </Tile>
   );
 }

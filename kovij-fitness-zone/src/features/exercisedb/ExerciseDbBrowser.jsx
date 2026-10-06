@@ -23,7 +23,7 @@ function ExerciseTile({ exercise: e, onOpen, action, layout }) {
           <ExerciseDbMedia src={e.thumbUrl || e.gifUrl} className="size-14 shrink-0 rounded-tile border border-line" iconClassName="size-5" />
           <span className="min-w-0">
             <span className="block truncate font-semibold text-ink hover:underline">{e.name}</span>
-            <span className="block truncate text-[13px] text-ink-3">{exerciseFacts(e)}</span>
+            <span className="block truncate text-body-sm text-ink-3">{exerciseFacts(e)}</span>
           </span>
         </button>
         {action}
@@ -36,7 +36,7 @@ function ExerciseTile({ exercise: e, onOpen, action, layout }) {
         <ExerciseDbMedia src={e.thumbUrl || e.gifUrl} className="aspect-square w-full border-b border-line" />
         <span className="flex flex-1 flex-col gap-1 p-3">
           <span className="font-semibold leading-snug text-ink group-hover:underline">{e.name}</span>
-          <span className="text-[13px] text-ink-3">{exerciseFacts(e)}</span>
+          <span className="text-body-sm text-ink-3">{exerciseFacts(e)}</span>
         </span>
       </button>
       {action && <div className="px-3 pb-3">{action}</div>}
@@ -89,7 +89,7 @@ export function ExerciseDbBrowser({ api, onOpen, renderAction, layout = "grid", 
       <div className="flex flex-col gap-3">
         <SearchInput value={search} onChange={setSearch} placeholder="Search exercises, e.g. bench press" label="Search ExerciseDB" autoFocus={autoFocus} />
         {filters.isError ? (
-          <p className="text-[13px] text-ink-3">
+          <p className="text-body-sm text-ink-3">
             Filters didn’t load.{" "}
             <button type="button" className="font-semibold text-brand-ink hover:underline" onClick={() => filters.refetch()}>
               Try again
@@ -157,7 +157,7 @@ export function ExerciseDbBrowser({ api, onOpen, renderAction, layout = "grid", 
         />
       ) : (
         <div className={cn("transition-opacity", results.isFetching && !results.isFetchingNextPage && "opacity-60")}>
-          <p className="mb-2 text-[13px] text-ink-3" aria-live="polite">
+          <p className="mb-2 text-body-sm text-ink-3" aria-live="polite">
             {total === 1 ? "1 exercise" : `${formatNumber(total)} exercises`}
             {filtered ? " match" : " in ExerciseDB"}
           </p>

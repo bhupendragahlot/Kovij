@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Apple, CheckCircle2, Circle, Droplet, Minus, Plus } from "lucide-react";
 import { useDiet, useTickMeal, useWater } from "../queries";
-import { Card, CardHeader, EmptyState, ErrorState, FormError, IconButton, PageHeader, SkeletonList, useToast } from "../../../shared/ui";
+import { Card, CardHeader, EmptyState, ErrorState, FormError, IconButton, PageHeader, SkeletonList, buttonClasses, useToast } from "../../../shared/ui";
 import { formatNumber } from "../../../shared/lib/format";
 import { cn } from "../../../shared/lib/cn";
 
@@ -44,7 +44,7 @@ export default function DietPage() {
             icon={Apple}
             title="No diet plan yet"
             body={d.upcoming ? `Your plan “${d.upcoming.name}” starts soon.` : "Your trainer can make one for you: Indian meals, your targets, your routine."}
-            action={!d.upcoming && <Link to="/member/support/new" className="inline-flex h-11 items-center rounded-full bg-brand px-5 font-bold text-on-brand">Ask for a diet plan</Link>}
+            action={!d.upcoming && <Link to="/member/support/new" className={buttonClasses({ variant: "primary" })}>Ask for a diet plan</Link>}
           />
         </Card>
       </>
@@ -89,7 +89,7 @@ export default function DietPage() {
                   <span className="min-w-0 flex-1">
                     <span className="flex items-baseline justify-between gap-2">
                       <span className="font-bold">{meal.name}</span>
-                      <span className="tabular shrink-0 text-[13px] text-ink-3">
+                      <span className="tabular shrink-0 text-body-sm text-ink-3">
                         {meal.time} · {formatNumber(meal.totals?.calories || 0)} kcal
                       </span>
                     </span>

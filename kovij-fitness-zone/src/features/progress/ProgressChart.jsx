@@ -75,7 +75,7 @@ export function ProgressChart({ entries }) {
           </ResponsiveContainer>
         </div>
       </ChartFrame>
-      {rows.length === 1 && <p className="text-[13px] text-ink-3">Add another entry to see the trend.</p>}
+      {rows.length === 1 && <p className="text-body-sm text-ink-3">Add another entry to see the trend.</p>}
     </div>
   );
 }

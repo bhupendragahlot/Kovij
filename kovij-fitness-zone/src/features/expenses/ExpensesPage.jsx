@@ -124,7 +124,7 @@ export default function ExpensesPage() {
       cell: (e) => (
         <span className="block max-w-72">
           <span className="block truncate">{e.vendor || <span className="text-ink-3">Not noted</span>}</span>
-          {e.note && <span className="block truncate text-[13px] text-ink-3">{e.note}</span>}
+          {e.note && <span className="block truncate text-body-sm text-ink-3">{e.note}</span>}
         </span>
       ),
     },
@@ -138,7 +138,7 @@ export default function ExpensesPage() {
       <CategoryCell category={e.category} />
       <div className="min-w-0 flex-1 text-right">
         <p className="tabular font-bold">{formatINR(e.amount)}</p>
-        <p className="truncate text-[13px] text-ink-3">
+        <p className="truncate text-body-sm text-ink-3">
           {dayLabel(e.date)}
           {e.vendor ? `, ${e.vendor}` : ""}
         </p>
@@ -217,7 +217,7 @@ export default function ExpensesPage() {
             </div>
           ) : (
             <>
-              <p className="tabular mb-4 text-[28px] font-bold leading-9">{formatINR(monthTotal)}</p>
+              <p className="tabular mb-4 text-headline font-bold leading-9">{formatINR(monthTotal)}</p>
               <BreakdownList
                 label={`Expenses by category in ${monthLabel(month)}`}
                 items={EXPENSE_CATEGORIES.map((c) => ({ key: c, label: EXPENSE_CATEGORY[c].label, icon: EXPENSE_CATEGORY[c].icon, amount: byCategory[c]?.amount || 0 }))}
@@ -225,7 +225,7 @@ export default function ExpensesPage() {
                 emptyText="Nothing recorded this month yet."
                 onSelect={(category) => setFilters({ category })}
               />
-              {monthCount > 0 && <p className="mt-4 text-[13px] text-ink-3">{formatNumber(monthCount)} {monthCount === 1 ? "expense" : "expenses"}. Tap a category to list only those.</p>}
+              {monthCount > 0 && <p className="mt-4 text-body-sm text-ink-3">{formatNumber(monthCount)} {monthCount === 1 ? "expense" : "expenses"}. Tap a category to list only those.</p>}
             </>
           )}
         </Card>

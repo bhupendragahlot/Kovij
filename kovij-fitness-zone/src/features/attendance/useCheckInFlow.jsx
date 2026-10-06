@@ -117,11 +117,11 @@ export function useCheckInFlow({ onCheckedIn } = {}) {
             <Avatar name={blocked.member.name} src={blocked.member.profilePhoto} />
             <div className="min-w-0 flex-1">
               <p className="truncate font-semibold">{blocked.member.name}</p>
-              <p className="text-[13px] text-ink-3">{blocked.member.memberCode}</p>
+              <p className="text-body-sm text-ink-3">{blocked.member.memberCode}</p>
             </div>
             <BlockedBadge state={state} />
           </div>
-          <p className="text-[15px] text-ink-2">
+          <p className="text-body-lg text-ink-2">
             {blocked.message || `${blocked.member.name}'s plan ended on ${formatDate(blocked.membership?.endDate)}`}. {nextStep(state)}
           </p>
           <Field label="Reason for letting in once" hint="Saved with the visit so the owner can review it." error={reasonError}>

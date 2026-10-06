@@ -27,7 +27,7 @@ function CategoryPicker({ value, onChange, error }) {
             <label
               key={c}
               className={cn(
-                "flex min-h-16 cursor-pointer flex-col items-center justify-center gap-1 rounded-tile border px-2 py-2 text-center text-[13px] font-semibold transition-colors",
+                "flex min-h-16 cursor-pointer flex-col items-center justify-center gap-1 rounded-tile border px-2 py-2 text-center text-body-sm font-semibold transition-colors",
                 "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-focus/40",
                 selected ? "border-ink bg-ink text-canvas" : "border-line-strong bg-surface text-ink-2 hover:border-ink-3 hover:text-ink"
               )}
@@ -39,7 +39,7 @@ function CategoryPicker({ value, onChange, error }) {
           );
         })}
       </div>
-      {error && <p className="mt-1.5 text-[13px] font-medium text-bad">{error}</p>}
+      {error && <p className="mt-1.5 text-body-sm font-medium text-bad">{error}</p>}
     </fieldset>
   );
 }
@@ -205,8 +205,8 @@ export function ExpenseDialog({ open, expense, onClose }) {
               </Button>
             </>
           )}
-          {removeBill && !file && <p className="mt-1.5 text-[13px] text-ink-3">The bill will be removed when you save.</p>}
-          {errors.bill && <p className="mt-1.5 text-[13px] font-medium text-bad">{errors.bill}</p>}
+          {removeBill && !file && <p className="mt-1.5 text-body-sm text-ink-3">The bill will be removed when you save.</p>}
+          {errors.bill && <p className="mt-1.5 text-body-sm font-medium text-bad">{errors.bill}</p>}
         </div>
       </form>
     </Dialog>

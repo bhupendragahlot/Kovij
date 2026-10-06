@@ -1,6 +1,7 @@
 import { useId } from "react";
 import { Check } from "lucide-react";
 import { cn } from "../../shared/lib/cn";
+import { chipClasses } from "../../shared/ui";
 
 /**
  * Pick several day counts from a fixed list (e.g. remind 7, 3 and 1 day before). Toggle
@@ -30,11 +31,7 @@ export function DayChips({ label, hint, error, value = [], onChange, options, ma
               aria-pressed={on}
               disabled={disabled || (!on && full)}
               onClick={() => toggle(n)}
-              className={cn(
-                "inline-flex h-11 min-w-16 items-center justify-center gap-1.5 rounded-full border px-3.5 text-sm font-semibold transition-colors duration-150 md:h-9",
-                "disabled:cursor-not-allowed disabled:opacity-50",
-                on ? "border-ink bg-ink text-canvas" : "border-line-strong bg-surface text-ink-2 hover:border-ink-3 hover:text-ink"
-              )}
+              className={chipClasses(on, "min-w-14")}
             >
               {on && <Check className="size-3.5" aria-hidden strokeWidth={2.6} />}
               {suffix(n)}
@@ -42,7 +39,7 @@ export function DayChips({ label, hint, error, value = [], onChange, options, ma
           );
         })}
       </div>
-      <p id={`${id}-hint`} className={cn("text-[13px]", error ? "font-medium text-bad" : "text-ink-3")}>
+      <p id={`${id}-hint`} className={cn("text-body-sm", error ? "font-medium text-bad" : "text-ink-3")}>
         {error || (full && !disabled ? `That's the most you can pick (${max}). Remove one to choose another.` : hint)}
       </p>
     </div>

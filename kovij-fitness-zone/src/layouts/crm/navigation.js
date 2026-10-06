@@ -29,7 +29,7 @@ import { can } from "../../features/auth/permissions";
  *
  * mobile: "tab"     → phone bottom bar
  *         "primary" → the raised centre button on the phone bottom bar
- *         "more"    → phone "More" sheet
+ *         "more"    → phone "More" sheet (`sheetLabel` overrides the label there)
  */
 export const NAV_GROUPS = [
   {
@@ -63,7 +63,8 @@ export const NAV_GROUPS = [
       { id: "reports", label: "Reports", to: "/admin/reports", icon: BarChart3, mobile: "more", permission: "reports.view" },
       { id: "plans", label: "Plans", to: "/admin/plans", icon: Layers, mobile: "more", permission: "members.edit" },
       { id: "campaigns", label: "Campaigns", to: "/admin/campaigns", icon: Megaphone, mobile: "more", permission: "campaigns.manage" },
-      { id: "announcements", label: "Announcements", to: "/admin/announcements", icon: BellRing, mobile: "more", permission: "announcements.manage" },
+      // sheetLabel: a soft hyphen where the word may break in the narrow More-sheet cell.
+      { id: "announcements", label: "Announcements", sheetLabel: "Announce\u00ADments", to: "/admin/announcements", icon: BellRing, mobile: "more", permission: "announcements.manage" },
     ],
   },
   {

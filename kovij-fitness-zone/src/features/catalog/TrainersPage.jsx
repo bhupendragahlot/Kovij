@@ -20,12 +20,12 @@ function PerformanceRow({ perf }) {
   ];
   return (
     <div className="mt-4 rounded-tile bg-surface-2 p-3">
-      <p className="mb-1.5 text-[12px] font-semibold text-ink-3">Last 30 days</p>
+      <p className="mb-1.5 text-label font-semibold text-ink-3">Last 30 days</p>
       <dl className="grid grid-cols-3 gap-x-2 gap-y-2.5" aria-label="Coaching in the last 30 days">
       {items.map((i) => (
         <div key={i.label} className="min-w-0">
-          <dt className="truncate text-[12px] text-ink-3">{i.label}</dt>
-          <dd className={cn("tabular text-[15px] font-bold", i.warn && "text-warn")}>{i.value}</dd>
+          <dt className="truncate text-label text-ink-3">{i.label}</dt>
+          <dd className={cn("tabular text-body-lg font-bold", i.warn && "text-warn")}>{i.value}</dd>
         </div>
       ))}
       </dl>
@@ -41,8 +41,8 @@ function TrainerCard({ trainer: t, perf, canManage, onEdit, onMembers, onRemove 
       <div className="flex items-start gap-3">
         <Avatar name={t.name} src={t.image} size="lg" />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[15px] font-semibold">{t.name}</p>
-          <p className="truncate text-[13px] text-ink-3">{t.role}</p>
+          <p className="truncate text-body-lg font-semibold">{t.name}</p>
+          <p className="truncate text-body-sm text-ink-3">{t.role}</p>
         </div>
         {canManage && (
           <Menu

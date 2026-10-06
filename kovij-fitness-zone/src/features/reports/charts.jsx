@@ -115,7 +115,7 @@ export function BusyHeatmap({ grid }) {
       table={{ caption: "Busiest times", columns: ["Time", "Visits"], rows: slots.map((s) => [`${DAY_SHORT[s.d]} ${hourLabel(s.h)}m`, formatNumber(s.v)]) }}
     >
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[20rem] border-separate border-spacing-[3px] text-[11px]" aria-hidden>
+        <table className="w-full min-w-[20rem] border-separate border-spacing-[3px] text-label-sm" aria-hidden>
           <thead>
             <tr>
               <th className="w-9" />

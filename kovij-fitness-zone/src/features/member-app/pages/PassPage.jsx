@@ -76,15 +76,15 @@ export default function PassPage() {
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center overflow-y-auto bg-hero px-5 pb-10 pt-[max(1rem,env(safe-area-inset-top))] text-hero-ink">
       <div className="flex w-full max-w-sm items-center justify-between">
-        <p className="text-[15px] font-bold">{gym?.gymName || "Kovij Fitness Zone"}</p>
-        <button type="button" onClick={() => navigate(-1)} aria-label="Close the pass" className="grid size-11 place-items-center rounded-full hover:bg-white/10">
+        <p className="text-body-lg font-bold">{gym?.gymName || "Kovij Fitness Zone"}</p>
+        <button type="button" onClick={() => navigate(-1)} aria-label="Close the pass" className="state-layer touch-target grid size-12 place-items-center rounded-full">
           <X className="size-6" aria-hidden />
         </button>
       </div>
 
       <div className="mt-6 flex w-full max-w-sm flex-col items-center">
-        <h1 className="text-[22px] font-bold">Check-in pass</h1>
-        <p className="mt-1 text-[15px] text-hero-ink-2">Show this at the desk or the entrance scanner.</p>
+        <h1 className="text-headline-sm font-bold">Check-in pass</h1>
+        <p className="mt-1 text-body-lg text-hero-ink-2">Show this at the desk or the entrance scanner.</p>
 
         <div className="mt-6 w-full rounded-card bg-white p-5 text-neutral-900 shadow-pop">
           {pass.isPending && !saved ? (
@@ -94,8 +94,8 @@ export default function PassPage() {
           ) : (
             <>
               {svg ? <div className="mx-auto aspect-square w-full max-w-[18rem] [&>svg]:size-full" role="img" aria-label={`QR code for member ${code}`} dangerouslySetInnerHTML={{ __html: svg }} /> : <Skeleton className="aspect-square w-full" />}
-              <p className="mt-4 text-center text-[17px] font-bold">{current.name}</p>
-              <p className="tabular mt-1 text-center text-[26px] font-bold tracking-[0.18em]" aria-label={`Member code ${code.split("").join(" ")}`}>
+              <p className="mt-4 text-center text-title-lg font-bold">{current.name}</p>
+              <p className="tabular mt-1 text-center text-headline font-bold tracking-[0.18em]" aria-label={`Member code ${code.split("").join(" ")}`}>
                 {code}
               </p>
             </>
@@ -103,18 +103,18 @@ export default function PassPage() {
         </div>
 
         {status && (
-          <p className="mt-5 text-center text-[15px]">
+          <p className="mt-5 text-center text-body-lg">
             <span className="font-semibold">{status.badge}</span>
             {standing.membership?.endDate && ["active", "ending"].includes(status.key) && <span className="text-hero-ink-2"> · valid until {formatDate(standing.membership.endDate)}</span>}
           </p>
         )}
         {!live && saved && (
-          <p className="mt-3 flex items-center gap-2 text-[13px] text-hero-ink-2">
+          <p className="mt-3 flex items-center gap-2 text-body-sm text-hero-ink-2">
             <CloudOff className="size-4" aria-hidden />
             Offline: showing the pass saved {formatRelativeTime(saved.savedAt)}.
           </p>
         )}
-        <p className="mt-6 text-center text-[13px] text-hero-ink-2">Can’t scan? Tell the desk your code. Turn the screen brightness up if the scanner struggles.</p>
+        <p className="mt-6 text-center text-body-sm text-hero-ink-2">Can’t scan? Tell the desk your code. Turn the screen brightness up if the scanner struggles.</p>
         <Button variant="secondary" className="mt-6" onClick={() => navigate(-1)}>
           Done
         </Button>
