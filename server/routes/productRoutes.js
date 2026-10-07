@@ -5,11 +5,19 @@ import { requirePermission } from '../middleware/requirePermission.js';
 import { validate } from '../middleware/validate.js';
 import { idParam } from '../validators/common.js';
 import { productSchema, productPatchSchema } from '../validators/catalog.schema.js';
+import { avatarUpload } from '../services/storageService.js';
 
+/**
+ * Mounted at /api/products. Public reads list only products shown on the website; staff manage
+ * the catalogue (Staff app → Products), like plans.
+ */
 const router = express.Router();
 const byId = validate(idParam, 'params');
-// Shop products are part of the catalogue managers look after, like plans.
 const manage = requirePermission('plans.manage');
+
+// Fixed paths before /:id.
+router.get('/manage', adminAuth, manage, products.list);
+router.post('/image', adminAuth, manage, avatarUpload, products.uploadImage);
 
 router.get('/', products.listPublic);
 router.get('/:id', byId, products.getPublic);

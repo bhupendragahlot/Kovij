@@ -23,6 +23,7 @@ export const qk = {
     list: (params) => ["leads", "list", params],
   },
   plans: ["plans"],
+  products: ["products"],
   trainers: ["trainers"],
   campaigns: {
     all: ["campaigns"],

@@ -17,21 +17,35 @@ export const planSchema = z.object({
 });
 export const planPatchSchema = planSchema.partial();
 
-export const productSchema = z.object({
-  name: z.string().trim().min(1).max(120),
-  category: z.enum(['protein', 'preworkout', 'vitamins', 'accessories']),
+/** Product photo: one uploaded here (/uploads/avatars/…), a file the site ships (/images/…) or an https link. */
+const productImage = z
+  .string()
+  .trim()
+  .min(1, 'Add a photo of the product')
+  .max(1000)
+  .refine((v) => /^\/(uploads\/avatars|images)\/[\w./-]+$/.test(v) || /^https:\/\/\S+$/.test(v), 'Upload a photo, or paste a link starting with https://');
+
+const productFields = {
+  name: z.string().trim().min(1, 'Name the product').max(120),
+  category: z.enum(['protein', 'preworkout', 'vitamins', 'accessories'], { errorMap: () => ({ message: 'Choose a category' }) }),
   price: money,
-  discountPrice: money.optional(),
-  rating: z.coerce.number().min(0).max(5).optional(),
-  image: z.string().trim().min(1).max(1000),
+  // Sale price; null (from the edit form) removes it.
+  discountPrice: money.nullable().optional(),
+  rating: z.coerce.number().min(0).max(5, 'Rating is out of 5').optional(),
+  image: productImage,
   badge: optionalText(40),
   description: optionalText(1000),
-  stock: z.coerce.number().int().min(0).default(0),
+  stock: z.coerce.number().int('Whole numbers only').min(0, 'Stock can’t be negative').default(0),
   showOnFrontend: bool.default(true),
-  sku: z.string().trim().min(1).max(60),
-  brand: z.string().trim().min(1).max(80),
-});
-export const productPatchSchema = productSchema.partial();
+  sku: z.string().trim().min(1, 'Add the SKU (stock code)').max(60),
+  brand: z.string().trim().min(1, 'Add the brand').max(80),
+};
+
+const saleBelowPrice = (p) => p.discountPrice == null || p.price == null || p.discountPrice < p.price;
+const saleMessage = { message: 'The sale price must be lower than the price', path: ['discountPrice'] };
+
+export const productSchema = z.object(productFields).refine(saleBelowPrice, saleMessage);
+export const productPatchSchema = z.object(productFields).partial().refine(saleBelowPrice, saleMessage);
 
 export const contactSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(120),

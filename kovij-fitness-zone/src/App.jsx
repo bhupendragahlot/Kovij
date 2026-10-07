@@ -20,6 +20,7 @@ const CheckInPage = lazy(() => import("./features/attendance/CheckInPage"));
 const PaymentsPage = lazy(() => import("./features/payments/PaymentsPage"));
 const LeadsPage = lazy(() => import("./features/leads/LeadsPage"));
 const PlansPage = lazy(() => import("./features/catalog/PlansPage"));
+const ProductsPage = lazy(() => import("./features/catalog/ProductsPage"));
 const TrainersPage = lazy(() => import("./features/catalog/TrainersPage"));
 const CampaignsPage = lazy(() => import("./features/campaigns/CampaignsPage"));
 const SettingsPage = lazy(() => import("./features/settings/SettingsPage"));
@@ -92,6 +93,7 @@ const router = createBrowserRouter([
       { path: "payments", element: <PaymentsPage />, handle: { title: "Payments" } },
       { path: "leads", element: <LeadsPage />, handle: { title: "Leads" } },
       { path: "plans", element: <PlansPage />, handle: { title: "Plans" } },
+      { path: "products", element: <ProductsPage />, handle: { title: "Products" } },
       { path: "trainers", element: <TrainersPage />, handle: { title: "Trainers" } },
       { path: "campaigns", element: <CampaignsPage />, handle: { title: "Campaigns" } },
       { path: "email/campaigns", element: <Navigate to="/admin/campaigns" replace /> },

@@ -3,93 +3,124 @@ import { motion } from "framer-motion"
 import { animate, stagger } from "motion"
 import { FaStar } from "react-icons/fa"
 import { useTheme } from "../context/ThemeContext"
+import { API_ORIGIN } from "../shared/lib/apiBase"
+
+/** Shown until the gym adds its own products (Staff app → Products). */
+const SAMPLE_PRODUCTS = [
+  {
+    id: 1,
+    name: "Whey Protein Isolate",
+    category: "protein",
+    price: 2499,
+    discountPrice: 1999,
+    rating: 4.8,
+    image: "https://imgs.search.brave.com/Ckjd05tsIs4QgvuMMRJkITTvdIiIqduxzY_6IRGEcQw/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9zaG9w/LmJvZHlidWlsZGlu/Zy5jb20vY2RuL3No/b3AvZmlsZXMva2Fn/ZWQtd2hleS1wcm90/ZWluLWlzb2xhdGUt/NDkxNDM2LmpwZz9j/cm9wPWNlbnRlciZo/ZWlnaHQ9MjA0OCZ2/PTE3MzAzNjcwMzIm/d2lkdGg9MjA0OA",
+    badge: "Best Seller",
+  },
+  {
+    id: 2,
+    name: "Pre-Workout Energy Booster",
+    category: "preworkout",
+    price: 1899,
+    discountPrice: 1499,
+    rating: 4.5,
+    image: "https://imgs.search.brave.com/6VVg1MNWl-0ErZ5rh3sc3xEAN12mQgU-gNgiHtwod9E/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/ODF1cGlrSkppQ0wu/anBn",
+    badge: "20% OFF",
+  },
+  {
+    id: 3,
+    name: "BCAA Amino Acids",
+    category: "protein",
+    price: 1299,
+    discountPrice: 999,
+    rating: 4.3,
+    image: "/images/product-3.jpg",
+    badge: "New",
+  },
+  {
+    id: 4,
+    name: "Multivitamin Complex",
+    category: "vitamins",
+    price: 899,
+    discountPrice: 799,
+    rating: 4.6,
+    image: "/images/product-4.jpg",
+  },
+  {
+    id: 5,
+    name: "Creatine Monohydrate",
+    category: "protein",
+    price: 1199,
+    discountPrice: 999,
+    rating: 4.7,
+    image: "/images/product-5.jpg",
+    badge: "Popular",
+  },
+  {
+    id: 6,
+    name: "Gym Shaker Bottle",
+    category: "accessories",
+    price: 499,
+    discountPrice: 399,
+    rating: 4.4,
+    image: "/images/product-6.jpg",
+  },
+  {
+    id: 7,
+    name: "Weight Lifting Gloves",
+    category: "accessories",
+    price: 799,
+    discountPrice: 649,
+    rating: 4.2,
+    image: "https://imgs.search.brave.com/qZp0nYP-m3W-OGkn7ifJWUoLseBCTQhQoReuLJ54FDA/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly93d3cu/Z29yaWxsYXdlYXIu/Y29tL3Jlc2l6ZS85/OTgwMzkwOC13b21l/bnMtZml0bmVzcy1n/bG92ZXMtMjAtYmxh/Y2stZ3JheS0xXzM4/MjAwMTUwNTg5NDgu/anBnLzUwMC81MDAv/VHJ1ZS93b21lbi1z/LWZpdG5lc3MtZ2xv/dmVzLTIwLWJsYWNr/LWdyYXkuanBn",
+  },
+  {
+    id: 8,
+    name: "Vitamin D3 + K2",
+    category: "vitamins",
+    price: 699,
+    discountPrice: 599,
+    rating: 4.5,
+    image: "https://imgs.search.brave.com/aEXrGmsMyDpJIZaGWAz2inMtkgz9e4cipQlSESQpvxg/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NDFIcUlLRjlHVEwu/anBn",
+  },
+]
+
+const formatPrice = (n) => `₹${Number(n).toLocaleString("en-IN")}`
+
+/** Product photo; falls back to a placeholder when the link is broken. */
+function ProductPhoto({ product }) {
+  const [failed, setFailed] = useState(false)
+  return (
+    <img
+      src={!failed && product.image ? product.image : "/placeholder.svg"}
+      alt={product.name}
+      loading="lazy"
+      onError={() => setFailed(true)}
+      className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+    />
+  )
+}
 
 function Shop() {
   const [activeCategory, setActiveCategory] = useState("all")
   const { theme } = useTheme()
   const heroCopyRef = useRef(null)
+  // null while loading; the gym's products once loaded, or the samples when it has none yet.
+  const [products, setProducts] = useState(null)
 
-  const products = [
-    {
-      id: 1,
-      name: "Whey Protein Isolate",
-      category: "protein",
-      price: 2499,
-      discountPrice: 1999,
-      rating: 4.8,
-      image: "https://imgs.search.brave.com/Ckjd05tsIs4QgvuMMRJkITTvdIiIqduxzY_6IRGEcQw/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9zaG9w/LmJvZHlidWlsZGlu/Zy5jb20vY2RuL3No/b3AvZmlsZXMva2Fn/ZWQtd2hleS1wcm90/ZWluLWlzb2xhdGUt/NDkxNDM2LmpwZz9j/cm9wPWNlbnRlciZo/ZWlnaHQ9MjA0OCZ2/PTE3MzAzNjcwMzIm/d2lkdGg9MjA0OA",
-      badge: "Best Seller",
-    },
-    {
-      id: 2,
-      name: "Pre-Workout Energy Booster",
-      category: "preworkout",
-      price: 1899,
-      discountPrice: 1499,
-      rating: 4.5,
-      image: "https://imgs.search.brave.com/6VVg1MNWl-0ErZ5rh3sc3xEAN12mQgU-gNgiHtwod9E/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/ODF1cGlrSkppQ0wu/anBn",
-      badge: "20% OFF",
-    },
-    {
-      id: 3,
-      name: "BCAA Amino Acids",
-      category: "protein",
-      price: 1299,
-      discountPrice: 999,
-      rating: 4.3,
-      image: "/images/product-3.jpg",
-      badge: "New",
-    },
-    {
-      id: 4,
-      name: "Multivitamin Complex",
-      category: "vitamins",
-      price: 899,
-      discountPrice: 799,
-      rating: 4.6,
-      image: "/images/product-4.jpg",
-    },
-    {
-      id: 5,
-      name: "Creatine Monohydrate",
-      category: "protein",
-      price: 1199,
-      discountPrice: 999,
-      rating: 4.7,
-      image: "/images/product-5.jpg",
-      badge: "Popular",
-    },
-    {
-      id: 6,
-      name: "Gym Shaker Bottle",
-      category: "accessories",
-      price: 499,
-      discountPrice: 399,
-      rating: 4.4,
-      image: "/images/product-6.jpg",
-    },
-    {
-      id: 7,
-      name: "Weight Lifting Gloves",
-      category: "accessories",
-      price: 799,
-      discountPrice: 649,
-      rating: 4.2,
-      image: "https://imgs.search.brave.com/qZp0nYP-m3W-OGkn7ifJWUoLseBCTQhQoReuLJ54FDA/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly93d3cu/Z29yaWxsYXdlYXIu/Y29tL3Jlc2l6ZS85/OTgwMzkwOC13b21l/bnMtZml0bmVzcy1n/bG92ZXMtMjAtYmxh/Y2stZ3JheS0xXzM4/MjAwMTUwNTg5NDgu/anBnLzUwMC81MDAv/VHJ1ZS93b21lbi1z/LWZpdG5lc3MtZ2xv/dmVzLTIwLWJsYWNr/LWdyYXkuanBn",
-    },
-    {
-      id: 8,
-      name: "Vitamin D3 + K2",
-      category: "vitamins",
-      price: 699,
-      discountPrice: 599,
-      rating: 4.5,
-      image: "https://imgs.search.brave.com/aEXrGmsMyDpJIZaGWAz2inMtkgz9e4cipQlSESQpvxg/rs:fit:500:0:0:0/g:ce/aHR0cHM6Ly9tLm1l/ZGlhLWFtYXpvbi5j/b20vaW1hZ2VzL0kv/NDFIcUlLRjlHVEwu/anBn",
-    },
-  ]
+  useEffect(() => {
+    let live = true
+    fetch(`${API_ORIGIN}/api/products`)
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
+      .then((data) => live && setProducts(data.products?.length ? data.products : SAMPLE_PRODUCTS))
+      .catch(() => live && setProducts(SAMPLE_PRODUCTS))
+    return () => {
+      live = false
+    }
+  }, [])
 
   const filteredProducts =
-    activeCategory === "all" ? products : products.filter((product) => product.category === activeCategory)
+    activeCategory === "all" ? products || [] : (products || []).filter((product) => product.category === activeCategory)
 
   const categoryPills = useMemo(
     () => [
@@ -158,7 +189,7 @@ function Shop() {
                 key={pill.id}
                 type="button"
                 onClick={() => setActiveCategory(pill.id)}
-                className={`px-4 py-1.5 text-xs font-black uppercase tracking-wider transition-colors ${
+                className={`shrink-0 whitespace-nowrap px-4 py-1.5 text-xs font-black uppercase tracking-wider transition-colors ${
                   activeCategory === pill.id
                     ? "corner-cut-tr bg-[#d32f2f] text-white"
                     : "bg-[#2a2a2a] text-neutral-400 hover:text-white"
@@ -176,10 +207,23 @@ function Shop() {
 
       {/* Product Grid */}
       <section className="mx-auto max-w-7xl px-6 py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {products && filteredProducts.length === 0 && (
+          <p className="py-16 text-center text-sm font-bold uppercase tracking-widest text-neutral-500">Nothing in this category yet</p>
+        )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" aria-busy={!products}>
+          {!products &&
+            [0, 1, 2, 3].map((i) => (
+              <div key={i} className="bg-[#0e0e0e] border border-neutral-800" aria-hidden>
+                <div className="aspect-square animate-pulse bg-neutral-900" />
+                <div className="space-y-3 p-4 sm:p-6">
+                  <div className="h-5 w-3/4 animate-pulse bg-neutral-800" />
+                  <div className="h-4 w-1/3 animate-pulse bg-neutral-800" />
+                </div>
+              </div>
+            ))}
           {filteredProducts.map((product, index) => (
             <motion.article
-              key={product.id}
+              key={product._id || product.id}
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.25 }}
@@ -187,11 +231,7 @@ function Shop() {
               className="fx-hoverlift fx-gpu bg-[#0e0e0e] border border-neutral-800 group hover:border-[#d32f2f]"
             >
               <div className="aspect-square relative bg-neutral-900 overflow-hidden">
-                <img
-                  src={product.image || "/placeholder.svg"}
-                  alt={product.name}
-                  className="w-full h-full object-cover grayscale group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
-                />
+                <ProductPhoto product={product} />
                 {product.badge && (
                   <div className="absolute top-3 left-3 bg-[#d32f2f] px-2 py-1 text-[10px] font-black uppercase tracking-tight text-white">
                     {product.badge}
@@ -200,17 +240,28 @@ function Shop() {
               </div>
               <div className="p-4 sm:p-6">
                 <div className="flex justify-between items-start mb-2 gap-3">
-                  <h3 className="font-['Lexend'] text-lg font-black uppercase tracking-tight">{product.name}</h3>
-                  <span className="text-[#ffb3ac] font-black">₹{product.discountPrice}</span>
+                  <h3 className="font-['Lexend'] text-lg font-black uppercase tracking-tight text-white">{product.name}</h3>
+                  {product.discountPrice != null && product.discountPrice < product.price ? (
+                    <span className="shrink-0 text-right">
+                      <span className="block text-[#ffb3ac] font-black">{formatPrice(product.discountPrice)}</span>
+                      <s className="block text-xs text-neutral-500">{formatPrice(product.price)}</s>
+                    </span>
+                  ) : (
+                    <span className="shrink-0 text-[#ffb3ac] font-black">{formatPrice(product.price)}</span>
+                  )}
                 </div>
-                <div className="flex items-center gap-1 mb-4">
-                  <div className="flex text-[#f7be1d]">
-                    {[...Array(5)].map((_, i) => (
-                      <FaStar key={i} className={i < Math.floor(product.rating) ? "text-[#f7be1d]" : "text-neutral-700"} />
-                    ))}
+                {product.rating > 0 ? (
+                  <div className="flex items-center gap-1 mb-4">
+                    <div className="flex text-[#f7be1d]" role="img" aria-label={`Rated ${product.rating} out of 5`}>
+                      {[...Array(5)].map((_, i) => (
+                        <FaStar key={i} aria-hidden className={i < Math.floor(product.rating) ? "text-[#f7be1d]" : "text-neutral-700"} />
+                      ))}
+                    </div>
+                    <span className="text-[10px] text-neutral-500 ml-1">({product.rating})</span>
                   </div>
-                  <span className="text-[10px] text-neutral-500 ml-1">({product.rating})</span>
-                </div>
+                ) : (
+                  product.brand && <p className="mb-4 text-xs uppercase tracking-widest text-neutral-500">{product.brand}</p>
+                )}
 
                 <button className="fx-hoverlift fx-press w-full py-3 bg-neutral-800 hover:bg-[#d32f2f] text-white text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2">
                   View Details <span className="translate-y-[1px]">→</span>

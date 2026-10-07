@@ -10,7 +10,7 @@ const GROUPS = [
   ["Attendance", [["attendance.checkin", "Check members in"], ["attendance.view", "See attendance"]]],
   ["Money", [["payments.view", "See payments and dues"], ["payments.collect", "Collect payments"], ["payments.refund", "Record refunds"], ["revenue.view", "See revenue"], ["expenses.manage", "Manage expenses"]]],
   ["Coaching", [["workouts.manage", "Workout plans"], ["diets.manage", "Diet plans"], ["progress.manage", "Record progress"], ["trainers.manage", "Manage trainers"]]],
-  ["Growth", [["leads.manage", "Enquiries"], ["support.manage", "Member support"], ["plans.manage", "Plans and prices"], ["campaigns.manage", "Email campaigns"], ["announcements.manage", "Announcements"], ["reminders.manage", "Reminder settings"], ["reports.view", "Reports"]]],
+  ["Growth", [["leads.manage", "Enquiries"], ["support.manage", "Member support"], ["plans.manage", "Plans, prices and shop products"], ["campaigns.manage", "Email campaigns"], ["announcements.manage", "Announcements"], ["reminders.manage", "Reminder settings"], ["reports.view", "Reports"]]],
   ["Admin", [["settings.manage", "Gym settings"], ["staff.manage", "Staff accounts"], ["activity.view", "Activity log"]]],
 ];
 

@@ -137,6 +137,7 @@ const ACTIONS = [
   ['PATCH', '/plans/:id', 'plan.update', 'edited a plan'],
   ['DELETE', '/plans/:id', 'plan.delete', 'removed a plan'],
   ['POST', '/products', 'product.create', 'added a product'],
+  ['POST', '/products/image', 'product.image', 'uploaded a product photo'],
   ['PUT', '/products/:id', 'product.update', 'edited a product'],
   ['DELETE', '/products/:id', 'product.delete', 'removed a product'],
 ];

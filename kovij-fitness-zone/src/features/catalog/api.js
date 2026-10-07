@@ -35,6 +35,19 @@ function catalogResource({ key, listUrl, writeUrl, plural, updateMethod = "patch
 
 export const plansResource = catalogResource({ key: qk.plans, listUrl: "/plans", writeUrl: "/plans", plural: "plans" });
 export const trainersResource = catalogResource({ key: qk.trainers, listUrl: "/admin/trainers", writeUrl: "/admin/trainers", plural: "trainers" });
+/** Shop products: staff see every product (hidden ones too) at /products/manage. */
+export const productsResource = catalogResource({ key: qk.products, listUrl: "/products/manage", writeUrl: "/products", plural: "products", updateMethod: "put" });
+
+/** Upload a product photo; answers with its URL to save on the product. */
+export function useUploadProductImage() {
+  return useMutation({
+    mutationFn: (file) => {
+      const form = new FormData();
+      form.append("photo", file);
+      return api.post("/products/image", form);
+    },
+  });
+}
 
 /** Plans a member can buy today (active), cheapest first. */
 export function useSellablePlans() {

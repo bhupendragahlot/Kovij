@@ -17,6 +17,7 @@ import {
   ScanLine,
   ScrollText,
   Settings,
+  ShoppingBag,
   TrendingUp,
   UserRound,
   Users,
@@ -62,6 +63,7 @@ export const NAV_GROUPS = [
       { id: "expenses", label: "Expenses", to: "/admin/expenses", icon: Receipt, mobile: "more", permission: "expenses.manage" },
       { id: "reports", label: "Reports", to: "/admin/reports", icon: BarChart3, mobile: "more", permission: "reports.view" },
       { id: "plans", label: "Plans", to: "/admin/plans", icon: Layers, mobile: "more", permission: "members.edit" },
+      { id: "products", label: "Products", to: "/admin/products", icon: ShoppingBag, mobile: "more", permission: "plans.manage" },
       { id: "campaigns", label: "Campaigns", to: "/admin/campaigns", icon: Megaphone, mobile: "more", permission: "campaigns.manage" },
       // sheetLabel: a soft hyphen where the word may break in the narrow More-sheet cell.
       { id: "announcements", label: "Announcements", sheetLabel: "Announce\u00ADments", to: "/admin/announcements", icon: BellRing, mobile: "more", permission: "announcements.manage" },
