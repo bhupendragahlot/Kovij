@@ -7,7 +7,6 @@ import path from "path";
 // import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
 import morgan from "morgan";
-import fs from "fs";
 import { fileURLToPath } from "url";
 
 import { mountApiRoutes } from "./routes/index.js";
@@ -15,7 +14,8 @@ import Member from "./models/Member.js";
 import { errorHandler, AppError } from "./middleware/errorHandler.js";
 import { apiLimiter } from "./middleware/rateLimiter.js";
 import { activityLog } from "./middleware/activityLog.js";
-import { PUBLIC_AVATAR_DIR, LEGACY_MEMBER_DIR } from "./services/storageService.js";
+import "./services/storageService.js";
+import { sendStoredFile } from "./services/fileStore.js";
 import { runStartupMigrations } from "./migrations/index.js";
 import { failAbandonedEmails, reportEmailSetup } from "./services/emailService.js";
 import { contentSecurityPolicy } from "./config/csp.js";
@@ -56,17 +56,27 @@ app.use(mongoSanitize());
 app.use(morgan("combined", { stream: { write: (msg) => logger.info(msg.trim()) } }));
 app.use(cookieParser());
 
-// Uploads: profile photos are public; ID proofs are only reachable through the staff API.
-fs.mkdirSync(PUBLIC_AVATAR_DIR, { recursive: true });
-app.use("/uploads/avatars", express.static(PUBLIC_AVATAR_DIR, { maxAge: "7d" }));
+// Uploads live in the database (services/fileStore.js), so they survive deploys and restarts.
+// Profile photos and the gym logo are public (names are random and never reused, so they cache
+// for a long time); ID proofs, bills and progress photos only go through the staff/member API.
+const FILE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,120}$/;
+app.get(
+  "/uploads/avatars/:file",
+  asyncHandler(async (req, res) => {
+    const file = req.params.file;
+    if (!FILE_NAME.test(file)) throw new AppError("Not found", 404, "NOT_FOUND");
+    await sendStoredFile(res, `public/avatars/${file}`, { cache: "public, max-age=2592000, immutable" });
+  })
+);
 // Legacy folder mixes photos and ID proofs: serve a file only if it is someone's profile photo.
 app.get(
   "/uploads/members/:file",
   asyncHandler(async (req, res) => {
-    const file = path.basename(req.params.file);
+    const file = req.params.file;
+    if (!FILE_NAME.test(file)) throw new AppError("Not found", 404, "NOT_FOUND");
     const isAvatar = await Member.exists({ profilePhoto: `/uploads/members/${file}` });
     if (!isAvatar) throw new AppError("Not found", 404, "NOT_FOUND");
-    res.sendFile(path.join(LEGACY_MEMBER_DIR, file));
+    await sendStoredFile(res, `members/${file}`, { cache: "public, max-age=604800" });
   })
 );
 // A missing upload is a 404, not the app's index page.

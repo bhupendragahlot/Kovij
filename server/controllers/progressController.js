@@ -55,7 +55,7 @@ export const uploadProgressPhoto = asyncHandler(async (req, res) => {
 
 /** GET the image itself, only for this member's photo. */
 export const streamProgressPhoto = asyncHandler(async (req, res) => {
-  sendPhoto(res, await photoFile(req.subject.memberId, req.validated.params.photoId));
+  await sendPhoto(res, await photoFile(req.subject.memberId, req.validated.params.photoId));
 });
 
 /** DELETE a photo and its file. */

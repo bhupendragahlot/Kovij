@@ -1,10 +1,10 @@
-import fs from 'fs';
 import Expense from '../models/Expense.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { toGymTime } from '../utils/time.js';
 import { sendCsv, toCsv } from '../services/csvExport.js';
-import { billPath, billRefFor, removeBillFile } from '../services/expenseBillStorage.js';
+import { billKey, billRefFor, removeBillFile } from '../services/expenseBillStorage.js';
+import { fileExists, sendStoredFile } from '../services/fileStore.js';
 import {
   buildExpenseFilter,
   createExpense,
@@ -92,12 +92,8 @@ export const removeBill = asyncHandler(async (req, res) => {
 /** GET /api/admin/expenses/:id/bill: streams the private file to staff only. */
 export const downloadBill = asyncHandler(async (req, res) => {
   const expense = await getExpense(req.params.id);
-  const file = billPath(expense.bill?.ref);
-  if (!file || !fs.existsSync(file)) throw new AppError('No bill is attached to this expense', 404, 'NOT_FOUND');
-  res.setHeader('Content-Type', expense.bill.mime || 'application/octet-stream');
-  res.setHeader('Cache-Control', 'private, no-store');
-  res.setHeader('X-Content-Type-Options', 'nosniff');
+  const key = billKey(expense.bill?.ref);
+  if (!key || !(await fileExists(key))) throw new AppError('No bill is attached to this expense', 404, 'NOT_FOUND');
   const safeName = String(expense.bill.name || 'bill').replace(/[^A-Za-z0-9._ -]/g, '_');
-  res.setHeader('Content-Disposition', `inline; filename="${safeName}"`);
-  fs.createReadStream(file).on('error', () => res.destroy()).pipe(res);
+  await sendStoredFile(res, key, { disposition: `inline; filename="${safeName}"` });
 });

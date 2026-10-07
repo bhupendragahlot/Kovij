@@ -136,6 +136,12 @@ Each module owns its **backend** (models, services, controllers, validators, rou
   - `src/app/appIdentity.js` points `<link rel="manifest">` and the iPhone home-screen title at the right app on start-up and on every route change.
   - Install buttons use `src/app/install.js`, which captures `beforeinstallprompt`. iPhones get Add to Home Screen steps (`shared/ui/InstallApp.jsx`). They appear on the member Home and Profile and in the staff account menu.
   - Offline: member reads are cached NetworkFirst (`kv-member-api`, cleared on member sign-out) next to the staff `kv-api` cache. Queries fail at once with "You're offline" instead of waiting on a skeleton.
+- **Uploaded files (logo, photos, ID proofs, bills, progress photos):**
+  - Stored in MongoDB GridFS (bucket `uploads`) through `services/fileStore.js`, never on the server disk. Render wipes the disk on every deploy and restart, which is how the gym logo used to vanish.
+  - Keys mirror the old folders (`public/avatars/…`, `private/id-proofs/…`, `private/expense-bills/…`, `private/progress-photos/…`), so stored references are unchanged. Reads fall back to a disk file with the same key.
+  - `FILE_STORE=disk` keeps files under `UPLOAD_ROOT` instead (only with a persistent disk). Upload code checks each file by its bytes, then calls `saveFile`. Serving goes through `sendStoredFile`.
+  - Migration `2026-10-forget-lost-uploads` clears logo and photo links whose file was already lost, and `GymLogo` (layouts/crm/BrandMark.jsx) falls back to the K mark if a logo can't load.
+  - E2E flow `uploads` proves files survive a wiped disk.
 - **Member app passwords:**
   - Desk registration requires a date of birth, which becomes the member's first password as DDMMYYYY (`services/memberPasswordService.js`).
   - Members sign in at `POST /api/member/auth/password` with their mobile number, email or member ID. They change the password at `/password/change` (current, new, confirm), which signs out their other devices.

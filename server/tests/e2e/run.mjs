@@ -98,7 +98,7 @@ try {
     server.on('exit', (code) => reject(new Error(`server exited early (${code}):\n${log}`)));
   });
 
-  const flowEnv = { E2E_API: `http://localhost:${PORT}/api`, E2E_JWT_SECRET: SECRET, E2E_TYPESAFE_STUB: typesafe.url, E2E_GOOGLE_KEY: google.privateKeyPem, E2E_GOOGLE_CLIENT_ID, E2E_EXERCISEDB_STUB: exerciseDb.url };
+  const flowEnv = { E2E_API: `http://localhost:${PORT}/api`, E2E_JWT_SECRET: SECRET, E2E_TYPESAFE_STUB: typesafe.url, E2E_GOOGLE_KEY: google.privateKeyPem, E2E_GOOGLE_CLIENT_ID, E2E_EXERCISEDB_STUB: exerciseDb.url, E2E_UPLOAD_DIR: join(cwd, "uploads") };
   const failures = [];
   for (const [name, file] of selected) {
     console.log(`\n── ${name} ──`);

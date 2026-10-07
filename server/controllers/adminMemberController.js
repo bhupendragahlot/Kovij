@@ -1,5 +1,3 @@
-import path from 'path';
-import fs from 'fs';
 import Member from '../models/Member.js';
 import Membership from '../models/Membership.js';
 import MemberProfile from '../models/MemberProfile.js';
@@ -23,7 +21,8 @@ import {
 import { buildTimeline, cancelMembershipRecord } from '../services/membershipService.js';
 import { registerDeskMember, sellMembership } from '../services/salesService.js';
 import { findByIdempotencyKey } from '../services/paymentService.js';
-import { privateUploadPath, removeAvatar } from '../services/storageService.js';
+import { privateFileKey, removeAvatar } from '../services/storageService.js';
+import { fileExists, sendStoredFile } from '../services/fileStore.js';
 import { withTransaction } from '../utils/db.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { gymDayKey } from '../utils/time.js';
@@ -281,8 +280,7 @@ export const notifyMember = asyncHandler(async (req, res) => {
 /** GET /api/admin/members/:id/id-proof — ID documents are never served publicly. */
 export const getIdProof = asyncHandler(async (req, res) => {
   const profile = await MemberProfile.findOne({ memberId: req.params.id }).lean();
-  const filePath = privateUploadPath(profile?.idProof?.url);
-  if (!filePath || !fs.existsSync(filePath)) throw new AppError('No ID proof on file', 404, 'NOT_FOUND');
-  res.setHeader('Cache-Control', 'private, no-store');
-  res.sendFile(path.resolve(filePath));
+  const key = privateFileKey(profile?.idProof?.url);
+  if (!key || !(await fileExists(key))) throw new AppError('No ID proof on file', 404, 'NOT_FOUND');
+  await sendStoredFile(res, key);
 });

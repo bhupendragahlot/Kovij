@@ -6,15 +6,11 @@ import { MEMBER_NAV } from "./nav";
 import { useGym, useHome } from "./queries";
 import { Avatar, ConfirmProvider, NavBar, NavBarLink, OfflineBanner, RailLink, Toaster } from "../../shared/ui";
 import { useScrolled } from "../../shared/hooks/useScrolled";
-import { KMark } from "../../layouts/crm/BrandMark";
+import { GymLogo } from "../../layouts/crm/BrandMark";
 import { cn } from "../../shared/lib/cn";
 
 function GymMark({ gym, className }) {
-  return gym?.logoUrl ? (
-    <img src={gym.logoUrl} alt="" className={cn("rounded-[9px] bg-white object-contain p-0.5", className)} />
-  ) : (
-    <KMark className={className} />
-  );
+  return <GymLogo src={gym?.logoUrl} className={className} />;
 }
 
 /**

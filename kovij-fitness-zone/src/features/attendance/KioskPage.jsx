@@ -18,7 +18,7 @@ import { useKioskGym, useScan } from "./api";
 import { useQrScanner } from "./useQrScanner";
 import { formatDuration, shortName } from "./lib";
 import { useLogout } from "../auth/api";
-import { KMark } from "../../layouts/crm/BrandMark";
+import { GymLogo } from "../../layouts/crm/BrandMark";
 import { usePermission } from "../auth/permissions";
 import { useOnlineStatus } from "../../shared/hooks/useOnlineStatus";
 import { newIdempotencyKey } from "../../shared/lib/apiClient";
@@ -644,7 +644,7 @@ function KioskRunner({ config, onExit }) {
 
       <header className="flex items-center justify-between gap-4 px-5 pb-2 pt-[max(1rem,env(safe-area-inset-top))] sm:px-8">
         <div className="flex min-w-0 items-center gap-3">
-          {gym.data?.logoUrl ? <img src={gym.data.logoUrl} alt="" className="size-10 rounded-tile object-cover" /> : <KMark className="size-10 shrink-0" />}
+          <GymLogo src={gym.data?.logoUrl} className="size-10" imgClassName="rounded-tile object-cover" />
           <p className="truncate text-xl font-bold sm:text-2xl">{gymName}</p>
         </div>
         <p className="tabular shrink-0 text-xl font-semibold text-hero-ink-2 sm:text-2xl">{clock}</p>

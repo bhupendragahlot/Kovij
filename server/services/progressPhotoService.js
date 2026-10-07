@@ -1,20 +1,19 @@
 /**
  * Private progress photos: one per member, day and pose (front, side, back).
  *
- * Files are written under uploads/private/progress-photos (never served statically) and are
- * only streamed through authenticated routes. The type is checked from the file's own bytes,
+ * Files are kept in the file store (fileStore.js, "private/progress-photos/…"; never served
+ * statically) and are only streamed through authenticated routes. The type is checked from the file's own bytes,
  * not from what the client claims, and names are random so nothing about the member leaks
  * through a file name.
  */
-import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
 import multer from 'multer';
 import ProgressPhoto from '../models/ProgressPhoto.js';
-import { UPLOAD_ROOT, sniffImageType } from './storageService.js';
+import { sniffImageType } from './storageService.js';
+import { fileExists, removeFile as removeStoredFile, saveFile, sendStoredFile } from './fileStore.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { gymDayKey } from '../utils/time.js';
-import { logger } from '../utils/logger.js';
 import { dayBounds, dayOffset } from './wellnessMath.js';
 
 export const PHOTO_POLICY = {
@@ -23,7 +22,7 @@ export const PHOTO_POLICY = {
   backdateDays: 365,
 };
 
-const PHOTO_DIR = path.join(UPLOAD_ROOT, 'private', 'progress-photos');
+const KEY_PREFIX = 'private/progress-photos/';
 const REF_PREFIX = 'private:progress-photos/';
 const EXT = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' };
 
@@ -58,16 +57,11 @@ export function receivePhoto(req, res, next) {
   });
 }
 
-const absolutePath = (ref) => (ref?.startsWith(REF_PREFIX) ? path.join(PHOTO_DIR, path.basename(ref.slice(REF_PREFIX.length))) : null);
+const storedKey = (ref) => (ref?.startsWith(REF_PREFIX) ? `${KEY_PREFIX}${path.basename(ref.slice(REF_PREFIX.length))}` : null);
 
 async function removeFile(ref) {
-  const file = absolutePath(ref);
-  if (!file) return;
-  try {
-    await fs.unlink(file);
-  } catch (e) {
-    if (e.code !== 'ENOENT') logger.warn(`Couldn't remove a progress photo file: ${e.code || e.message}`);
-  }
+  const key = storedKey(ref);
+  if (key) await removeStoredFile(key);
 }
 
 export function presentPhoto(p, urlBase) {
@@ -114,10 +108,9 @@ export async function savePhoto({ memberId, day: dayInput, pose, file, actor, ur
     throw new AppError(`This member has ${PHOTO_POLICY.maxPerMember} photos. Delete old ones before adding more.`, 409, 'TOO_MANY_PHOTOS');
   }
 
-  await fs.mkdir(PHOTO_DIR, { recursive: true });
   const name = `${Date.now()}-${crypto.randomBytes(12).toString('hex')}${EXT[mime]}`;
   const ref = `${REF_PREFIX}${name}`;
-  await fs.writeFile(path.join(PHOTO_DIR, name), file.buffer, { flag: 'wx' });
+  await saveFile(`${KEY_PREFIX}${name}`, file.buffer, { contentType: mime });
 
   const set = {
     date: dayBounds(day).start,
@@ -150,14 +143,9 @@ export async function savePhoto({ memberId, day: dayInput, pose, file, actor, ur
 /** The file to stream, after checking the photo belongs to this member. */
 export async function photoFile(memberId, photoId) {
   const photo = await ProgressPhoto.findOne({ _id: photoId, memberId }).lean();
-  const file = absolutePath(photo?.file);
-  if (!file) throw new AppError('Photo not found', 404, 'NOT_FOUND');
-  try {
-    await fs.access(file);
-  } catch {
-    throw new AppError('Photo not found', 404, 'NOT_FOUND');
-  }
-  return { file, mime: photo.mime };
+  const key = storedKey(photo?.file);
+  if (!key || !(await fileExists(key))) throw new AppError('Photo not found', 404, 'NOT_FOUND');
+  return { key, mime: photo.mime };
 }
 
 export async function deletePhoto(memberId, photoId) {
@@ -167,12 +155,6 @@ export async function deletePhoto(memberId, photoId) {
 }
 
 /** Stream a private photo with headers that keep it out of shared caches and stop sniffing. */
-export function sendPhoto(res, { file, mime }) {
-  res.set({
-    'Content-Type': mime,
-    'Cache-Control': 'private, no-store',
-    'X-Content-Type-Options': 'nosniff',
-    'Content-Disposition': 'inline',
-  });
-  res.sendFile(file);
+export function sendPhoto(res, { key }) {
+  return sendStoredFile(res, key, { disposition: 'inline' });
 }

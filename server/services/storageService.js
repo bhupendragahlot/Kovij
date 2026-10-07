@@ -1,68 +1,37 @@
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
 import { AppError } from '../middleware/errorHandler.js';
 import { logger } from '../utils/logger.js';
+import { removeFile, saveFile, setUploadRoot } from './fileStore.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 /**
- * Where uploads live. Tests (NODE_ENV=test) write into the throwaway working directory the e2e
- * runner creates, so they never leave files in the repository.
+ * Disk folder for FILE_STORE=disk and for files saved before uploads moved into the database
+ * (see fileStore.js). Tests (NODE_ENV=test) use the throwaway working directory the e2e runner
+ * creates, so they never leave files in the repository.
  */
 export const UPLOAD_ROOT = process.env.UPLOAD_ROOT
   ? path.resolve(process.env.UPLOAD_ROOT)
   : process.env.NODE_ENV === 'test'
     ? path.join(process.cwd(), 'uploads')
     : path.join(__dirname, '..', 'uploads');
-/** Served publicly at /uploads/avatars. */
-export const PUBLIC_AVATAR_DIR = path.join(UPLOAD_ROOT, 'public', 'avatars');
-/** Never served statically; streamed to staff through an authenticated route. */
-const PRIVATE_DIR = path.join(UPLOAD_ROOT, 'private');
-const ID_PROOF_DIR = path.join(PRIVATE_DIR, 'id-proofs');
-/** Pre-2026 uploads (avatars and ID proofs mixed together). */
-export const LEGACY_MEMBER_DIR = path.join(UPLOAD_ROOT, 'members');
+setUploadRoot(UPLOAD_ROOT);
 
+/** Public profile photos and the gym logo are served at /uploads/avatars/<name>. */
 export const AVATAR_URL_PREFIX = '/uploads/avatars/';
+const AVATAR_KEY = 'public/avatars/';
+const ID_PROOF_KEY = 'private/id-proofs/';
 const MAX_BYTES = 5 * 1024 * 1024;
-
-const ensureDir = (dir) => {
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-};
 
 const EXTENSIONS = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp', 'image/gif': '.gif', 'application/pdf': '.pdf' };
 const IMAGE_TYPES = Object.keys(EXTENSIONS).filter((m) => m !== 'application/pdf');
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = file.fieldname === 'idProof' ? ID_PROOF_DIR : PUBLIC_AVATAR_DIR;
-    ensureDir(dir);
-    cb(null, dir);
-  },
-  // Random name + extension derived from the verified MIME type, never from the client's filename.
-  filename: (req, file, cb) => cb(null, `${Date.now()}-${crypto.randomBytes(8).toString('hex')}${EXTENSIONS[file.mimetype]}`),
-});
-
-const fileFilter = (req, file, cb) => {
-  const allowed = file.fieldname === 'idProof' ? Object.keys(EXTENSIONS) : IMAGE_TYPES;
-  if (!allowed.includes(file.mimetype)) {
-    const message = file.fieldname === 'idProof' ? 'ID proof must be JPEG, PNG, WebP, GIF or PDF' : 'Photo must be JPEG, PNG, WebP or GIF';
-    return cb(new AppError(message, 422, 'INVALID_FILE_TYPE', { fields: { [file.fieldname]: message } }));
-  }
-  cb(null, true);
-};
-
-/** Multer instance for profile photo + ID proof (max 5MB each) */
-export const uploadMemberFiles = multer({
-  storage,
-  limits: { fileSize: MAX_BYTES, files: 2 },
-  fileFilter,
-});
-
-const avatarUploader = multer({ storage, limits: { fileSize: MAX_BYTES, files: 1, fields: 5 }, fileFilter }).single('photo');
+/** Random name; the extension comes from the checked type, never from the client's filename. */
+export const newFileName = (mime) => `${Date.now()}-${crypto.randomBytes(8).toString('hex')}${EXTENSIONS[mime] || ''}`;
 
 /**
  * Magic-byte check: the declared MIME type is only a claim from the browser. Returns the real
@@ -78,22 +47,62 @@ export function sniffImageType(buf) {
   return null;
 }
 
-function readHead(filePath, bytes = 16) {
-  const fd = fs.openSync(filePath, 'r');
-  try {
-    const buf = Buffer.alloc(bytes);
-    const n = fs.readSync(fd, buf, 0, bytes, 0);
-    return buf.subarray(0, n);
-  } finally {
-    fs.closeSync(fd);
-  }
+/** Real type of an image or PDF from its bytes, or null. */
+export function sniffDocumentType(buf) {
+  if (buf && buf.length >= 5 && buf.subarray(0, 5).toString('latin1') === '%PDF-') return 'application/pdf';
+  return sniffImageType(buf);
 }
 
-const removeQuietly = (filePath) => fs.promises.unlink(filePath).catch(() => {});
+const fileFilter = (req, file, cb) => {
+  const allowed = file.fieldname === 'idProof' ? Object.keys(EXTENSIONS) : IMAGE_TYPES;
+  if (!allowed.includes(file.mimetype)) {
+    const message = file.fieldname === 'idProof' ? 'ID proof must be JPEG, PNG, WebP, GIF or PDF' : 'Photo must be JPEG, PNG, WebP or GIF';
+    return cb(new AppError(message, 422, 'INVALID_FILE_TYPE', { fields: { [file.fieldname]: message } }));
+  }
+  cb(null, true);
+};
+
+// Held in memory (5 MB at most), checked, then saved to the file store.
+const memberFiles = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_BYTES, files: 2 }, fileFilter });
+const avatarUploader = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_BYTES, files: 1, fields: 5 }, fileFilter }).single('photo');
+
+/** Check one received file's bytes and save it; sets `file.filename` (used by fileRefFor). */
+async function persist(file) {
+  const isIdProof = file.fieldname === 'idProof';
+  const real = isIdProof ? sniffDocumentType(file.buffer) : sniffImageType(file.buffer);
+  if (!real) {
+    const message = isIdProof ? 'That file isn’t a photo or PDF we can use.' : 'That file isn’t a photo we can use. Choose a JPEG, PNG or WebP image.';
+    throw new AppError(message, 422, 'INVALID_FILE_TYPE', { fields: { [file.fieldname]: message } });
+  }
+  file.mimetype = real;
+  file.filename = newFileName(real);
+  await saveFile(`${isIdProof ? ID_PROOF_KEY : AVATAR_KEY}${file.filename}`, file.buffer, { contentType: real });
+  file.buffer = undefined;
+}
+
+/** Multer middleware followed by checking and saving every received file. */
+function thenPersist(receive) {
+  return (req, res, next) => {
+    receive(req, res, (err) => {
+      if (err) return next(err);
+      const files = [req.file, ...Object.values(req.files || {}).flat()].filter(Boolean);
+      Promise.all(files.map(persist)).then(() => next(), next);
+    });
+  };
+}
 
 /**
- * Express middleware for one staff-uploaded profile photo in the multipart field `photo`.
- * Sets `req.avatarUrl` (public URL) once the file is saved and verified as a real image.
+ * Profile photo + ID proof (max 5 MB each), for the member's own uploads and trainer photos:
+ *   uploadMemberFiles.fields([{ name: 'profilePhoto' }, { name: 'idProof' }]) / .single('photo')
+ */
+export const uploadMemberFiles = {
+  fields: (spec) => thenPersist(memberFiles.fields(spec)),
+  single: (field) => thenPersist(memberFiles.single(field)),
+};
+
+/**
+ * Express middleware for one staff-uploaded profile photo (or the gym logo) in the multipart
+ * field `photo`. Sets `req.avatarUrl` (public URL) once the file is verified and saved.
  * Multer's own errors become clear 4xx messages instead of a 500.
  */
 export function avatarUpload(req, res, next) {
@@ -107,27 +116,35 @@ export function avatarUpload(req, res, next) {
       return next(err);
     }
     if (!req.file) return next(new AppError('Choose a photo to upload', 422, 'VALIDATION_ERROR', { fields: { photo: 'Choose a photo' } }));
-    let real = null;
-    try {
-      real = sniffImageType(readHead(req.file.path));
-    } catch (e) {
-      logger.warn(`avatar sniff failed: ${e.message}`);
-    }
+    const real = sniffImageType(req.file.buffer);
     if (!real || real !== req.file.mimetype) {
-      removeQuietly(req.file.path);
       return next(new AppError('That file isn’t a photo we can use. Choose a JPEG, PNG or WebP image.', 422, 'INVALID_FILE_TYPE', { fields: { photo: 'Choose a JPEG, PNG or WebP photo' } }));
     }
-    req.avatarUrl = `${AVATAR_URL_PREFIX}${req.file.filename}`;
-    next();
+    req.file.filename = newFileName(real);
+    saveFile(`${AVATAR_KEY}${req.file.filename}`, req.file.buffer, { contentType: real })
+      .then(() => {
+        req.file.buffer = undefined;
+        req.avatarUrl = `${AVATAR_URL_PREFIX}${req.file.filename}`;
+        next();
+      })
+      .catch((e) => {
+        logger.error(`Couldn't save an uploaded photo: ${e.message}`);
+        next(new AppError('The photo couldn’t be saved. Try again.', 503, 'UPLOAD_FAILED'));
+      });
   });
 }
 
-/** Delete an avatar we stored (e.g. when it is replaced). Ignores anything outside the avatar folder. */
-export async function removeAvatar(url) {
-  if (typeof url !== 'string' || !url.startsWith(AVATAR_URL_PREFIX)) return;
+/** The stored-file key behind a public avatar URL, or null for anything else. */
+export function avatarKey(url) {
+  if (typeof url !== 'string' || !url.startsWith(AVATAR_URL_PREFIX)) return null;
   const file = path.basename(url);
-  if (!file || file.startsWith('.')) return;
-  await removeQuietly(path.join(PUBLIC_AVATAR_DIR, file));
+  return file && !file.startsWith('.') ? `${AVATAR_KEY}${file}` : null;
+}
+
+/** Delete an avatar we stored (e.g. when it is replaced). Ignores anything else. */
+export async function removeAvatar(url) {
+  const key = avatarKey(url);
+  if (key) await removeFile(key);
 }
 
 /** Reference stored in the database for an uploaded file. */
@@ -136,10 +153,10 @@ export function fileRefFor(file) {
   return file.fieldname === 'idProof' ? `private:id-proofs/${file.filename}` : `${AVATAR_URL_PREFIX}${file.filename}`;
 }
 
-/** Absolute path for a private file reference (new `private:` refs or legacy /uploads/members paths). */
-export function privateUploadPath(ref) {
+/** Stored-file key for a private reference (new `private:` refs or legacy /uploads/members paths). */
+export function privateFileKey(ref) {
   if (!ref) return null;
-  if (ref.startsWith('private:id-proofs/')) return path.join(ID_PROOF_DIR, path.basename(ref));
-  if (ref.startsWith('/uploads/members/')) return path.join(LEGACY_MEMBER_DIR, path.basename(ref));
+  if (ref.startsWith('private:id-proofs/')) return `${ID_PROOF_KEY}${path.basename(ref)}`;
+  if (ref.startsWith('/uploads/members/')) return `members/${path.basename(ref)}`;
   return null;
 }

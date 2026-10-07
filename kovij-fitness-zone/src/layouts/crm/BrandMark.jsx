@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { cn } from "../../shared/lib/cn";
 
 /**
@@ -16,11 +17,21 @@ export function KMark({ className }) {
   );
 }
 
+/**
+ * The gym's uploaded logo, or the K mark when there is none or it can't be loaded (never a
+ * broken-image icon). `className` sizes it; `imgClassName` styles the uploaded image only.
+ */
+export function GymLogo({ src, className, imgClassName = "rounded-[9px] bg-white object-contain p-0.5" }) {
+  const [failedSrc, setFailedSrc] = useState(null);
+  if (!src || failedSrc === src) return <KMark className={cn("shrink-0", className)} />;
+  return <img src={src} alt="" className={cn("shrink-0", imgClassName, className)} onError={() => setFailedSrc(src)} />;
+}
+
 /** The gym's own logo (Settings) replaces the K mark once one is uploaded. */
 export function BrandMark({ tone = "rail", compact = false, logoUrl, className }) {
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
-      {logoUrl ? <img src={logoUrl} alt="" className="size-9 shrink-0 rounded-[9px] bg-white object-contain p-0.5" /> : <KMark className="size-9 shrink-0" />}
+      <GymLogo src={logoUrl} className="size-9" />
       {!compact && (
         <span className="leading-tight">
           <span className={cn("block text-title-lg font-extrabold tracking-[-0.02em]", tone === "rail" ? "text-rail-ink" : "text-ink")}>Kovij</span>
